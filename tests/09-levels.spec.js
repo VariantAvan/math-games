@@ -53,7 +53,11 @@ test.describe('question generator follows each level', () => {
     1: ([a, b]) => a >= 1 && a <= 4 && b >= 1 && b <= 4,
     2: ([a, b]) => Math.min(a, b) >= 1 && Math.min(a, b) <= 4 && Math.max(a, b) <= 9,
     3: ([a, b]) => a >= 1 && a <= 9 && b >= 1 && b <= 9,
-    4: ([a, b]) => { const [big, small] = a > b ? [a, b] : [b, a]; return digits(big) === 2 && big % 10 < 5 && small >= 1 && small <= 9; },
+    4: ([a, b], mode) => {
+      const [big, small] = a > b ? [a, b] : [b, a];
+      const noCarry = mode === 'subtraction' ? small <= big % 10 : (big % 10) + small <= 9;
+      return digits(big) === 2 && big % 10 < 5 && small >= 1 && small <= 9 && noCarry;
+    },
     5: ([a, b]) => { const [big, small] = a > b ? [a, b] : [b, a]; return digits(big) === 2 && small >= 1 && small <= 9; },
     6: ([a, b]) => digits(a) === 2 && digits(b) === 2,
     7: ([a, b]) => [digits(a), digits(b)].sort().join() === '2,3',
@@ -67,7 +71,7 @@ test.describe('question generator follows each level', () => {
       for (let lv = 1; lv <= 10; lv++) {
         const qs = await page.evaluate(([m, l]) => Array.from({ length: 400 }, () => window.ToddlerMath.randomQuestion(m, l)), [mode, lv]);
         for (const q of qs) {
-          expect(RULES[lv](q), `level ${lv}: ${q}`).toBe(true);
+          expect(RULES[lv](q, mode), `level ${lv}: ${q}`).toBe(true);
           if (mode === 'subtraction') expect(q[0], `level ${lv}: ${q} must not go negative`).toBeGreaterThanOrEqual(q[1]);
         }
         if (mode === 'addition' && [2, 4, 5, 7, 9].includes(lv)) {
@@ -79,23 +83,66 @@ test.describe('question generator follows each level', () => {
   }
 });
 
-test.describe('level 1 (tiny numbers)', () => {
-  test('keys 5–9 are dimmed and refused; the second number can be 0–4', async ({ page }) => {
+test.describe('typing your own numbers is limited only by number of digits', () => {
+  test('level 1 still allows 6 + 7 (any single digits)', async ({ page }) => {
     await openApp(page);
     await setLevel(page, 1);
-    await expect(page.locator('.key[data-key="5"]')).toHaveClass(/dim/);
-    await tapKey(page, '7');
-    expect((await state(page)).num1).toBeNull();
-    await expect(page.locator('#prompt')).toContainText('1 to 4');
-    await tapKey(page, '3');
+    for (let k = 1; k <= 9; k++) await expect(page.locator(`.key[data-key="${k}"]`)).not.toHaveClass(/dim/);
+    await tapKey(page, '6');
     await waitForStep(page, 'num2');
-    await expect(page.locator('.key[data-key="0"]')).not.toHaveClass(/dim/);
-    await expect(page.locator('.key[data-key="6"]')).toHaveClass(/dim/);
-    await tapKey(page, '4');
-    await waitForStep(page, 'answer');
     await tapKey(page, '7');
+    await waitForStep(page, 'answer');
+    expect(await state(page)).toMatchObject({ num1: 6, num2: 7 });
+    await type(page, '13');
     await page.waitForFunction(() => window.ToddlerMath.getState().step === 'celebrate');
   });
+
+  test('level 1 does not allow 2-digit numbers like 11: the first digit goes straight in', async ({ page }) => {
+    await openApp(page);
+    await setLevel(page, 1);
+    await tapKey(page, '1');
+    await tapKey(page, '1'); // ignored while the first number's animal appears
+    await waitForStep(page, 'num2');
+    expect(await state(page)).toMatchObject({ num1: 1, num2: null, entry: '' });
+  });
+
+  test('level 4 lets you type a question that carries (e.g. 38 + 7)', async ({ page }) => {
+    await openApp(page);
+    await setLevel(page, 4);
+    await type(page, '38');
+    await waitForStep(page, 'num2');
+    await type(page, '7');
+    await tapKey(page, 'enter');
+    await waitForStep(page, 'answer');
+    await type(page, '45');
+    await page.waitForFunction(() => window.ToddlerMath.getState().step === 'celebrate');
+  });
+
+  test('level 4 does not allow 3-digit numbers', async ({ page }) => {
+    await openApp(page);
+    await setLevel(page, 4);
+    await type(page, '123');
+    await waitForStep(page, 'num2');
+    expect((await state(page)).num1).toBe(12);
+  });
+});
+
+test.describe('level 4 Pick for me! avoids carrying for a typed first number', () => {
+  for (const mode of ['addition', 'subtraction']) {
+    test(mode, async ({ page }) => {
+      await openApp(page, mode);
+      await setLevel(page, 4);
+      const pairs = await page.evaluate((m) => Array.from({ length: 200 }, () => window.ToddlerMath.randomQuestion(m, 4)), mode);
+      expect(pairs.length).toBe(200);
+      await type(page, '63');
+      await waitForStep(page, 'num2');
+      await page.locator('#randomBtn').click({ force: true });
+      await waitForStep(page, 'answer');
+      const { num2 } = await state(page);
+      if (mode === 'addition') expect(3 + num2).toBeLessThanOrEqual(9);
+      else expect(num2).toBeLessThanOrEqual(3);
+    });
+  }
 });
 
 test.describe('big numbers (levels 4–10)', () => {

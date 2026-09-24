@@ -228,7 +228,7 @@ Pick a level on the welcome screen (the strip of 1–10 under the game cards) or
 | 1 | Both under 5 | 2 + 3 · 4 − 1 |
 | 2 | One under 5, one single digit | 4 + 7 · 8 − 3 |
 | 3 | Two single digits (**default**, the original game) | 8 + 6 · 9 − 6 |
-| 4 | 2-digit with ones under 5, and a single digit | 23 + 5 · 34 − 2 |
+| 4 | 2-digit with ones under 5, and a single digit, **no carrying** (no borrowing in Take Away) | 23 + 5 · 34 − 2 |
 | 5 | 2-digit and a single digit | 47 + 8 · 52 − 7 |
 | 6 | Two 2-digit numbers | 35 + 48 · 84 − 37 |
 | 7 | 3-digit and 2-digit | 256 + 73 · 512 − 86 |
@@ -238,10 +238,10 @@ Pick a level on the welcome screen (the strip of 1–10 under the game cards) or
 
 How the levels behave:
 - **Surprise me!** follows these rules exactly. In Take Away the bigger number always comes first, so the answer is never negative.
-- **Typing your own numbers:**
-  - Level 1 only allows 1–4 (0–4 for the second number).
-  - Levels 2–3 take one digit per number, as before.
-  - From level 4, a number can have up to 2, 3 or 4 digits (depending on the level). It goes in when ✅ / Enter is pressed, or automatically once the maximum number of digits is typed. ⬅️ deletes a digit.
+- **Typing your own numbers is limited only by the number of digits.** Level 1 still allows 6 + 7 but not 11 + 3. (Take Away also can't take away more than you have.)
+  - Levels 1–3 take one digit per number: the key goes straight in.
+  - From level 4, a number can have up to 2, 3 or 4 digits (depending on the level). It goes in when ✅ / Enter is pressed, or automatically once the maximum number of digits is typed. ⬅️ deletes a digit. Typed questions may carry, e.g. 38 + 7 at level 4.
+- **Level 4 never carries:** in Add Along, the ones digit plus the single digit is at most 9 (23 + 5, never 24 + 8). In Take Away, the single digit is never more than the ones digit (34 − 2, never 31 − 4). "Pick for me!" keeps to this for a typed first number too.
 - **Levels 4–10 show only the number sentence, drawn larger.** There are no animal pictures and no "Count with me!" helper. The prompts say "What does it add up to? Type the answer!" / "How many are left? Type the answer!", and a wrong answer gets "Oops, not quite! Try again!". The bottom row of the pad keeps 🎲 Surprise me!, greyed out on the answer step.
 
 **Automated** (`tests/09-levels.spec.js`)
@@ -252,8 +252,11 @@ How the levels behave:
 | L.2 | A level picked on the welcome screen carries into the game (⭐ badge) and is remembered after a reload. |
 | L.3 | The in-game ⭐ opens the level sheet (10 options with examples). Picking one closes the sheet and restarts the round at that level. |
 | L.4 | Take Away's level sheet shows − examples, and Escape closes the sheet. |
-| L.5 | **Generator:** 400 questions per level, in each game, all match that level's rules. In Take Away the first number is always ≥ the second. For the mixed levels (2, 4, 5, 7, 9) in Add Along, the smaller-shaped number appears in both positions. |
-| L.6 | Level 1: keys 5–9 are dimmed and refused ("1 to 4"). The second number allows 0–4. 3 + 4 = 7 plays through. |
+| L.5 | **Generator:** 400 questions per level, in each game, all match that level's rules, including level 4's no-carry/no-borrow rule. In Take Away the first number is always ≥ the second. For the mixed levels (2, 4, 5, 7, 9) in Add Along, the smaller-shaped number appears in both positions. |
+| L.6 | Level 1 still allows any single digits: no keys are dimmed, and 6 + 7 = 13 plays through. |
+| L.6b | Level 1 doesn't allow 2-digit numbers: pressing 1 enters 1 straight away (so no 11). |
+| L.6c | Level 4 lets you type a question that carries (38 + 7 = 45), but not a 3-digit number (typing 1, 2, 3 enters 12). |
+| L.6d | Level 4 "Pick for me!" after typing 63 picks a second number that doesn't carry (≤ 6 in Add Along) or borrow (≤ 3 in Take Away). |
 | L.7 | Level 5: typing "4","7" enters 47 automatically, and a 1-digit second number goes in with ✅. 47 + 8 = 55 celebrates. |
 | L.8 | Level 9: Backspace edits a number being typed. 586 goes in with Enter, and 2407 + 586 = 2993 is accepted. |
 | L.9 | A multi-digit number can't start with 0. |

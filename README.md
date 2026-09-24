@@ -21,7 +21,8 @@ In both games, **🎲 Surprise me!** at the bottom of the number pad makes up a 
 3. **How many are left?** Count the animals that are still there and type the answer.
 
 **Difficulty levels (1–10):** pick one on the welcome screen or with the ⭐ button in a game. The levels go from tiny numbers under 5 (level 1), through single digits (level 3, the default), up to two 4-digit numbers (level 10):
-- Surprise me! follows the level.
+- Surprise me! follows the level exactly (level 4 never needs carrying or borrowing).
+- Typing your own numbers is only limited by the level's number of digits: at level 1 you can still type 6 + 7, but not 11 + 3.
 - From level 4, numbers can have several digits (press ✅ to enter one).
 - Levels 4–10 show just the number sentence: no animal pictures and no counting helper.
 

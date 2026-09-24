@@ -1367,6 +1367,7 @@
 
   /* ---------- Difficulty levels ---------- */
   // Number shapes: s = 1–4, d1 = 1–9, d2low = 2 digits with ones under 5, d2 / d3 / d4 = 2 / 3 / 4 digits.
+  // Level 4 is special-cased in makeQuestion so it never needs carrying (or borrowing in Take Away).
   const GEN = {
     s: () => randInt(1, 4),
     d1: () => randInt(1, 9),
@@ -1379,7 +1380,7 @@
     { gen: ['s', 's'],      digits: 1, desc: 'Tiny numbers: both under 5',                     ex: ['2 + 3', '4 − 1'] },
     { gen: ['s', 'd1'],     digits: 1, desc: 'One number under 5, one single digit',          ex: ['4 + 7', '8 − 3'] },
     { gen: ['d1', 'd1'],    digits: 1, desc: 'Two single-digit numbers',                      ex: ['8 + 6', '9 − 6'] },
-    { gen: ['d2low', 'd1'], digits: 2, desc: 'A 2-digit number (ones under 5) and a single digit', ex: ['23 + 5', '34 − 2'] },
+    { gen: ['d2low', 'd1'], digits: 2, desc: 'A 2-digit number (ones under 5) and a single digit, no carrying', ex: ['23 + 5', '34 − 2'] },
     { gen: ['d2', 'd1'],    digits: 2, desc: 'A 2-digit number and a single digit',           ex: ['47 + 8', '52 − 7'] },
     { gen: ['d2', 'd2'],    digits: 2, desc: 'Two 2-digit numbers',                           ex: ['35 + 48', '84 − 37'] },
     { gen: ['d3', 'd2'],    digits: 3, desc: 'A 3-digit and a 2-digit number',                ex: ['256 + 73', '512 − 86'] },
@@ -1389,10 +1390,27 @@
   ];
   const level = () => LEVELS[state.level];
   const isBig = () => level().digits > 1;          // multi-digit typing, numbers only (no pictures)
-  const keyMax = () => (state.level === 1 ? 4 : 9); // level 1 only uses 1–4 (0–4 for the second number)
+
+  // A single digit that goes with a without carrying (addition) or borrowing (subtraction); null if none fits.
+  function noCarrySingle(modeId, a) {
+    const ones = a % 10;
+    if (modeId === 'subtraction') return ones >= 1 ? randInt(1, Math.min(ones, 9)) : null;
+    return ones <= 8 ? randInt(1, 9 - ones) : null;
+  }
 
   // Make a question for a game at a level. Take Away always puts the bigger number first.
   function makeQuestion(modeId, lv, keepFirst) {
+    if (lv === 4) {
+      if (keepFirst != null) {
+        const b = noCarrySingle(modeId, keepFirst);
+        if (b != null && (modeId !== 'subtraction' || b <= keepFirst)) return [keepFirst, b];
+      } else {
+        // 2-digit with ones 0–4 (1–4 in Take Away, so there is something to take from the ones).
+        const a = randInt(1, 9) * 10 + (modeId === 'subtraction' ? randInt(1, 4) : randInt(0, 4));
+        const b = noCarrySingle(modeId, a);
+        return modeId === 'addition' && Math.random() < 0.5 ? [b, a] : [a, b];
+      }
+    }
     const [g1, g2] = LEVELS[lv].gen;
     if (keepFirst != null) {
       let b = GEN[g2]();
@@ -1498,9 +1516,10 @@
       const key = k.dataset.key;
       let dim = busy || step === 'celebrate';
       const digit = /^[0-9]$/.test(key) ? Number(key) : null;
+      // Typed numbers are only limited by the level's number of digits (and Take Away can't take more than it has).
       if (!isBig() && digit != null) {
-        if (step === 'num1' && (digit === 0 || digit > keyMax())) dim = true;
-        if (step === 'num2' && digit > Math.min(keyMax(), mode().maxSecond())) dim = true;
+        if (step === 'num1' && digit === 0) dim = true;
+        if (step === 'num2' && digit > mode().maxSecond()) dim = true;
       }
       if (isBig() && step === 'num1' && digit === 0 && !state.entry) dim = true;
       if (key === 'enter') {
@@ -1868,15 +1887,11 @@
       typeEntry(d);
       return;
     }
-    if (state.step === 'num1' && (d === 0 || d > keyMax())) {
-      refuse(`Pick a number from 1 to ${keyMax()}! 👆`, `Pick a number from one to ${keyMax() === 4 ? 'four' : 'nine'}!`);
+    if (state.step === 'num1' && d === 0) {
+      refuse('Pick a number from 1 to 9! 👆', 'Pick a number from one to nine!');
       return;
     }
     if (state.step === 'num2' && d > mode().maxSecond()) { tooMany(); return; }
-    if (state.step === 'num2' && d > keyMax()) {
-      refuse(`Pick a number from 0 to ${keyMax()}! 👆`, 'Pick a number from zero to four!');
-      return;
-    }
     Sound.key(d);
     if (state.step === 'num1') chooseFirst(d);
     else if (state.step === 'num2') chooseSecond(d);
