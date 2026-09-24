@@ -1,6 +1,6 @@
 # Add Along! 🐾: Toddler Math
 
-Cheerful, **100% offline** math games for toddlers: addition (sums up to 18) and take-away subtraction. The whole app is one file, [`index.html`](index.html). Open it in any browser, even with no internet, directly from disk (`file://`).
+Cheerful, **100% offline** math games for toddlers (and older kids): addition and take-away subtraction, with 10 difficulty levels from tiny numbers to 4-digit sums. The whole app is one file, [`index.html`](index.html). Open it in any browser, even with no internet, directly from disk (`file://`).
 
 ## How to play
 
@@ -20,8 +20,15 @@ In both games, **🎲 Surprise me!** at the bottom of the number pad makes up a 
 2. **Pick how many go away** (0 up to the starting number). They hop away, fade and get a soft ✖.
 3. **How many are left?** Count the animals that are still there and type the answer.
 
+**Difficulty levels (1–10):** pick one on the welcome screen or with the ⭐ button in a game. The levels go from tiny numbers under 5 (level 1), through single digits (level 3, the default), up to two 4-digit numbers (level 10):
+- Surprise me! follows the level.
+- From level 4, numbers can have several digits (press ✅ to enter one).
+- From level 4, numbers are drawn as base-ten blocks: thousand cubes, hundred flats, ten rods and animal ones. There's a "Show me the places" helper that walks through the ones, then the tens, and so on.
+
+See [TESTING.md](TESTING.md#difficulty-levels-both-games) for the full table.
+
 **Controls:** the on-screen keypad (0–9, ⬅️ back, ✅ check) or the physical keyboard (`0`–`9`, `Enter`, `Backspace`).
-**Top bar:** 🏠 back to the game list · 🎁 pick the animal (puppies, kittens, chicks, bunnies, frogs, horses, ducks, birds, apples, stars, or a surprise each round) · 🔊 sound on/off · 🔄 start over.
+**Top bar:** 🏠 back to the game list · ⭐ difficulty level · 🎁 pick the animal (puppies, kittens, chicks, bunnies, frogs, horses, ducks, birds, apples, stars, or a surprise each round) · 🔊 sound on/off · 🔄 start over.
 
 ## How it's built
 

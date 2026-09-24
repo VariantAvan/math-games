@@ -258,12 +258,15 @@
   .prompt.nudge { animation: nudge 0.5s ease; }
 
   /* ---------- Equation ---------- */
+  .stage { container-type: inline-size; }
   .equation {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: clamp(6px, 1.6vw, 16px);
     font-size: clamp(34px, min(9vw, 8dvh), 88px);
+    /* Long numbers (higher levels) shrink the whole number sentence to fit the width. */
+    font-size: min(clamp(34px, min(9vw, 8dvh), 88px), calc(100cqi / (var(--eq-chars, 4) * 0.62 + 4.4)));
     font-weight: 900;
   }
   .equation .op { color: var(--accent); line-height: 1; }
@@ -398,9 +401,84 @@
   .board.party .animal .bob { animation: party 0.55s ease-in-out infinite alternate; }
 
   /* Take Away: one big group; the animals that leave hop, fade and get a soft cross. */
-  #app[data-mode="subtraction"] #group2,
-  #app[data-mode="subtraction"] #plusBig { display: none; }
-  #app[data-mode="subtraction"] #group1 { max-width: 760px; }
+  #app[data-layout="solo"] #group2,
+  #app[data-layout="solo"] #plusBig { display: none; }
+  #app[data-layout="solo"] #group1 { max-width: 760px; }
+
+  /* ---------- Place-value blocks (levels 4+): thousands cubes, hundred flats, ten rods, animal ones ---------- */
+  .herd.pv {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 4px;
+    padding-top: 6px;
+  }
+  .pv-col {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 50%;
+    container-type: size;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 2px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.6);
+    transition: background 0.25s, box-shadow 0.25s;
+  }
+  .pv-col.hint { background: #fff4b8; box-shadow: 0 0 0 4px #ffd84d; }
+  .pv-blocks {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-end;
+    justify-content: center;
+    gap: 3px 2px;
+  }
+  .pv-label {
+    font-size: clamp(9px, 12cqw, 15px);
+    font-weight: 900;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+  .blk {
+    display: grid; place-items: center;
+    border-radius: 4px;
+    animation: hop-in 0.45s cubic-bezier(.34, 1.56, .64, 1) both;
+    animation-delay: calc(min(var(--i, 0), 30) * 40ms);
+  }
+  .blk.pop { animation: pop 0.4s cubic-bezier(.34, 1.56, .64, 1); }
+  .pv-label .pv-short { display: none; }
+  @container (max-width: 80px) {
+    .pv-label .pv-long { display: none; }
+    .pv-label .pv-short { display: inline; }
+  }
+  .pv-ones .blk { width: min(31cqw, 21cqh); height: min(31cqw, 21cqh); font-size: min(27cqw, 18cqh); }
+  .pv-ones .blk .face { font-family: var(--emoji); line-height: 1; filter: drop-shadow(0 2px 1px rgba(45, 42, 74, 0.25)); }
+  .pv-tens .blk {
+    width: min(15cqw, 5cqh);
+    height: min(42cqh, 95cqw);
+    background: repeating-linear-gradient(to bottom, #45c3ff 0 calc(10% - 1px), #1b86c4 calc(10% - 1px) 10%);
+    box-shadow: inset 0 0 0 1px #1b86c4;
+  }
+  .pv-hundreds .blk, .pv-thousands .blk {
+    width: min(29cqw, 20cqh);
+    height: min(29cqw, 20cqh);
+    background-color: #ffb13d;
+    background-image:
+      linear-gradient(to right, rgba(0, 0, 0, 0.18) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.18) 1px, transparent 1px);
+    background-size: 10% 10%;
+    box-shadow: inset 0 0 0 1px #c97d0c;
+  }
+  .pv-thousands .blk {
+    background-color: #9a8cff;
+    box-shadow: inset 0 0 0 1px #5d4fd6, 3px -3px 0 #6c5ee0;
+  }
   .animal.gone .bob { animation: none; }
   .animal.gone .face {
     opacity: 0.3;
@@ -441,6 +519,65 @@
   .count-btn.dim { opacity: 0.38; filter: saturate(0.5); }
   .count-btn[hidden] { display: none; }
   .random-btn { background: #cdbbff; border-bottom-color: #8f74e6; }
+
+  /* ---------- Difficulty levels ---------- */
+  .level-tool { position: relative; }
+  .level-tool .lvl-badge {
+    position: absolute;
+    right: -4px; bottom: -4px;
+    min-width: 22px; height: 22px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 900;
+    display: grid; place-items: center;
+    box-shadow: 0 0 0 2px #fff;
+  }
+  .level-row { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 8px; }
+  .level-title { font-size: clamp(16px, 2.6dvh, 22px); font-weight: 900; color: var(--ink-soft); }
+  .level-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .level-chip {
+    width: 48px; height: 48px;
+    border-radius: 16px;
+    background: #fff;
+    border: 3px solid var(--slot-edge);
+    border-bottom-width: 6px;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--ink);
+    transition: transform 0.1s;
+  }
+  .level-chip:active { transform: translateY(3px); }
+  .level-chip[aria-checked="true"] { background: var(--accent); border-color: #5a3ed6; color: #fff; }
+  .level-desc { margin: 0; font-size: clamp(15px, 2.4dvh, 19px); font-weight: 700; color: var(--ink-soft); min-height: 1.3em; }
+  .level-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 8px; text-align: left; }
+  .level-opt {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    align-items: center;
+    padding: 8px 12px;
+    min-height: 64px;
+    border-radius: 18px;
+    background: #f5f2ff;
+    border: 4px solid transparent;
+    text-align: left;
+  }
+  .level-opt[aria-checked="true"] { border-color: var(--accent); background: #fff; }
+  .level-opt .lv-n {
+    grid-row: 1 / 3;
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: var(--accent); color: #fff;
+    display: grid; place-items: center;
+    font-size: 20px; font-weight: 900;
+  }
+  .level-opt .lv-d { font-size: 15px; font-weight: 800; line-height: 1.2; }
+  .level-opt .lv-ex { font-size: 14px; font-weight: 700; color: var(--ink-soft); }
+  @media (max-width: 430px) { #gameTitle { display: none; } }
   .count-btn.pulse { animation: breathe 1s ease-in-out infinite; }
 
   /* ---------- Numpad ---------- */
@@ -664,6 +801,11 @@
         <span class="soon-tag">Coming soon!</span>
       </button>
     </div>
+    <div class="level-row">
+      <div class="level-title" id="levelTitle">Level</div>
+      <div class="level-chips" id="levelChips" role="radiogroup" aria-labelledby="levelTitle"></div>
+      <p class="level-desc" id="levelDesc"></p>
+    </div>
   </div>
 </div>
 
@@ -672,6 +814,7 @@
     <h2 class="title"><span id="gameTitle">Add Along!</span> <span class="emoji" id="gameIcon">🐾</span></h2>
     <div class="tools">
       <button class="tool" id="homeBtn" type="button" aria-label="Pick another game"><span class="emoji">🏠</span></button>
+      <button class="tool level-tool" id="levelBtn" type="button" aria-label="Difficulty level"><span class="emoji">⭐</span><span class="lvl-badge" id="levelNum">3</span></button>
       <button class="tool" id="themeBtn" type="button" aria-label="Pick your animal"><span class="emoji" id="themeIcon">🎁</span></button>
       <button class="tool" id="soundBtn" type="button" aria-label="Sound on" aria-pressed="true"><span class="emoji" id="soundIcon">🔊</span></button>
       <button class="tool" id="restartBtn" type="button" aria-label="Start over"><span class="emoji">🔄</span></button>
@@ -722,7 +865,7 @@
     <button class="key" type="button" data-key="0" style="--k:#f4eee2">0</button>
     <button class="key check" type="button" data-key="enter" aria-label="Check"><span class="emoji">✅</span></button>
     <button class="count-btn random-btn" id="randomBtn" type="button" data-key="random"><span class="emoji">🎲</span> <span id="randomLabel">Surprise me!</span></button>
-    <button class="count-btn dim" id="countBtn" type="button" data-key="count" aria-disabled="true" hidden><span class="emoji">👆</span> Count with me!</button>
+    <button class="count-btn dim" id="countBtn" type="button" data-key="count" aria-disabled="true" hidden><span class="emoji" id="countIcon">👆</span> <span id="countLabel">Count with me!</span></button>
   </section>
 </div>
 
@@ -732,6 +875,14 @@
     <div class="msg" id="celebrateMsg"></div>
     <button class="again" id="againBtn" type="button">Play Again! <span class="emoji">🔄</span></button>
     <div class="timer" aria-hidden="true"><i id="timerBar"></i></div>
+  </div>
+</div>
+
+<div class="overlay" id="levelSheet" hidden role="dialog" aria-modal="true" aria-labelledby="levelSheetTitle">
+  <div class="card sheet-card">
+    <h2 id="levelSheetTitle">How tricky? <span class="emoji">⭐</span></h2>
+    <div class="level-grid" id="levelGrid" role="radiogroup" aria-labelledby="levelSheetTitle"></div>
+    <button class="close-sheet" id="closeLevel" type="button">Done</button>
   </div>
 </div>
 
@@ -1232,7 +1383,10 @@
     g1: $('#group1'), g2: $('#group2'),
     plus: $('#plusBig'),
     pad: $('#pad'),
-    countBtn: $('#countBtn'),
+    countBtn: $('#countBtn'), countLabel: $('#countLabel'), countIcon: $('#countIcon'),
+    levelBtn: $('#levelBtn'), levelNum: $('#levelNum'),
+    levelSheet: $('#levelSheet'), levelGrid: $('#levelGrid'),
+    levelChips: $('#levelChips'), levelDesc: $('#levelDesc'),
     randomBtn: $('#randomBtn'), randomLabel: $('#randomLabel'),
     gameTitle: $('#gameTitle'), gameIcon: $('#gameIcon'),
     opSign: $('#opSign'),
@@ -1262,6 +1416,8 @@
     wrongs: 0,
     counted: 0,
     pendingSecond: null,   // set by "Surprise me!" so step 2 is filled in automatically
+    entry: '',             // digits typed so far for a multi-digit number (levels 4+)
+    level: store.get('level', 3),
     lastQuestion: '',
     theme: store.get('theme', 'random'),
     animal: THEMES[0],
@@ -1269,11 +1425,52 @@
     countTimers: []
   };
   if (state.theme !== 'random' && !THEMES.some((t) => t.id === state.theme)) state.theme = 'random';
+  if (!(state.level >= 1 && state.level <= 10)) state.level = 3;
 
   const later = (fn, ms) => { state.timers.push(setTimeout(fn, ms)); };
   const clearTimers = () => { state.timers.forEach(clearTimeout); state.timers = []; stopCountAlong(); };
   const noun = (n) => (n === 1 ? state.animal.one : state.animal.many);
   const randInt = (lo, hi) => lo + Math.floor(Math.random() * (hi - lo + 1));
+
+  /* ---------- Difficulty levels ---------- */
+  // Number shapes: s = 1–4, d1 = 1–9, d2low = 2 digits with ones under 5, d2 / d3 / d4 = 2 / 3 / 4 digits.
+  const GEN = {
+    s: () => randInt(1, 4),
+    d1: () => randInt(1, 9),
+    d2low: () => randInt(1, 9) * 10 + randInt(0, 4),
+    d2: () => randInt(10, 99),
+    d3: () => randInt(100, 999),
+    d4: () => randInt(1000, 9999)
+  };
+  const LEVELS = [null,
+    { gen: ['s', 's'],      digits: 1, desc: 'Tiny numbers: both under 5',                     ex: ['2 + 3', '4 − 1'] },
+    { gen: ['s', 'd1'],     digits: 1, desc: 'One number under 5, one single digit',          ex: ['4 + 7', '8 − 3'] },
+    { gen: ['d1', 'd1'],    digits: 1, desc: 'Two single-digit numbers',                      ex: ['8 + 6', '9 − 6'] },
+    { gen: ['d2low', 'd1'], digits: 2, desc: 'A 2-digit number (ones under 5) and a single digit', ex: ['23 + 5', '34 − 2'] },
+    { gen: ['d2', 'd1'],    digits: 2, desc: 'A 2-digit number and a single digit',           ex: ['47 + 8', '52 − 7'] },
+    { gen: ['d2', 'd2'],    digits: 2, desc: 'Two 2-digit numbers',                           ex: ['35 + 48', '84 − 37'] },
+    { gen: ['d3', 'd2'],    digits: 3, desc: 'A 3-digit and a 2-digit number',                ex: ['256 + 73', '512 − 86'] },
+    { gen: ['d3', 'd3'],    digits: 3, desc: 'Two 3-digit numbers',                           ex: ['418 + 365', '734 − 258'] },
+    { gen: ['d4', 'd3'],    digits: 4, desc: 'A 4-digit and a 3-digit number',                ex: ['2407 + 586', '3021 − 475'] },
+    { gen: ['d4', 'd4'],    digits: 4, desc: 'Two 4-digit numbers',                           ex: ['4825 + 3197', '8204 − 3576'] }
+  ];
+  const level = () => LEVELS[state.level];
+  const isBig = () => level().digits > 1;          // place-value blocks + multi-digit typing
+  const keyMax = () => (state.level === 1 ? 4 : 9); // level 1 only uses 1–4 (0–4 for the second number)
+
+  // Make a question for a game at a level. Take Away always puts the bigger number first.
+  function makeQuestion(modeId, lv, keepFirst) {
+    const [g1, g2] = LEVELS[lv].gen;
+    if (keepFirst != null) {
+      let b = GEN[g2]();
+      if (modeId === 'subtraction' && b > keepFirst) b = randInt(1, keepFirst);
+      return [keepFirst, b];
+    }
+    let a = GEN[g1](), b = GEN[g2]();
+    if (modeId === 'subtraction') { if (b > a) [a, b] = [b, a]; }
+    else if (Math.random() < 0.5) [a, b] = [b, a];
+    return [a, b];
+  }
 
   /* ---------- Activities: everything that differs between the games ---------- */
   const MODES = {
@@ -1287,10 +1484,8 @@
       secondChosen: (d) => d === 0
         ? [`Zero! No more ${state.animal.many}!`, `Zero! No more ${state.animal.many}!`]
         : [`${d} more ${noun(d)}! ${state.animal.emoji}`, `plus ${d} more ${noun(d)}!`],
-      maxSecond: () => 9,
-      recountHint: ' Tap each one to count! 👆',
-      // Surprise question: both numbers 1–9 (sums 2–18). Pass a to keep the first number.
-      random: (a = randInt(1, 9)) => [a, randInt(1, 9)]
+      maxSecond: () => Infinity,
+      recountHint: ' Tap each one to count! 👆'
     },
     subtraction: {
       title: 'Take Away!', icon: '👋', op: '−', opWord: 'take away',
@@ -1303,12 +1498,11 @@
         ? ['Zero! Nobody goes away!', 'Zero! Nobody goes away!']
         : [`${d} ${noun(d)} ${d === 1 ? 'goes' : 'go'} away! 👋`, `take away ${d}! Bye-bye ${noun(d)}!`],
       maxSecond: () => state.num1,
-      recountHint: ' Tap each one that is still here! 👆',
-      // Surprise question: start with 2–9, take away 1..start (answers 0–8).
-      random: (a = randInt(2, 9)) => [a, randInt(1, a)]
+      recountHint: ' Tap each one that is still here! 👆'
     }
   };
   const mode = () => MODES[state.mode];
+  const isSolo = () => state.mode === 'subtraction' && !isBig(); // Take Away with cross-outs
   const answer = () => mode().answer(state.num1 || 0, state.num2 || 0);
 
   function restartAnim(el, cls) {
@@ -1341,8 +1535,11 @@
   function renderEquation() {
     const { step, num1, num2, input } = state;
     els.opSign.textContent = mode().op;
-    setSlot(els.s1, num1 != null ? String(num1) : step === 'num1' ? '?' : '', step === 'num1');
-    setSlot(els.s2, num2 != null ? String(num2) : step === 'num2' ? '?' : '', step === 'num2');
+    const entry = state.entry;
+    setSlot(els.s1, num1 != null ? String(num1) : step === 'num1' ? (entry || '?') : '', step === 'num1' && !entry);
+    setSlot(els.s2, num2 != null ? String(num2) : step === 'num2' ? (entry || '?') : '', step === 'num2' && !entry);
+    const d = level().digits;
+    els.equation.style.setProperty('--eq-chars', String(d * 3 + (state.mode === 'addition' ? 1 : 0)));
     let ans = '';
     if (step === 'answer') ans = input || '?';
     if (step === 'celebrate') ans = String(answer());
@@ -1365,9 +1562,16 @@
     els.pad.querySelectorAll('.key').forEach((k) => {
       const key = k.dataset.key;
       let dim = busy || step === 'celebrate';
-      if (key === '0' && step === 'num1') dim = true;
-      if (step === 'num2' && /^[0-9]$/.test(key) && Number(key) > mode().maxSecond()) dim = true;
-      if (key === 'enter') dim = step !== 'answer' || !input || busy;
+      const digit = /^[0-9]$/.test(key) ? Number(key) : null;
+      if (!isBig() && digit != null) {
+        if (step === 'num1' && (digit === 0 || digit > keyMax())) dim = true;
+        if (step === 'num2' && digit > Math.min(keyMax(), mode().maxSecond())) dim = true;
+      }
+      if (isBig() && step === 'num1' && digit === 0 && !state.entry) dim = true;
+      if (key === 'enter') {
+        const typing = (step === 'num1' || step === 'num2') && isBig() && !!state.entry;
+        dim = busy || !(typing || (step === 'answer' && !!input));
+      }
       if (key === 'back') dim = dim || step === 'num1';
       k.classList.toggle('dim', dim);
     });
@@ -1379,11 +1583,13 @@
     els.randomLabel.textContent = step === 'num2' ? 'Pick for me!' : 'Surprise me!';
     els.countBtn.hidden = picking;
     els.countBtn.classList.toggle('dim', step !== 'answer' || busy);
+    els.countLabel.textContent = isBig() ? 'Show me the places' : 'Count with me!';
+    els.countIcon.textContent = isBig() ? '🔢' : '👆';
     els.countBtn.setAttribute('aria-disabled', String(step !== 'answer'));
   }
 
   function herdColumns(n) {
-    if (state.mode === 'subtraction') return Math.min(n, 5); // ten-frame rows of 5
+    if (isSolo()) return Math.min(n, 5); // ten-frame rows of 5
     if (n <= 3) return n;
     if (n === 4) return 2;
     return 3;
@@ -1411,9 +1617,11 @@
     el.classList.toggle('waiting', n == null);
     herd.textContent = '';
     herd.style.gridTemplateColumns = '';
-    herd.dataset.n = n == null ? '' : String(n);
+    herd.classList.remove('pv');
+    herd.dataset.n = n == null || isBig() ? '' : String(n);
     syncAnimalSize();
     if (n == null) return;
+    if (isBig() && n > 0) { renderPlaceValue(herd, n); return; }
     if (n === 0) {
       const z = document.createElement('div');
       z.className = 'zero';
@@ -1435,6 +1643,53 @@
     }
   }
 
+  const PLACES = [
+    { key: 'ones', one: 'one', many: 'ones', short: 'O' },
+    { key: 'tens', one: 'ten', many: 'tens', short: 'T' },
+    { key: 'hundreds', one: 'hundred', many: 'hundreds', short: 'H' },
+    { key: 'thousands', one: 'thousand', many: 'thousands', short: 'Th' }
+  ];
+  const digitAt = (n, p) => Math.floor(n / Math.pow(10, p)) % 10;
+  const digitSum = (n) => String(n).split('').reduce((t, c) => t + Number(c), 0);
+
+  // Base-ten picture of a number: one column per place, biggest place on the left.
+  function renderPlaceValue(herd, n) {
+    herd.classList.add('pv');
+    const places = String(n).length;
+    let k = 0;
+    for (let p = places - 1; p >= 0; p--) {
+      const count = digitAt(n, p);
+      const place = PLACES[p];
+      const col = document.createElement('div');
+      col.className = `pv-col pv-${place.key}`;
+      col.dataset.place = place.key;
+      const blocks = document.createElement('div');
+      blocks.className = 'pv-blocks';
+      for (let i = 0; i < count; i++) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'blk';
+        b.dataset.place = String(p);
+        b.style.setProperty('--i', String(k++));
+        b.setAttribute('aria-label', p === 0 ? state.animal.one : place.one);
+        if (p === 0) b.innerHTML = `<span class="face">${state.animal.emoji}</span>`;
+        blocks.append(b);
+      }
+      const label = document.createElement('div');
+      label.className = 'pv-label';
+      label.innerHTML = `${count} <span class="pv-long">${count === 1 ? place.one : place.many}</span><span class="pv-short">${place.short}</span>`;
+      col.append(blocks, label);
+      herd.append(col);
+    }
+  }
+
+  function tapBlock(b) {
+    const p = Number(b.dataset.place);
+    restartAnim(b, 'pop');
+    Sound.pop(p * 4);
+    Voice.say(p === 0 ? 'one' : `one ${PLACES[p].one}`);
+  }
+
   function renderActiveGroups() {
     els.g1.classList.toggle('active', state.step === 'num1');
     els.g2.classList.toggle('active', state.step === 'num2');
@@ -1445,6 +1700,9 @@
   function render() {
     els.app.dataset.step = state.step;
     els.app.dataset.mode = state.mode;
+    els.app.dataset.layout = isSolo() ? 'solo' : 'pair';
+    els.plus.textContent = mode().op;
+    els.levelNum.textContent = String(state.level);
     renderEquation();
     renderSteps();
     renderPad();
@@ -1454,8 +1712,11 @@
 
   /* ---------- Step transitions ---------- */
   function scheduleAppearance(n, then) {
-    for (let i = 0; i < n; i++) later(() => Sound.pop(i), i * CONFIG.appearStepMs + 120);
-    later(then, Math.max(n, 1) * CONFIG.appearStepMs + CONFIG.settleMs);
+    // Big numbers: pop along with the first dozen blocks, a little faster.
+    const count = isBig() ? Math.min(digitSum(n), 12) : n;
+    const step = isBig() ? Math.min(45, CONFIG.appearStepMs) : CONFIG.appearStepMs;
+    for (let i = 0; i < count; i++) later(() => Sound.pop(i), i * step + 120);
+    later(then, Math.max(count, 1) * step + CONFIG.settleMs);
   }
 
   // Take Away: the last d animals of the group leave one after another (d = 0 brings everyone back).
@@ -1482,8 +1743,9 @@
     renderGroup(1, d);
     render();
     restartAnim(els.s1, 'filled');
-    setPrompt(`${surprise ? 'Surprise! ' : ''}${d} ${noun(d)}! ${state.animal.emoji}`);
-    Voice.say(`${surprise ? 'Surprise! ' : ''}${d} ${noun(d)}!`);
+    const what = isBig() ? `${d}!` : `${d} ${noun(d)}!`;
+    setPrompt(`${surprise ? 'Surprise! ' : ''}${what} ${state.animal.emoji}`);
+    Voice.say(`${surprise ? 'Surprise! ' : ''}${what}`);
     scheduleAppearance(d, () => {
       Sound.chime();
       state.step = 'num2';
@@ -1504,12 +1766,12 @@
   function chooseSecond(d) {
     state.num2 = d;
     state.busy = true;
-    const subtract = state.mode === 'subtraction';
+    const subtract = isSolo();
     if (subtract) markGone(d);
     else renderGroup(2, d);
     render();
     restartAnim(els.s2, 'filled');
-    const [text, say] = mode().secondChosen(d);
+    const [text, say] = isBig() ? [`${mode().op} ${d}!`, `${mode().opWord} ${d}!`] : mode().secondChosen(d);
     setPrompt(text);
     Voice.say(say, { interrupt: false });
     (subtract ? scheduleGoodbyes : scheduleAppearance)(d, () => {
@@ -1527,21 +1789,62 @@
   // "Surprise me!" makes up the question: on step 1 both numbers, on step 2 just the second.
   function surprise() {
     if (state.busy || (state.step !== 'num1' && state.step !== 'num2')) return;
+    state.entry = '';
     if (state.step === 'num2') {
       Sound.chime();
-      chooseSecond(mode().random(state.num1)[1]);
+      chooseSecond(makeQuestion(state.mode, state.level, state.num1)[1]);
       return;
     }
-    let q = mode().random();
-    for (let tries = 0; tries < 5 && q.join() === state.lastQuestion; tries++) q = mode().random();
+    let q = makeQuestion(state.mode, state.level);
+    for (let tries = 0; tries < 5 && q.join() === state.lastQuestion; tries++) q = makeQuestion(state.mode, state.level);
     state.lastQuestion = q.join();
     Sound.chime();
     state.pendingSecond = q[1];
     chooseFirst(q[0]);
   }
 
+  // Levels 4+: numbers can have several digits. They go in when ✅ is pressed,
+  // or automatically once the level's maximum number of digits is typed.
+  function typeEntry(d) {
+    if (state.entry === '0') state.entry = '';
+    if (state.entry.length >= level().digits) return;
+    state.entry += String(d);
+    render();
+    restartAnim(state.step === 'num1' ? els.s1 : els.s2, 'filled');
+    if (state.entry.length >= level().digits) {
+      state.busy = true;
+      renderPad();
+      later(commitEntry, CONFIG.checkDelayMs);
+    }
+  }
+
+  function commitEntry() {
+    state.busy = false;
+    if (!state.entry || (state.step !== 'num1' && state.step !== 'num2')) { render(); return; }
+    const v = parseInt(state.entry, 10);
+    state.entry = '';
+    if (state.step === 'num1') {
+      if (!v) { refuse('Numbers start at 1! Try again. 👆', 'Pick a number bigger than zero!'); render(); return; }
+      chooseFirst(v);
+    } else {
+      if (v > mode().maxSecond()) { tooMany(); render(); return; }
+      chooseSecond(v);
+    }
+  }
+
+  function refuse(text, say) {
+    Sound.key(null);
+    setPrompt(text, { nudge: true });
+    Voice.say(say);
+  }
+
+  function tooMany() {
+    const n = state.num1;
+    refuse(`We only have ${n}${isBig() ? '' : ' ' + noun(n)}! Pick ${n} or less. 👆`, `We only have ${n}! Pick ${n} or less.`);
+  }
+
   function typeAnswer(d) {
-    if (state.input.length >= 2) return;
+    if (state.input.length >= 5) return;
     state.input += String(d);
     restartAnim(els.sa, 'filled');
     els.sa.classList.remove('wrong');
@@ -1625,7 +1928,7 @@
     els.celebrate.hidden = true;
     els.board.classList.remove('party', 'wiggle');
     els.sa.classList.remove('right', 'wrong');
-    Object.assign(state, { step: 'num1', num1: null, num2: null, input: '', busy: false, wrongs: 0, counted: 0, pendingSecond: null });
+    Object.assign(state, { step: 'num1', num1: null, num2: null, input: '', entry: '', busy: false, wrongs: 0, counted: 0, pendingSecond: null });
     pickRoundAnimal();
     renderGroup(1, null);
     renderGroup(2, null);
@@ -1636,6 +1939,12 @@
 
   function back() {
     if (state.busy) return;
+    if (state.entry) {
+      Sound.key(null);
+      state.entry = state.entry.slice(0, -1);
+      render();
+      return;
+    }
     if (state.step === 'answer') {
       Sound.key(null);
       if (state.input) {
@@ -1647,7 +1956,7 @@
       clearCounted();
       state.num2 = null;
       state.step = 'num2';
-      if (state.mode === 'subtraction') markGone(0);
+      if (isSolo()) markGone(0);
       else renderGroup(2, null);
       setPrompt(mode().pickSecond);
       render();
@@ -1663,17 +1972,20 @@
 
   function pressDigit(d) {
     if (state.busy || state.step === 'celebrate') return;
-    if (state.step === 'num1' && d === 0) {
-      Sound.key(null);
-      setPrompt('Pick a number from 1 to 9! 👆', { nudge: true });
-      Voice.say('Pick a number from one to nine!');
+    const picking = state.step === 'num1' || state.step === 'num2';
+    if (picking && isBig()) {
+      if (state.step === 'num1' && d === 0 && !state.entry) { refuse('Numbers start at 1! 👆', 'Start with a number bigger than zero!'); return; }
+      Sound.key(d);
+      typeEntry(d);
       return;
     }
-    if (state.step === 'num2' && d > mode().maxSecond()) {
-      const n = state.num1;
-      Sound.key(null);
-      setPrompt(`We only have ${n} ${noun(n)}! Pick ${n} or less. 👆`, { nudge: true });
-      Voice.say(`We only have ${n}! Pick ${n} or less.`);
+    if (state.step === 'num1' && (d === 0 || d > keyMax())) {
+      refuse(`Pick a number from 1 to ${keyMax()}! 👆`, `Pick a number from one to ${keyMax() === 4 ? 'four' : 'nine'}!`);
+      return;
+    }
+    if (state.step === 'num2' && d > mode().maxSecond()) { tooMany(); return; }
+    if (state.step === 'num2' && d > keyMax()) {
+      refuse(`Pick a number from 0 to ${keyMax()}! 👆`, 'Pick a number from zero to four!');
       return;
     }
     Sound.key(d);
@@ -1686,6 +1998,7 @@
     if (state.busy) return;
     if (state.step === 'celebrate') { playAgain(); return; }
     if (state.step === 'answer' && state.input) checkAnswer();
+    else if ((state.step === 'num1' || state.step === 'num2') && state.entry) commitEntry();
   }
 
   /* ---------- Touch counting ---------- */
@@ -1718,10 +2031,35 @@
   function stopCountAlong() {
     state.countTimers.forEach(clearTimeout);
     state.countTimers = [];
+    els.board.querySelectorAll('.pv-col.hint').forEach((c) => c.classList.remove('hint'));
+  }
+
+  // Big numbers: walk through the places, ones first, lighting up the matching columns.
+  function placeHint() {
+    stopCountAlong();
+    const a = state.num1, b = state.num2;
+    const places = Math.max(String(a).length, String(b).length);
+    const { opWord } = mode();
+    const verb = state.mode === 'addition' ? 'Add' : 'Take away';
+    const text = `${verb} the ones first, then the tens${places > 2 ? ', and so on' : ''}!`;
+    setPrompt(text);
+    Voice.say(text);
+    for (let p = 0; p < places; p++) {
+      state.countTimers.push(setTimeout(() => {
+        els.board.querySelectorAll('.pv-col.hint').forEach((c) => c.classList.remove('hint'));
+        els.board.querySelectorAll(`.pv-col[data-place="${PLACES[p].key}"]`).forEach((c) => c.classList.add('hint'));
+        Sound.pop(p * 4);
+        Voice.say(`The ${PLACES[p].many}: ${digitAt(a, p)} ${opWord} ${digitAt(b, p)}`);
+      }, 2200 + p * 2600));
+    }
+    state.countTimers.push(setTimeout(() => {
+      els.board.querySelectorAll('.pv-col.hint').forEach((c) => c.classList.remove('hint'));
+    }, 2200 + places * 2600));
   }
 
   function countAlong() {
     if (state.step !== 'answer' || state.busy) return;
+    if (isBig()) { placeHint(); return; }
     stopCountAlong();
     clearCounted();
     setPrompt('Let’s count together!');
@@ -1731,6 +2069,53 @@
       state.countTimers.push(setTimeout(() => tapAnimal(a), 1100 + k * CONFIG.countAlongMs));
     });
   }
+
+  /* ---------- Difficulty level pickers (welcome strip + in-game sheet) ---------- */
+  function renderLevelPickers() {
+    const ex = (lv) => LEVELS[lv].ex[state.mode === 'subtraction' ? 1 : 0];
+    els.levelChips.textContent = '';
+    els.levelGrid.textContent = '';
+    for (let lv = 1; lv <= 10; lv++) {
+      const on = String(lv === state.level);
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'level-chip';
+      chip.dataset.level = String(lv);
+      chip.setAttribute('role', 'radio');
+      chip.setAttribute('aria-checked', on);
+      chip.setAttribute('aria-label', `Level ${lv}: ${LEVELS[lv].desc}`);
+      chip.textContent = String(lv);
+      els.levelChips.append(chip);
+
+      const opt = document.createElement('button');
+      opt.type = 'button';
+      opt.className = 'level-opt';
+      opt.dataset.level = String(lv);
+      opt.setAttribute('role', 'radio');
+      opt.setAttribute('aria-checked', on);
+      opt.innerHTML = `<span class="lv-n">${lv}</span><span class="lv-d"></span><span class="lv-ex"></span>`;
+      opt.querySelector('.lv-d').textContent = LEVELS[lv].desc;
+      opt.querySelector('.lv-ex').textContent = `like ${ex(lv)}`;
+      els.levelGrid.append(opt);
+    }
+    els.levelDesc.textContent = `Level ${state.level}: ${LEVELS[state.level].desc} (like ${LEVELS[state.level].ex[0]})`;
+    els.levelNum.textContent = String(state.level);
+    els.levelBtn.setAttribute('aria-label', `Difficulty level ${state.level}`);
+  }
+
+  function setLevel(lv) {
+    if (!(lv >= 1 && lv <= 10)) return;
+    const changed = lv !== state.level;
+    state.level = lv;
+    store.set('level', lv);
+    Sound.pop(lv);
+    renderLevelPickers();
+    if (changed && screen !== 'welcome') reset();
+    else render();
+  }
+
+  function openLevels() { renderLevelPickers(); els.levelSheet.hidden = false; }
+  function closeLevels() { els.levelSheet.hidden = true; }
 
   /* ---------- Theme picker ---------- */
   function buildThemeGrid() {
@@ -1814,7 +2199,12 @@
   }
 
   onTap(els.pad, { match: '.key, .count-btn', fn: (k) => handleKey(k.dataset.key) });
-  onTap(els.board, { match: '.animal', fn: (a) => tapAnimal(a) });
+  onTap(els.board, { match: '.animal, .blk', fn: (a) => (a.classList.contains('blk') ? tapBlock(a) : tapAnimal(a)) });
+  onTap(els.levelChips, { match: '.level-chip', fn: (c) => setLevel(Number(c.dataset.level)) });
+  onTap(els.levelBtn, { fn: openLevels });
+  onTap(els.levelGrid, { match: '.level-opt', fn: (o) => { setLevel(Number(o.dataset.level)); closeLevels(); } });
+  onTap(els.levelSheet.querySelector('#closeLevel'), { fn: closeLevels });
+  els.levelSheet.addEventListener('pointerdown', (e) => { if (e.target === els.levelSheet) closeLevels(); });
   onTap(els.welcome, { match: '.activity', fn: (b) => startActivity(b.dataset.activity) });
   onTap(els.homeBtn, { fn: () => { Sound.key(null); goHome(); } });
   onTap(els.againBtn, { fn: playAgain });
@@ -1828,8 +2218,8 @@
   window.addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     Sound.unlock();
-    if (!els.themeSheet.hidden) {
-      if (e.key === 'Escape') { e.preventDefault(); closeThemes(); }
+    if (!els.themeSheet.hidden || !els.levelSheet.hidden) {
+      if (e.key === 'Escape') { e.preventDefault(); closeThemes(); closeLevels(); }
       return;
     }
     if (screen === 'welcome') {
@@ -1875,6 +2265,7 @@
   function showWelcome() {
     reset();
     closeThemes();
+    closeLevels();
     screen = 'welcome';
     els.app.hidden = true;
     els.welcome.hidden = false;
@@ -1886,6 +2277,7 @@
     state.lastQuestion = '';
     els.gameTitle.textContent = MODES[id].title;
     els.gameIcon.textContent = MODES[id].icon;
+    renderLevelPickers();
     els.welcome.hidden = true;
     els.app.hidden = false;
     reset({ announce });
@@ -1921,6 +2313,7 @@
    * Boot + test hooks
    * ================================================================ */
   applyMute(store.get('muted', false));
+  renderLevelPickers();
   route();
 
   window.ToddlerMath = {
@@ -1929,6 +2322,8 @@
     getState: () => ({
       screen,
       mode: state.mode,
+      level: state.level,
+      entry: state.entry,
       step: state.step,
       num1: state.num1,
       num2: state.num2,
@@ -1940,7 +2335,8 @@
       animal: state.animal.id
     }),
     reset: () => reset(),
-    randomQuestion: (m) => MODES[m].random(),
+    randomQuestion: (m, lv = 3) => makeQuestion(m, lv),
+    setLevel: (lv) => setLevel(lv),
     answerFor: (m, a, b) => MODES[m].answer(a, b),
     audioState: () => Sound.state,
     particles: () => FX.count(),

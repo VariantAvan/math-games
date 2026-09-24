@@ -219,6 +219,60 @@ The bottom row of the number pad shows **🎲 Surprise me!** while you're pickin
 
 ---
 
+## Difficulty levels (both games)
+
+Pick a level on the welcome screen (the strip of 1–10 under the game cards) or in a game with the ⭐ button (it shows the current level). The choice is remembered. Changing it mid-round starts a fresh round.
+
+| Level | Numbers | Example |
+|---|---|---|
+| 1 | Both under 5 | 2 + 3 · 4 − 1 |
+| 2 | One under 5, one single digit | 4 + 7 · 8 − 3 |
+| 3 | Two single digits (**default**, the original game) | 8 + 6 · 9 − 6 |
+| 4 | 2-digit with ones under 5, and a single digit | 23 + 5 · 34 − 2 |
+| 5 | 2-digit and a single digit | 47 + 8 · 52 − 7 |
+| 6 | Two 2-digit numbers | 35 + 48 · 84 − 37 |
+| 7 | 3-digit and 2-digit | 256 + 73 · 512 − 86 |
+| 8 | Two 3-digit numbers | 418 + 365 · 734 − 258 |
+| 9 | 4-digit and 3-digit | 2407 + 586 · 3021 − 475 |
+| 10 | Two 4-digit numbers | 4825 + 3197 · 8204 − 3576 |
+
+How the levels behave:
+- **Surprise me!** follows these rules exactly. In Take Away the bigger number always comes first, so the answer is never negative.
+- **Typing your own numbers:**
+  - Level 1 only allows 1–4 (0–4 for the second number).
+  - Levels 2–3 take one digit per number, as before.
+  - From level 4, a number can have up to 2, 3 or 4 digits (depending on the level). It goes in when ✅ / Enter is pressed, or automatically once the maximum number of digits is typed. ⬅️ deletes a digit.
+- **From level 4, numbers are drawn as base-ten blocks:** purple thousand cubes, orange hundred flats, blue ten rods and animal ones. Each group has one labelled column per place ("4 tens", or "4 T" when narrow on phones). Take Away uses two groups with a − sign instead of crossing out.
+- **On step 3, "Count with me!" becomes "🔢 Show me the places".** It lights up the ones columns ("The ones: 7 plus 8"), then the tens, and so on.
+
+**Automated** (`tests/09-levels.spec.js`)
+
+| # | Test |
+|---|------|
+| L.1 | The welcome screen shows level chips 1–10 with level 3 selected, and a description line. |
+| L.2 | A level picked on the welcome screen carries into the game (⭐ badge) and is remembered after a reload. |
+| L.3 | The in-game ⭐ opens the level sheet (10 options with examples). Picking one closes the sheet and restarts the round at that level. |
+| L.4 | Take Away's level sheet shows − examples, and Escape closes the sheet. |
+| L.5 | **Generator:** 400 questions per level, in each game, all match that level's rules. In Take Away the first number is always ≥ the second. For the mixed levels (2, 4, 5, 7, 9) in Add Along, the smaller-shaped number appears in both positions. |
+| L.6 | Level 1: keys 5–9 are dimmed and refused ("1 to 4"). The second number allows 0–4. 3 + 4 = 7 plays through. |
+| L.7 | Level 5: typing "4","7" enters 47 automatically. The blocks show 4 ten rods and 7 animal ones. A 1-digit second number goes in with ✅. 47 + 8 = 55 celebrates. |
+| L.8 | Level 9: Backspace edits a number being typed. 2407 shows 4 columns including an empty "0 tens" column. 586 goes in with Enter, and 2407 + 586 = 2993 is accepted. |
+| L.9 | A multi-digit number can't start with 0. |
+| L.10 | Take Away level 6 uses two groups with a − sign. 45 − 67 is refused ("We only have 45"), and 45 − 28 = 17 celebrates. |
+| L.11 | "Show me the places" lights up both ones columns, then both tens columns. |
+| L.12 | Surprise me! at levels 4, 8 and 10 in both games makes a question that can be solved to a celebration. |
+| L.13 | Level 10 (8204 − 3576) fits on 360×640, 667×375 and 1024×768 screens: no horizontal scroll, the equation is on screen, and every block is inside its group. Screenshots are saved. |
+
+**Manual**
+
+- [ ] Try each level with Surprise me! a few times in both games. The numbers should feel right for the level.
+- [ ] Level 4+: the blocks are easy to read. Ten rods look like 10 stacked units, hundreds like a 10×10 flat, and thousands like cubes. Tapping a block pops it and says "one ten" / "one hundred".
+- [ ] "Show me the places" speaks each place in time with the highlight, and doesn't give away the answer.
+- [ ] Typing a 3-digit number on a phone: the digits appear in the box as you type, and ✅ lights up once there's something to enter.
+- [ ] Switching level from the ⭐ sheet mid-round starts cleanly (no leftover animals or blocks).
+
+---
+
 ## Cross-cutting: layout, themes, sound
 
 **Automated** (`tests/05-ui.spec.js`)
