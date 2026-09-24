@@ -25,7 +25,8 @@ test('fanfare, applause and firework booms are synthesized', async ({ page }) =>
 });
 
 test('canvas particles are drawn, then fade away completely', async ({ page }) => {
-  test.setTimeout(30_000);
+  // Particles age in animation-frame time, so a heavily loaded machine plays them in slow motion.
+  test.setTimeout(60_000);
   await page.evaluate(() => { window.ToddlerMath.config.autoResetMs = 0; });
   await winRound(page);
   expect(await page.evaluate(() => window.ToddlerMath.particles())).toBeGreaterThan(50);
@@ -37,7 +38,7 @@ test('canvas particles are drawn, then fade away completely', async ({ page }) =
     return n;
   });
   expect(painted).toBeGreaterThan(100);
-  await page.waitForFunction(() => window.ToddlerMath.particles() === 0, null, { timeout: 20_000 });
+  await page.waitForFunction(() => window.ToddlerMath.particles() === 0, null, { timeout: 45_000 });
 });
 
 test('Play Again resets to a fresh step 1', async ({ page }) => {

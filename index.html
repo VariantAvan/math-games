@@ -75,7 +75,7 @@
     max-width: 1400px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas: "top" "stage" "pad";
     gap: 8px;
@@ -93,7 +93,89 @@
       grid-template-areas: "top top" "stage pad";
       gap: 12px;
     }
-    .pad { align-self: center; --kh: clamp(64px, calc((100dvh - 150px) / 4.4), 118px); }
+    .pad { align-self: center; --kh: clamp(64px, calc((100dvh - 170px) / 5.3), 118px); }
+  }
+
+  #app[hidden], .welcome[hidden] { display: none; }
+
+  /* ---------- Welcome screen ---------- */
+  .welcome {
+    position: fixed;
+    inset: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    padding:
+      max(16px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+  }
+  .welcome-inner {
+    margin: auto;
+    width: min(1100px, 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(8px, 2dvh, 20px);
+    text-align: center;
+  }
+  .welcome-hello { font-size: clamp(56px, 12dvh, 110px); animation: party 0.9s ease-in-out infinite alternate; display: inline-block; }
+  .welcome-title {
+    margin: 0;
+    font-size: clamp(30px, min(8vw, 7dvh), 64px);
+    font-weight: 900;
+    color: var(--accent);
+    text-shadow: 0 3px 0 #fff, 0 6px 0 rgba(122, 92, 255, 0.18);
+  }
+  .welcome-sub { margin: 0; font-size: clamp(18px, min(4.6vw, 3.6dvh), 30px); font-weight: 800; color: var(--ink-soft); }
+  .activities {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+    gap: clamp(12px, 2.4vw, 24px);
+    margin-top: 6px;
+  }
+  .activity {
+    position: relative;
+    min-height: clamp(150px, 30dvh, 280px);
+    border-radius: 32px;
+    padding: 18px 16px 22px;
+    background: #fff;
+    border: 5px solid var(--edge, var(--slot-edge));
+    border-bottom-width: 11px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px;
+    box-shadow: 0 10px 24px rgba(45, 42, 74, 0.1);
+    transition: transform 0.1s ease, border-bottom-width 0.1s ease;
+  }
+  .activity:active { transform: translateY(5px); border-bottom-width: 6px; }
+  .activity.wiggle { animation: shake 0.5s ease; }
+  .act-art { font-size: clamp(40px, 9dvh, 76px); line-height: 1.1; }
+  .act-name { font-size: clamp(24px, 4.4dvh, 38px); font-weight: 900; }
+  .act-desc { font-size: clamp(15px, 2.4dvh, 20px); font-weight: 700; color: var(--ink-soft); }
+  .act-go {
+    margin-top: 6px;
+    padding: 8px 24px;
+    border-radius: 999px;
+    background: var(--good);
+    color: #fff;
+    font-size: clamp(18px, 3dvh, 26px);
+    font-weight: 900;
+    box-shadow: 0 4px 0 #1e8a4a;
+  }
+  .activity.play { --edge: var(--good); background: linear-gradient(180deg, #fff, #eafff1); }
+  .activity.play .act-go { animation: breathe 1.2s ease-in-out infinite; }
+  .activity.soon { opacity: 0.7; background: rgba(255, 255, 255, 0.7); }
+  .activity.soon .act-art { filter: grayscale(0.6); }
+  .soon-tag {
+    margin-top: 6px;
+    padding: 6px 18px;
+    border-radius: 999px;
+    background: #efeaff;
+    color: var(--accent);
+    font-size: clamp(15px, 2.4dvh, 20px);
+    font-weight: 900;
   }
 
   /* ---------- Top bar ---------- */
@@ -114,6 +196,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
   }
   .tools { display: flex; gap: 8px; flex-shrink: 0; }
   .tool {
@@ -314,19 +397,22 @@
   .board.wiggle .animal .face { animation: wiggle 0.6s ease 2; }
   .board.party .animal .bob { animation: party 0.55s ease-in-out infinite alternate; }
 
-  .helpers { display: flex; justify-content: center; min-height: 52px; }
+  /* "Count with me!" sits in its own full-width row at the bottom of the number pad. */
   .count-btn {
-    font-size: clamp(16px, 2.6dvh, 22px);
-    font-weight: 900;
-    padding: 10px 20px;
-    min-height: 52px;
-    border-radius: 999px;
+    grid-column: 1 / -1;
+    min-height: 56px;
+    height: calc(var(--kh) * 0.8);
+    border-radius: 22px;
     background: #ffd84d;
-    box-shadow: 0 5px 0 #d9ae12;
-    transition: transform 0.1s, opacity 0.3s;
+    border-bottom: 7px solid #d9ae12;
+    box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.65), 0 6px 12px rgba(45, 42, 74, 0.1);
+    font-size: clamp(18px, calc(var(--kh) * 0.28), 28px);
+    font-weight: 900;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform 0.08s ease, border-bottom-width 0.08s ease, opacity 0.2s, filter 0.2s;
   }
-  .count-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #d9ae12; }
-  .count-btn[hidden] { display: none; }
+  .count-btn:active, .count-btn.pressed { transform: translateY(5px); border-bottom-width: 2px; }
+  .count-btn.dim { opacity: 0.38; filter: saturate(0.5); }
   .count-btn.pulse { animation: breathe 1s ease-in-out infinite; }
 
   /* ---------- Numpad ---------- */
@@ -484,7 +570,7 @@
   @keyframes drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
   @media (prefers-reduced-motion: reduce) {
-    .animal .bob, .group.active, .slot.active, .again, .card .big-emoji, .key.check.ready, .count-btn.pulse { animation: none; }
+    .animal .bob, .group.active, .slot.active, .again, .card .big-emoji, .key.check.ready, .count-btn.pulse, .welcome-hello, .activity.play .act-go { animation: none; }
   }
 
   /* Short landscape screens (phones on their side) */
@@ -492,20 +578,24 @@
     .steps { display: none; }
     .prompt { min-height: 1.3em; }
     .tool { width: 44px; height: 44px; font-size: 22px; border-radius: 14px; }
-    .helpers { min-height: 44px; }
-    .count-btn { min-height: 44px; padding: 6px 14px; }
-    .gnum { position: absolute; top: -10px; left: -10px; font-size: 16px; z-index: 1; box-shadow: 0 0 0 3px #fff; }
+    /* Too short for 5 keypad rows: use 4 columns (digits + a side column for back / 0 / check). */
+    #app { grid-template-columns: minmax(0, 1fr) minmax(300px, 44%); }
+    .pad { --kh: 64px; grid-template-columns: repeat(4, minmax(64px, 1fr)); gap: 8px; padding: 8px; }
+    .pad .key[data-key="back"] { grid-column: 4; grid-row: 1; }
+    .pad .key[data-key="0"] { grid-column: 4; grid-row: 2; }
+    .pad .key[data-key="enter"] { grid-column: 4; grid-row: 3; }
+    .count-btn { min-height: 52px; height: 52px; }
+    .gnum { position: absolute; top: -10px; left: 8px; font-size: 16px; z-index: 1; box-shadow: 0 0 0 3px #fff; }
     .group { padding: 4px; }
   }
   /* Short portrait screens (phones): give the animals every pixel we can */
   @media (orientation: portrait) and (max-height: 760px) {
     .steps { display: none; }
     .prompt { min-height: 2.3em; font-size: clamp(16px, 4.4vw, 22px); }
-    .gnum { position: absolute; top: -10px; left: -10px; font-size: 16px; z-index: 1; box-shadow: 0 0 0 3px #fff; }
+    .gnum { position: absolute; top: -10px; left: 8px; font-size: 16px; z-index: 1; box-shadow: 0 0 0 3px #fff; }
     .group { padding: 4px; }
-    .helpers { min-height: 44px; }
-    .count-btn { min-height: 44px; padding: 6px 16px; }
-    .pad { gap: 8px; padding: 8px; }
+    .pad { gap: 6px; padding: 6px; }
+    .count-btn { min-height: 52px; height: 52px; }
     .tool { width: 44px; height: 44px; font-size: 22px; border-radius: 14px; }
   }
 </style>
@@ -515,10 +605,39 @@
 
 <canvas id="fx" aria-hidden="true"></canvas>
 
-<div id="app" data-step="num1">
+<div class="welcome" id="welcome">
+  <div class="welcome-inner">
+    <div class="welcome-hello emoji" aria-hidden="true">🐶</div>
+    <h1 class="welcome-title">Let’s play math!</h1>
+    <p class="welcome-sub">Pick a game to play</p>
+    <div class="activities">
+      <button class="activity play" type="button" data-activity="addition">
+        <span class="act-art emoji" aria-hidden="true">🐶➕🐱</span>
+        <span class="act-name">Add Along</span>
+        <span class="act-desc">Put two groups together!</span>
+        <span class="act-go">Play! ▶</span>
+      </button>
+      <button class="activity soon" type="button" data-activity="subtraction" aria-disabled="true">
+        <span class="act-art emoji" aria-hidden="true">🍎➖🐛</span>
+        <span class="act-name">Take Away</span>
+        <span class="act-desc">How many are left?</span>
+        <span class="soon-tag">Coming soon!</span>
+      </button>
+      <button class="activity soon" type="button" data-activity="counting" aria-disabled="true">
+        <span class="act-art emoji" aria-hidden="true">🔢⭐</span>
+        <span class="act-name">Count Up</span>
+        <span class="act-desc">Count the stars 1, 2, 3!</span>
+        <span class="soon-tag">Coming soon!</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="app" data-step="num1" hidden>
   <header class="topbar">
-    <h1 class="title">Add Along! <span class="emoji">🐾</span></h1>
+    <h2 class="title">Add Along! <span class="emoji">🐾</span></h2>
     <div class="tools">
+      <button class="tool" id="homeBtn" type="button" aria-label="Pick another game"><span class="emoji">🏠</span></button>
       <button class="tool" id="themeBtn" type="button" aria-label="Pick your animal"><span class="emoji" id="themeIcon">🎲</span></button>
       <button class="tool" id="soundBtn" type="button" aria-label="Sound on" aria-pressed="true"><span class="emoji" id="soundIcon">🔊</span></button>
       <button class="tool" id="restartBtn" type="button" aria-label="Start over"><span class="emoji">🔄</span></button>
@@ -553,10 +672,6 @@
         <div class="herd"></div>
       </section>
     </div>
-
-    <div class="helpers">
-      <button class="count-btn" id="countBtn" type="button" hidden><span class="emoji">👆</span> Count with me!</button>
-    </div>
   </main>
 
   <section class="pad" id="pad" aria-label="Number pad">
@@ -572,6 +687,7 @@
     <button class="key back" type="button" data-key="back" aria-label="Back"><span class="emoji">⬅️</span></button>
     <button class="key" type="button" data-key="0" style="--k:#f4eee2">0</button>
     <button class="key check" type="button" data-key="enter" aria-label="Check"><span class="emoji">✅</span></button>
+    <button class="count-btn dim" id="countBtn" type="button" data-key="count" aria-disabled="true"><span class="emoji">👆</span> Count with me!</button>
   </section>
 </div>
 
@@ -1075,6 +1191,8 @@
     plus: $('#plusBig'),
     pad: $('#pad'),
     countBtn: $('#countBtn'),
+    welcome: $('#welcome'),
+    homeBtn: $('#homeBtn'),
     steps: document.querySelectorAll('.steps li[data-s]'),
     celebrate: $('#celebrate'),
     celebrateMsg: $('#celebrateMsg'),
@@ -1168,12 +1286,29 @@
       k.classList.toggle('dim', dim);
     });
     els.pad.querySelector('[data-key="enter"]').classList.toggle('ready', step === 'answer' && !!input && !busy);
+    els.countBtn.classList.toggle('dim', step !== 'answer' || busy);
+    els.countBtn.setAttribute('aria-disabled', String(step !== 'answer'));
   }
 
   function herdColumns(n) {
     if (n <= 3) return n;
     if (n === 4) return 2;
     return 3;
+  }
+
+  // Both groups share one animal size (fitted to the larger grid) so a bigger-looking
+  // animal never reads as "worth more" while counting.
+  function syncAnimalSize() {
+    let cols = 1, rows = 1;
+    els.board.querySelectorAll('.herd').forEach((h) => {
+      const n = Number(h.dataset.n);
+      if (!n) return;
+      const c = herdColumns(n);
+      cols = Math.max(cols, c);
+      rows = Math.max(rows, Math.ceil(n / c));
+    });
+    els.board.style.setProperty('--cols', String(cols));
+    els.board.style.setProperty('--rows', String(rows));
   }
 
   function renderGroup(which, n, { animate = true } = {}) {
@@ -1183,6 +1318,8 @@
     el.classList.toggle('waiting', n == null);
     herd.textContent = '';
     herd.style.gridTemplateColumns = '';
+    herd.dataset.n = n == null ? '' : String(n);
+    syncAnimalSize();
     if (n == null) return;
     if (n === 0) {
       const z = document.createElement('div');
@@ -1191,10 +1328,7 @@
       herd.append(z);
       return;
     }
-    const cols = herdColumns(n);
-    herd.style.gridTemplateColumns = `repeat(${cols}, auto)`;
-    herd.style.setProperty('--cols', String(cols));
-    herd.style.setProperty('--rows', String(Math.ceil(n / cols)));
+    herd.style.gridTemplateColumns = `repeat(${herdColumns(n)}, auto)`;
     for (let i = 0; i < n; i++) {
       const b = document.createElement('button');
       b.type = 'button';
@@ -1212,7 +1346,6 @@
     els.g1.classList.toggle('active', state.step === 'num1');
     els.g2.classList.toggle('active', state.step === 'num2');
     els.plus.classList.toggle('hidden', state.step === 'num1');
-    els.countBtn.hidden = state.step !== 'answer';
     els.countBtn.classList.toggle('pulse', state.step === 'answer' && state.wrongs >= 2);
   }
 
@@ -1531,12 +1664,14 @@
     flashKey(key);
     if (key === 'back') back();
     else if (key === 'enter') pressEnter();
+    else if (key === 'count') countAlong();
     else pressDigit(Number(key));
   }
 
-  onTap(els.pad, { match: '.key', fn: (k) => handleKey(k.dataset.key) });
+  onTap(els.pad, { match: '.key, .count-btn', fn: (k) => handleKey(k.dataset.key) });
   onTap(els.board, { match: '.animal', fn: (a) => tapAnimal(a) });
-  onTap(els.countBtn, { fn: countAlong });
+  onTap(els.welcome, { match: '.activity', fn: (b) => startActivity(b.dataset.activity) });
+  onTap(els.homeBtn, { fn: () => { Sound.key(null); goHome(); } });
   onTap(els.againBtn, { fn: playAgain });
   onTap(els.restartBtn, { fn: () => { Sound.key(null); reset({ announce: true }); } });
   onTap(els.soundBtn, { fn: () => { applyMute(!Sound.muted); store.set('muted', Sound.muted); if (!Sound.muted) Sound.chime(); } });
@@ -1550,6 +1685,10 @@
     Sound.unlock();
     if (!els.themeSheet.hidden) {
       if (e.key === 'Escape') { e.preventDefault(); closeThemes(); }
+      return;
+    }
+    if (screen === 'welcome') {
+      if (e.key === 'Enter' && !e.repeat) { e.preventDefault(); startActivity('addition'); }
       return;
     }
     if (state.step === 'celebrate') {
@@ -1581,15 +1720,64 @@
   document.addEventListener('visibilitychange', () => { if (document.hidden) Voice.cancel(); });
 
   /* ================================================================
+   * Screens — welcome (activity picker) and games, routed by URL hash
+   * so reload and the browser Back button behave as expected.
+   * ================================================================ */
+  const ACTIVITIES = ['addition'];
+  let screen = 'welcome';
+
+  function showWelcome() {
+    reset();
+    closeThemes();
+    screen = 'welcome';
+    els.app.hidden = true;
+    els.welcome.hidden = false;
+  }
+
+  function showGame(id, { announce = false } = {}) {
+    screen = id;
+    els.welcome.hidden = true;
+    els.app.hidden = false;
+    reset({ announce });
+  }
+
+  function route({ announce = false } = {}) {
+    const id = location.hash.slice(1);
+    if (ACTIVITIES.includes(id)) showGame(id, { announce });
+    else showWelcome();
+  }
+
+  function startActivity(id) {
+    if (!ACTIVITIES.includes(id)) {
+      const card = els.welcome.querySelector(`[data-activity="${id}"]`);
+      if (card) restartAnim(card, 'wiggle');
+      Sound.boop();
+      Voice.say('That game is coming soon!');
+      return;
+    }
+    Sound.chime();
+    if (location.hash === '#' + id) showGame(id, { announce: true });
+    else location.hash = id; // hashchange shows the game
+  }
+
+  function goHome() {
+    if (location.hash) location.hash = '';
+    else showWelcome();
+  }
+
+  window.addEventListener('hashchange', () => route({ announce: true }));
+
+  /* ================================================================
    * Boot + test hooks
    * ================================================================ */
   applyMute(store.get('muted', false));
-  reset();
+  route();
 
   window.ToddlerMath = {
     config: CONFIG,
     themes: THEMES.map((t) => t.id),
     getState: () => ({
+      screen,
       step: state.step,
       num1: state.num1,
       num2: state.num2,

@@ -57,3 +57,14 @@ test('both groups use the same animal', async ({ page }) => {
   const faces = await page.locator('.animal .face').allTextContents();
   expect(new Set(faces).size).toBe(1);
 });
+
+test('animals are the same size in both groups (4 in a square, 3 in a row)', async ({ page }) => {
+  await page.evaluate(() => window.ToddlerMath.reset());
+  await tapKey(page, '4');
+  await waitForStep(page, 'num2');
+  await tapKey(page, '3');
+  await waitForStep(page, 'answer');
+  await page.waitForTimeout(700); // let the hop-in animation finish
+  const sizes = await page.locator('.animal').evaluateAll((as) => as.map((a) => Math.round(a.getBoundingClientRect().width)));
+  expect(new Set(sizes).size).toBe(1);
+});

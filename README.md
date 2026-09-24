@@ -4,12 +4,16 @@ A cheerful, **100% offline** addition game for toddlers (single digits, sums up 
 
 ## How to play
 
+The app opens on a **welcome screen** where you pick an activity. **Add Along** (addition) is ready to play now; **Take Away** (subtraction) and **Count Up** (counting) are placeholders marked "Coming soon!". The 🏠 button in the game goes back to the welcome screen, and `index.html#addition` opens the game directly.
+
+**Add Along:**
+
 1. **Pick the first number** (1–9). That many animals hop onto the screen.
 2. **Pick another number** (0–9). A second group joins, with a big **+** between them.
-3. **How many altogether?** Tap each animal to count it (it pops and gets a number badge), then type the answer. A correct answer gets fireworks, confetti, a fanfare and applause. A wrong answer gets a gentle wobble and "Oops, try counting them again!"
+3. **How many altogether?** Tap each animal (or press **👆 Count with me!** at the bottom of the number pad) to count it (it pops and gets a number badge), then type the answer. A correct answer gets fireworks, confetti, a fanfare and applause. A wrong answer gets a gentle wobble and "Oops, try counting them again!"
 
 **Controls:** the on-screen keypad (0–9, ⬅️ back, ✅ check) or the physical keyboard (`0`–`9`, `Enter`, `Backspace`).
-**Top bar:** 🎲 pick the animal (puppies, kittens, chicks, bunnies, frogs, horses, ducks, birds, apples, stars, or a surprise each round) · 🔊 sound on/off · 🔄 start over.
+**Top bar:** 🏠 back to the game list · 🎲 pick the animal (puppies, kittens, chicks, bunnies, frogs, horses, ducks, birds, apples, stars, or a surprise each round) · 🔊 sound on/off · 🔄 start over.
 
 ## How it's built
 

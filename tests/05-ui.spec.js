@@ -38,12 +38,16 @@ for (const [name, vp] of Object.entries(VIEWPORTS)) {
       expect(a.w).toBeGreaterThanOrEqual(30);
       expect(a.inside).toBe(true);
     }
-    // the "Count with me!" button is not covered by the groups
+    // "Count with me!" is a full-width row at the bottom of the number pad
+    const pad = await page.locator('.pad').boundingBox();
     const cb = await page.locator('#countBtn').boundingBox();
-    for (const sel of ['#group1', '#group2']) {
-      const g = await page.locator(sel).boundingBox();
-      expect(g.y + g.height).toBeLessThanOrEqual(cb.y + 1);
-    }
+    const lowestKey = Math.max(...(await page.locator('.key').evaluateAll((ks) => ks.map((k) => k.getBoundingClientRect().bottom))));
+    expect(cb.y).toBeGreaterThanOrEqual(lowestKey);
+    expect(cb.x).toBeGreaterThanOrEqual(pad.x);
+    expect(cb.x + cb.width).toBeLessThanOrEqual(pad.x + pad.width + 1);
+    expect(cb.y + cb.height).toBeLessThanOrEqual(pad.y + pad.height + 1);
+    expect(cb.width).toBeGreaterThan(pad.width * 0.8);
+    expect(cb.height).toBeGreaterThanOrEqual(52);
     await page.screenshot({ path: `test-results/screens/${name.replace(/ /g, '-')}.png` });
   });
 }
@@ -56,8 +60,8 @@ test('theme picker changes the animal and remembers it', async ({ page }) => {
   await page.locator('.theme-opt[data-theme="duck"]').click();
   await page.locator('#closeTheme').click();
   await expect(page.locator('#group1 .animal .face').first()).toHaveText('🦆');
-  await page.reload();
-  await page.waitForFunction(() => window.ToddlerMath);
+  await page.reload(); // URL is now …#addition, so the reload lands straight in the game
+  await page.waitForFunction(() => window.ToddlerMath && window.ToddlerMath.getState().screen === 'addition');
   expect((await state(page)).theme).toBe('duck');
   expect((await state(page)).animal).toBe('duck');
 });

@@ -8,6 +8,7 @@ test('shows the counting helper and a "?" answer slot', async ({ page }) => {
   await setUpSum(page, 3, 2);
   await expect(page.locator('#slotAns')).toHaveText('?');
   await expect(page.locator('#countBtn')).toBeVisible();
+  await expect(page.locator('#countBtn')).not.toHaveClass(/dim/);
   await expect(page.locator('.steps li[data-s="answer"]')).toHaveClass(/on/);
 });
 

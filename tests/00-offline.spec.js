@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { test } = require('@playwright/test');
-const { APP_URL, openApp, setUpSum, tapKey, expect } = require('./helpers');
+const { APP_URL, openWelcome, openApp, setUpSum, tapKey, expect } = require('./helpers');
 
 const html = fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8');
 
@@ -44,9 +44,9 @@ test('no console errors or uncaught exceptions during a full round', async ({ pa
 });
 
 test('audio context is created and running after the first interaction', async ({ page }) => {
-  await openApp(page);
+  await openWelcome(page);
   expect(await page.evaluate(() => window.ToddlerMath.audioState())).toBe('none');
-  await tapKey(page, '2');
+  await page.locator('.activity[data-activity="addition"]').click({ force: true });
   await page.waitForFunction(() => window.ToddlerMath.audioState() === 'running');
 });
 

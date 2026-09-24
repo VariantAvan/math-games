@@ -3,10 +3,17 @@ const { expect } = require('@playwright/test');
 
 const APP_URL = 'file://' + path.resolve(__dirname, '..', 'index.html');
 
-/** Open the app and wait for the game to boot. */
-async function openApp(page) {
+/** Open the app on the welcome screen. */
+async function openWelcome(page) {
   await page.goto(APP_URL);
-  await page.waitForFunction(() => window.ToddlerMath && window.ToddlerMath.getState().step === 'num1');
+  await page.waitForFunction(() => window.ToddlerMath && window.ToddlerMath.getState().screen === 'welcome');
+}
+
+/** Open the app, pick the Addition activity and wait for step 1. */
+async function openApp(page) {
+  await openWelcome(page);
+  await page.locator('.activity[data-activity="addition"]').click({ force: true });
+  await page.waitForFunction(() => window.ToddlerMath.getState().screen === 'addition' && window.ToddlerMath.getState().step === 'num1');
 }
 
 const state = (page) => page.evaluate(() => window.ToddlerMath.getState());
@@ -31,4 +38,4 @@ async function setUpSum(page, a, b) {
   await waitForStep(page, 'answer');
 }
 
-module.exports = { APP_URL, openApp, state, soundLog, spoken, tapKey, waitForStep, setUpSum, expect };
+module.exports = { APP_URL, openWelcome, openApp, state, soundLog, spoken, tapKey, waitForStep, setUpSum, expect };

@@ -39,13 +39,39 @@ The page exposes a small test hook, `window.ToddlerMath`, with `getState()`, `re
 
 ---
 
+## Welcome screen: choose an activity
+
+**Automated** (`tests/06-welcome.spec.js`)
+
+| # | Test |
+|---|------|
+| W.1 | The app opens on the welcome screen ("Let’s play math!") with 3 activity cards: **Add Along** (playable) plus **Take Away** and **Count Up** (marked "Coming soon!"). The game is hidden. |
+| W.2 | On a phone (375×667), each card is at least 150×140 px and there is no horizontal scroll. |
+| W.3 | Tapping **Add Along** opens the game at step 1, the URL becomes `…#addition`, and "Pick the first number!" is spoken. |
+| W.4 | Pressing Enter on the welcome screen starts Add Along. |
+| W.5 | Digit keys do nothing on the welcome screen. |
+| W.6 | Tapping a coming-soon card wiggles it and says "That game is coming soon!", and the app stays on the welcome screen. |
+| W.7 | The 🏠 Home button mid-round goes back to the welcome screen and clears the round. |
+| W.8 | The browser's Back button from the game goes back to the welcome screen. |
+| W.9 | Opening `index.html#addition` directly skips the welcome screen (and a reload stays in the game). |
+
+**Manual**
+
+- [ ] The welcome screen fits and looks good on a phone (portrait and landscape), a tablet and a laptop. On a phone the cards stack and scroll.
+- [ ] Cards press down visibly when tapped, and the Play! pill gently pulses.
+- [ ] Tapping a coming-soon card is clearly "not yet" (wiggle + soft sound), not an error.
+- [ ] 🏠 during the celebration closes the fireworks and returns home cleanly.
+- [ ] Android: the system Back gesture from the game returns to the welcome screen.
+
+---
+
 ## Stage 1: Pick the first number
 
 **Automated** (`tests/01-first-number.spec.js`)
 
 | # | Test |
 |---|------|
-| 1.1 | Loads on step 1: prompt reads "Pick the first number!", first slot shows a pulsing `?`, no animals, step dot 1 is active. |
+| 1.1 | Loads on step 1: prompt reads "Pick the first number!", first slot shows a pulsing `?`, no animals, step dot 1 is active, and "Count with me!" is greyed out. |
 | 1.2 | Tapping **1**, **5** or **9** shows that numeral in the slot and in the group badge, and draws **exactly** that many animals. |
 | 1.3 | A physical keyboard digit (`6`) does the same. |
 | 1.4 | Moves to step 2 on its own. The key, pop and chime sounds fire, and the number is spoken ("3 puppies!"). |
@@ -77,6 +103,7 @@ The page exposes a small test hook, `window.ToddlerMath`, with `getState()`, `re
 | 2.4 | A physical keyboard digit works. |
 | 2.5 | Back (⬅️) on step 2 returns to step 1 and clears group 1. |
 | 2.6 | Both groups use the same animal. |
+| 2.7 | Animals are the **same size** in both groups (e.g. 4 in a square next to 3 in a row). |
 
 **Manual**
 
@@ -92,7 +119,7 @@ The page exposes a small test hook, `window.ToddlerMath`, with `getState()`, `re
 
 | # | Test |
 |---|------|
-| 3.1 | Answer slot shows `?`, the "Count with me!" button appears, and step dot 3 is active. |
+| 3.1 | Answer slot shows `?`, the "Count with me!" button (bottom row of the number pad) becomes active, and step dot 3 is active. |
 | 3.2 | Tapping animals marks them with yellow badges 1, 2, 3… in tap order. Tapping one again pops it but doesn't count it twice. |
 | 3.3 | Counting every animal shows "You counted them all!" without giving away the sum. |
 | 3.4 | A correct single-digit answer is checked automatically. The slot turns green and the celebration starts. |
@@ -145,7 +172,7 @@ The page exposes a small test hook, `window.ToddlerMath`, with `getState()`, `re
 
 | # | Test |
 |---|------|
-| 5.1–5.6 | Six screen sizes, each with 9 + 9 on screen: small phone (360×640), phone portrait (375×667), phone landscape (667×375), tablet portrait (768×1024), tablet landscape (1024×768) and laptop (1440×900). Checks: all 12 keys are **at least 64×64 px**, there is no horizontal scroll, and the keypad, equation and both groups are fully on screen. All 18 animals must be at least 30 px wide and sit **inside their own group card**, and the groups must not cover the "Count with me!" button. A screenshot is saved to `test-results/screens/`. |
+| 5.1–5.6 | Six screen sizes, each with 9 + 9 on screen: small phone (360×640), phone portrait (375×667), phone landscape (667×375), tablet portrait (768×1024), tablet landscape (1024×768) and laptop (1440×900). Checks: all 12 keys are **at least 64×64 px**, there is no horizontal scroll, and the keypad, equation and both groups are fully on screen. All 18 animals must be at least 30 px wide and sit **inside their own group card**, and "Count with me!" must be a full-width row (at least 52 px tall) below the last key, inside the pad. A screenshot is saved to `test-results/screens/`. |
 | 5.7 | The theme picker switches the animals (e.g. to 🦆) and remembers the choice after a reload. |
 | 5.8 | The "Surprise!" theme picks different animals across rounds. |
 | 5.9 | The sound toggle (🔇) silences every synthesized sound. |
