@@ -1,0 +1,2574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#fff1c9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>Add Along! Toddler Math</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%B6%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --ink: #2d2a4a;
+    --ink-soft: #5b5680;
+    --sky1: #fff1c9;
+    --sky2: #d4efff;
+    --card: rgba(255, 255, 255, 0.82);
+    --g1: #e2f4ff;
+    --g1-edge: #72c4f5;
+    --g2: #ffe6f1;
+    --g2-edge: #ff8fbd;
+    --accent: #7a5cff;
+    --good: #2fbf68;
+    --oops: #ff9f43;
+    --slot-edge: #e3dcff;
+    --radius: 28px;
+    --emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", "EmojiOne Color", sans-serif;
+    --font: ui-rounded, "SF Pro Rounded", "Nunito", "Varela Round", "Comic Sans MS", "Chalkboard SE", "Comic Neue", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: var(--sky1);
+  }
+
+  body {
+    font-family: var(--font);
+    color: var(--ink);
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.9) 0 60px, transparent 61px),
+      radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.9) 0 45px, transparent 46px),
+      radial-gradient(circle at 84% 10%, rgba(255, 255, 255, 0.85) 0 50px, transparent 51px),
+      radial-gradient(circle at 90% 12%, rgba(255, 255, 255, 0.85) 0 38px, transparent 39px),
+      linear-gradient(165deg, var(--sky1) 0%, #ffe4ec 45%, var(--sky2) 100%);
+    background-attachment: fixed;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    border: 0;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  button:focus-visible { outline: 4px solid var(--accent); outline-offset: 3px; }
+
+  .emoji { font-family: var(--emoji); font-style: normal; line-height: 1; }
+
+  /* ---------- Layout ---------- */
+  #app, #countApp {
+    height: 100vh;
+    height: 100dvh;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "top" "stage" "pad";
+    gap: 8px;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(12px, env(safe-area-inset-right))
+      max(10px, env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left));
+  }
+
+  @media (orientation: landscape) and (min-width: 600px) {
+    #app, #countApp {
+      grid-template-columns: minmax(0, 1fr) minmax(250px, 32%);
+      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-areas: "top top" "stage pad";
+      gap: 12px;
+    }
+    .pad { align-self: center; --kh: clamp(64px, calc((100dvh - 170px) / 5.3), 118px); }
+  }
+
+  #app[hidden], #countApp[hidden], .welcome[hidden] { display: none; }
+
+  /* ---------- Count Quickly ---------- */
+  .cstage {
+    grid-area: stage;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(6px, 1.4dvh, 12px);
+  }
+  .cstats {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    font-size: clamp(15px, 2.4dvh, 20px);
+    font-weight: 900;
+    color: var(--ink-soft);
+  }
+  .cfield {
+    position: relative;
+    flex: 1 1 0;
+    min-height: 140px;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.7);
+    border: 4px solid #cdbbff;
+    container-type: size;
+    overflow: hidden;
+  }
+  .cfield.shake { animation: shake 0.55s ease; }
+  .citem {
+    position: absolute;
+    font-family: var(--emoji);
+    line-height: 1;
+    font-size: min(16cqw, 20cqh);
+    transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1));
+    filter: drop-shadow(0 3px 2px rgba(45, 42, 74, 0.25));
+    animation: citem-in 0.35s cubic-bezier(.34, 1.56, .64, 1) both;
+    animation-delay: calc(var(--i, 0) * 30ms);
+    pointer-events: none;
+  }
+  .cfield.party .citem { animation: citem-party 0.5s ease-in-out infinite alternate; }
+  @keyframes citem-in {
+    from { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    to { transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1)); opacity: 1; }
+  }
+  @keyframes citem-party {
+    from { transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1)); }
+    to { transform: translate(-50%, -62%) rotate(calc(var(--r, 0deg) * -1)) scale(var(--s, 1)); }
+  }
+  .cans { display: flex; justify-content: center; font-size: clamp(34px, min(9vw, 8dvh), 72px); font-weight: 900; }
+  .cpad { --kh: clamp(64px, 11dvh, 110px); }
+  /* The subtle countdown: a thin bar along the very bottom of the screen. */
+  .ctimer {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: clamp(6px, 1.2dvh, 10px);
+    background: rgba(122, 92, 255, 0.12);
+    z-index: 5;
+    pointer-events: none;
+  }
+  .ctimer i {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #b9a8ff, #7a5cff);
+    transform-origin: left;
+    transform: scaleX(1);
+    border-radius: 0 4px 4px 0;
+  }
+  .ctimer.low i { background: linear-gradient(90deg, #ffc28a, #ff9f43); }
+
+  /* ---------- Welcome screen ---------- */
+  .welcome {
+    position: fixed;
+    inset: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    padding:
+      max(16px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+  }
+  .welcome-inner {
+    margin: auto;
+    width: min(1100px, 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(8px, 2dvh, 20px);
+    text-align: center;
+  }
+  .welcome-hello { font-size: clamp(56px, 12dvh, 110px); animation: party 0.9s ease-in-out infinite alternate; display: inline-block; }
+  .welcome-title {
+    margin: 0;
+    font-size: clamp(30px, min(8vw, 7dvh), 64px);
+    font-weight: 900;
+    color: var(--accent);
+    text-shadow: 0 3px 0 #fff, 0 6px 0 rgba(122, 92, 255, 0.18);
+  }
+  .welcome-sub { margin: 0; font-size: clamp(18px, min(4.6vw, 3.6dvh), 30px); font-weight: 800; color: var(--ink-soft); }
+  .activities {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+    gap: clamp(12px, 2.4vw, 24px);
+    margin-top: 6px;
+  }
+  .activity {
+    position: relative;
+    min-height: clamp(150px, 30dvh, 280px);
+    border-radius: 32px;
+    padding: 18px 16px 22px;
+    background: #fff;
+    border: 5px solid var(--edge, var(--slot-edge));
+    border-bottom-width: 11px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px;
+    box-shadow: 0 10px 24px rgba(45, 42, 74, 0.1);
+    transition: transform 0.1s ease, border-bottom-width 0.1s ease;
+  }
+  .activity:active { transform: translateY(5px); border-bottom-width: 6px; }
+  .activity.wiggle { animation: shake 0.5s ease; }
+  .act-art { font-size: clamp(40px, 9dvh, 76px); line-height: 1.1; }
+  .act-name { font-size: clamp(24px, 4.4dvh, 38px); font-weight: 900; }
+  .act-desc { font-size: clamp(15px, 2.4dvh, 20px); font-weight: 700; color: var(--ink-soft); }
+  .act-go {
+    margin-top: 6px;
+    padding: 8px 24px;
+    border-radius: 999px;
+    background: var(--good);
+    color: #fff;
+    font-size: clamp(18px, 3dvh, 26px);
+    font-weight: 900;
+    box-shadow: 0 4px 0 #1e8a4a;
+  }
+  .activity.play { --edge: var(--good); background: linear-gradient(180deg, #fff, #eafff1); }
+  .activity.play .act-go { animation: breathe 1.2s ease-in-out infinite; }
+  .activity.soon { opacity: 0.7; background: rgba(255, 255, 255, 0.7); }
+  .activity.soon .act-art { filter: grayscale(0.6); }
+  .soon-tag {
+    margin-top: 6px;
+    padding: 6px 18px;
+    border-radius: 999px;
+    background: #efeaff;
+    color: var(--accent);
+    font-size: clamp(15px, 2.4dvh, 20px);
+    font-weight: 900;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    grid-area: top;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .title {
+    margin: 0;
+    font-size: clamp(20px, 4.2vw, 34px);
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    text-shadow: 0 2px 0 #fff, 0 4px 0 rgba(122, 92, 255, 0.18);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+  .tools { display: flex; gap: 8px; flex-shrink: 0; }
+  .tool {
+    width: 52px; height: 52px;
+    border-radius: 18px;
+    background: #fff;
+    font-size: 28px;
+    display: grid; place-items: center;
+    box-shadow: 0 4px 0 rgba(45, 42, 74, 0.12), 0 6px 14px rgba(45, 42, 74, 0.08);
+    transition: transform 0.1s;
+  }
+  .tool:active { transform: translateY(3px) scale(0.95); }
+
+  /* ---------- Stage ---------- */
+  .stage {
+    grid-area: stage;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: clamp(6px, 1.4dvh, 14px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .steps {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .steps li {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-weight: 900;
+    font-size: 18px;
+    background: #fff;
+    color: var(--ink-soft);
+    border: 3px solid var(--slot-edge);
+    transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), background 0.25s;
+  }
+  .steps li.on { background: var(--accent); color: #fff; border-color: var(--accent); transform: scale(1.18); }
+  .steps li.done { background: var(--good); color: #fff; border-color: var(--good); }
+  .steps .dash { width: 18px; height: 4px; border-radius: 2px; background: var(--slot-edge); border: 0; }
+
+  .prompt {
+    margin: 0;
+    text-align: center;
+    font-weight: 900;
+    font-size: clamp(18px, min(4.6vw, 3.8dvh), 36px);
+    line-height: 1.2;
+    min-height: 2.4em;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 6px;
+  }
+  .prompt.nudge { animation: nudge 0.5s ease; }
+
+  /* ---------- Equation ---------- */
+  .stage { container-type: inline-size; }
+  .equation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(6px, 1.6vw, 16px);
+    font-size: clamp(34px, min(9vw, 8dvh), 88px);
+    /* Long numbers (higher levels) shrink the whole number sentence to fit the width. */
+    font-size: min(clamp(34px, min(9vw, 8dvh), 88px), calc(100cqi / (var(--eq-chars, 4) * 0.62 + 4.4)));
+    font-weight: 900;
+  }
+  .equation .op { color: var(--accent); line-height: 1; }
+  .slot {
+    min-width: 1.35em;
+    height: 1.35em;
+    padding: 0 0.15em;
+    border-radius: 0.32em;
+    background: #fff;
+    border: 5px solid var(--slot-edge);
+    display: grid; place-items: center;
+    line-height: 1;
+    box-shadow: 0 5px 0 rgba(45, 42, 74, 0.1);
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+  }
+  .slot.empty { background: rgba(255, 255, 255, 0.55); border-style: dashed; }
+  .slot.active { border-color: var(--accent); color: var(--accent); animation: glow 1.4s ease-in-out infinite; }
+  .slot.filled { animation: slot-pop 0.45s cubic-bezier(.34, 1.56, .64, 1); }
+  #slot1.filled, #slot1.done { color: #1f8fd6; }
+  #slot2.filled, #slot2.done { color: #e0467f; }
+  .slot.right { background: var(--good); border-color: var(--good); color: #fff; animation: slot-pop 0.5s cubic-bezier(.34, 1.56, .64, 1); }
+  .slot.wrong { background: #ffe7cf; border-color: var(--oops); color: #b25c00; }
+  .shake { animation: shake 0.55s ease; }
+
+  /* ---------- Board with animal groups ---------- */
+  .board {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: clamp(4px, 1.2vw, 14px);
+  }
+  .group {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 460px;
+    border-radius: var(--radius);
+    border: 4px solid transparent;
+    padding: 6px 6px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: opacity 0.3s, transform 0.3s, border-color 0.3s;
+  }
+  #group1 { background: var(--g1); border-color: var(--g1-edge); }
+  #group2 { background: var(--g2); border-color: var(--g2-edge); }
+  .group.waiting { opacity: 0.5; border-style: dashed; }
+  .group.active { opacity: 1; animation: breathe 1.6s ease-in-out infinite; }
+  .gnum {
+    font-weight: 900;
+    font-size: clamp(22px, 4dvh, 36px);
+    min-width: 1.6em; height: 1.6em;
+    border-radius: 999px;
+    display: grid; place-items: center;
+    color: #fff;
+    line-height: 1;
+  }
+  #group1 .gnum { background: #1f8fd6; }
+  #group2 .gnum { background: #e0467f; }
+
+  /* The herd is a size container so animals shrink to fit whatever room the card has. */
+  .herd {
+    flex: 1 1 0;
+    min-height: 0;
+    align-self: stretch;
+    container-type: size;
+    display: grid;
+    align-content: center;
+    justify-content: center;
+    gap: 2px 4px;
+  }
+  .zero {
+    font-size: clamp(18px, 3.4dvh, 30px);
+    font-weight: 900;
+    color: var(--ink-soft);
+    border: 4px dashed rgba(224, 70, 127, 0.45);
+    border-radius: 999px;
+    padding: 0.5em 0.9em;
+  }
+
+  .plus-big {
+    align-self: center;
+    font-size: clamp(30px, 6dvh, 64px);
+    font-weight: 900;
+    color: var(--accent);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .plus-big.hidden { opacity: 0.25; transform: scale(0.7); }
+
+  .animal {
+    position: relative;
+    font-size: clamp(18px, min(4.4vw, 7.5dvh), 76px);
+    font-size: clamp(16px, min(calc(100cqw / (var(--cols, 3) * 1.25)), calc(100cqh / (var(--rows, 3) * 1.25))), 76px);
+    width: 1.2em; height: 1.2em;
+    display: grid; place-items: center;
+    border-radius: 0.35em;
+    animation: hop-in 0.5s cubic-bezier(.34, 1.56, .64, 1) both;
+    animation-delay: calc(var(--i, 0) * 110ms);
+  }
+  .animal .bob {
+    display: block;
+    animation: bob 2.4s ease-in-out infinite;
+    animation-delay: var(--b, 0s);
+  }
+  .animal .face {
+    display: block;
+    font-family: var(--emoji);
+    line-height: 1;
+    filter: drop-shadow(0 3px 2px rgba(45, 42, 74, 0.25));
+  }
+  .animal .face.pop { animation: pop 0.4s cubic-bezier(.34, 1.56, .64, 1); }
+  .animal.counted { background: rgba(255, 255, 255, 0.85); box-shadow: 0 0 0 3px #ffd84d inset; }
+  .animal .badge {
+    position: absolute;
+    top: -0.12em; right: -0.12em;
+    min-width: 1.5em; height: 1.5em;
+    padding: 0 0.3em;
+    font-size: 0.34em;
+    font-weight: 900;
+    border-radius: 999px;
+    background: #ffd84d;
+    color: var(--ink);
+    display: none;
+    place-items: center;
+    box-shadow: 0 2px 0 rgba(45, 42, 74, 0.2);
+  }
+  .animal.counted .badge { display: grid; animation: slot-pop 0.35s cubic-bezier(.34, 1.56, .64, 1); }
+  .board.wiggle .animal .face { animation: wiggle 0.6s ease 2; }
+  .board.party .animal .bob { animation: party 0.55s ease-in-out infinite alternate; }
+
+  /* Take Away: one big group; the animals that leave hop, fade and get a soft cross. */
+  #app[data-layout="solo"] #group2,
+  #app[data-layout="solo"] #plusBig { display: none; }
+  #app[data-layout="solo"] #group1 { max-width: 760px; }
+
+  /* Levels 4+: no pictures or counting helper, just a big number sentence. */
+  #app[data-big="true"] #board { display: none; }
+  #app[data-big="true"] .stage { justify-content: center; }
+  #app[data-big="true"] .equation {
+    font-size: min(clamp(40px, min(11vw, 12dvh), 120px), calc(100cqi / (var(--eq-chars, 4) * 0.62 + 4.4)));
+  }
+
+  .animal.gone .bob { animation: none; }
+  .animal.gone .face {
+    opacity: 0.3;
+    filter: grayscale(1);
+    animation: leave 0.7s ease both;
+    animation-delay: calc(var(--g, 0) * 160ms);
+  }
+  .animal.gone::after {
+    content: "✖";
+    position: absolute;
+    inset: 0;
+    display: grid; place-items: center;
+    font-family: var(--font);
+    font-size: 0.85em;
+    font-weight: 900;
+    color: #ff5f86;
+    opacity: 0;
+    pointer-events: none;
+    animation: cross-in 0.3s ease forwards;
+    animation-delay: calc(var(--g, 0) * 160ms + 450ms);
+  }
+
+  /* "Count with me!" sits in its own full-width row at the bottom of the number pad. */
+  .count-btn {
+    grid-column: 1 / -1;
+    min-height: 56px;
+    height: calc(var(--kh) * 0.8);
+    border-radius: 22px;
+    background: #ffd84d;
+    border-bottom: 7px solid #d9ae12;
+    box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.65), 0 6px 12px rgba(45, 42, 74, 0.1);
+    font-size: clamp(18px, calc(var(--kh) * 0.28), 28px);
+    font-weight: 900;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform 0.08s ease, border-bottom-width 0.08s ease, opacity 0.2s, filter 0.2s;
+  }
+  .count-btn:active, .count-btn.pressed { transform: translateY(5px); border-bottom-width: 2px; }
+  .count-btn.dim { opacity: 0.38; filter: saturate(0.5); }
+  .count-btn[hidden] { display: none; }
+  .random-btn { background: #cdbbff; border-bottom-color: #8f74e6; }
+
+  /* ---------- Difficulty levels ---------- */
+  .level-tool { position: relative; }
+  .level-tool .lvl-badge {
+    position: absolute;
+    right: -4px; bottom: -4px;
+    min-width: 22px; height: 22px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 900;
+    display: grid; place-items: center;
+    box-shadow: 0 0 0 2px #fff;
+  }
+  .level-row { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 8px; }
+  .level-title { font-size: clamp(16px, 2.6dvh, 22px); font-weight: 900; color: var(--ink-soft); }
+  .level-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .level-chip {
+    width: 48px; height: 48px;
+    border-radius: 16px;
+    background: #fff;
+    border: 3px solid var(--slot-edge);
+    border-bottom-width: 6px;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--ink);
+    transition: transform 0.1s;
+  }
+  .level-chip:active { transform: translateY(3px); }
+  .level-chip[aria-checked="true"] { background: var(--accent); border-color: #5a3ed6; color: #fff; }
+  .level-desc { margin: 0; font-size: clamp(15px, 2.4dvh, 19px); font-weight: 700; color: var(--ink-soft); min-height: 1.3em; }
+  .level-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 8px; text-align: left; }
+  .level-opt {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    align-items: center;
+    padding: 8px 12px;
+    min-height: 64px;
+    border-radius: 18px;
+    background: #f5f2ff;
+    border: 4px solid transparent;
+    text-align: left;
+  }
+  .level-opt[aria-checked="true"] { border-color: var(--accent); background: #fff; }
+  .level-opt .lv-n {
+    grid-row: 1 / 3;
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: var(--accent); color: #fff;
+    display: grid; place-items: center;
+    font-size: 20px; font-weight: 900;
+  }
+  .level-opt .lv-d { font-size: 15px; font-weight: 800; line-height: 1.2; }
+  .level-opt .lv-ex { font-size: 14px; font-weight: 700; color: var(--ink-soft); }
+  @media (max-width: 430px) { #gameTitle { display: none; } }
+  .count-btn.pulse { animation: breathe 1s ease-in-out infinite; }
+
+  /* ---------- Numpad ---------- */
+  .pad {
+    grid-area: pad;
+    --kh: clamp(64px, 9dvh, 96px);
+    display: grid;
+    grid-template-columns: repeat(3, minmax(64px, 1fr));
+    gap: 10px;
+    padding: 10px;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 6px 20px rgba(45, 42, 74, 0.08);
+  }
+  .key {
+    min-width: 64px;
+    min-height: 64px;
+    height: var(--kh);
+    border-radius: 22px;
+    background: var(--k, #fff);
+    font-size: clamp(30px, calc(var(--kh) * 0.5), 52px);
+    font-weight: 900;
+    color: var(--ink);
+    border-bottom: 7px solid rgba(45, 42, 74, 0.22);
+    box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.65), 0 6px 12px rgba(45, 42, 74, 0.1);
+    display: grid; place-items: center;
+    transition: transform 0.08s ease, border-bottom-width 0.08s ease, opacity 0.2s, filter 0.2s;
+  }
+  .key:active, .key.pressed { transform: translateY(5px) scale(0.97); border-bottom-width: 2px; filter: brightness(1.06); }
+  .key.dim { opacity: 0.38; filter: saturate(0.5); }
+  .key.back { --k: #ffd29a; font-size: clamp(26px, calc(var(--kh) * 0.42), 44px); }
+  .key.check { --k: #6fe09c; font-size: clamp(26px, calc(var(--kh) * 0.42), 44px); }
+  .key.check.ready { animation: breathe 1.1s ease-in-out infinite; }
+
+  /* ---------- Overlays ---------- */
+  #fx {
+    position: fixed;
+    inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 60;
+  }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgba(255, 246, 214, 0.55);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+  .overlay[hidden] { display: none; }
+  .card {
+    width: min(560px, 100%);
+    max-height: 100%;
+    overflow: auto;
+    border-radius: 36px;
+    background: #fff;
+    padding: clamp(18px, 4dvh, 36px) clamp(16px, 4vw, 32px);
+    text-align: center;
+    box-shadow: 0 12px 0 rgba(122, 92, 255, 0.2), 0 24px 60px rgba(45, 42, 74, 0.2);
+    animation: card-in 0.6s cubic-bezier(.34, 1.56, .64, 1) both;
+  }
+  .card .big-emoji { font-size: clamp(48px, 10dvh, 96px); animation: party 0.6s ease-in-out infinite alternate; display: inline-block; }
+  .card .msg {
+    margin: 10px 0 18px;
+    font-size: clamp(24px, min(6vw, 5dvh), 44px);
+    font-weight: 900;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .card .msg .sum { color: var(--good); white-space: nowrap; }
+  .again {
+    font-size: clamp(24px, 4.6dvh, 38px);
+    font-weight: 900;
+    padding: 16px 34px;
+    min-height: 72px;
+    border-radius: 999px;
+    background: var(--good);
+    color: #fff;
+    box-shadow: 0 7px 0 #1e8a4a;
+    transition: transform 0.1s;
+    animation: breathe 1.2s ease-in-out infinite;
+  }
+  .again:active { transform: translateY(5px); box-shadow: 0 2px 0 #1e8a4a; }
+  .timer {
+    margin: 18px auto 0;
+    height: 8px;
+    width: 70%;
+    border-radius: 4px;
+    background: #efeaff;
+    overflow: hidden;
+  }
+  .timer i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: left;
+  }
+  .timer i.run { animation: drain var(--auto, 9s) linear forwards; }
+
+  .sheet-card h2 { margin: 0 0 14px; font-size: clamp(22px, 4dvh, 32px); }
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+    gap: 10px;
+  }
+  .theme-opt {
+    min-height: 76px;
+    border-radius: 22px;
+    background: #f5f2ff;
+    border: 4px solid transparent;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px;
+    font-weight: 800;
+    font-size: 13px;
+    transition: transform 0.1s;
+  }
+  .theme-opt .emoji { font-size: 38px; }
+  .theme-opt[aria-checked="true"] { border-color: var(--accent); background: #fff; }
+  .theme-opt:active { transform: scale(0.94); }
+  .close-sheet {
+    margin-top: 16px;
+    font-size: 22px; font-weight: 900;
+    padding: 12px 30px; min-height: 60px;
+    border-radius: 999px;
+    background: var(--accent); color: #fff;
+    box-shadow: 0 5px 0 #5a3ed6;
+  }
+
+  /* ---------- Keyframes ---------- */
+  @keyframes hop-in {
+    0% { transform: translateY(40%) scale(0) rotate(-25deg); opacity: 0; }
+    100% { transform: none; opacity: 1; }
+  }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6%); } }
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.45) rotate(-8deg); } 100% { transform: scale(1); } }
+  @keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+  @keyframes party { from { transform: translateY(0) rotate(-6deg); } to { transform: translateY(-22%) rotate(6deg); } }
+  @keyframes slot-pop { 0% { transform: scale(0.6); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
+  @keyframes glow { 0%, 100% { box-shadow: 0 5px 0 rgba(45,42,74,.1), 0 0 0 0 rgba(122,92,255,.35); } 50% { box-shadow: 0 5px 0 rgba(45,42,74,.1), 0 0 0 10px rgba(122,92,255,0); } }
+  @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    15% { transform: translateX(-12px) rotate(-2deg); }
+    30% { transform: translateX(10px) rotate(2deg); }
+    45% { transform: translateX(-8px) rotate(-1deg); }
+    60% { transform: translateX(6px) rotate(1deg); }
+    75% { transform: translateX(-3px); }
+  }
+  @keyframes nudge { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.08); } }
+  @keyframes card-in { from { transform: scale(0.5) translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes leave {
+    0% { opacity: 1; filter: none; transform: none; }
+    45% { opacity: 1; filter: none; transform: translateY(-40%) rotate(-14deg) scale(1.15); }
+    100% { opacity: 0.3; filter: grayscale(1); transform: none; }
+  }
+  @keyframes cross-in { from { opacity: 0; transform: scale(2); } to { opacity: 0.9; transform: none; } }
+  @keyframes drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animal .bob, .group.active, .slot.active, .again, .card .big-emoji, .key.check.ready, .count-btn.pulse, .welcome-hello, .activity.play .act-go { animation: none; }
+  }
+
+  /* Short landscape screens (phones on their side) */
+  @media (orientation: landscape) and (max-height: 480px) {
+    .steps { display: none; }
+    .prompt { min-height: 1.3em; }
+    .tool { width: 44px; height: 44px; font-size: 22px; border-radius: 14px; }
+    /* Too short for 5 keypad rows: use 4 columns (digits + a side column for back / 0 / check). */
+    #app, #countApp { grid-template-columns: minmax(0, 1fr) minmax(300px, 44%); }
+    #cPad { --kh: 64px; grid-template-columns: repeat(3, minmax(64px, 1fr)); }
+    .pad { --kh: 64px; grid-template-columns: repeat(4, minmax(64px, 1fr)); gap: 8px; padding: 8px; }
+    .pad .key[data-key="back"] { grid-column: 4; grid-row: 1; }
+    .pad .key[data-key="0"] { grid-column: 4; grid-row: 2; }
+    .pad .key[data-key="enter"] { grid-column: 4; grid-row: 3; }
+    .count-btn { min-height: 52px; height: 52px; }
+    .gnum { position: absolute; top: -10px; left: 8px; font-size: 16px; z-index: 1; box-shadow: 0 0 0 3px #fff; }
+    .group { padding: 4px; }
+  }
+  /* Short portrait screens (phones): give the animals every pixel we can */
+  @media (orientation: portrait) and (max-height: 760px) {
+    .steps { display: none; }
+    .prompt { min-height: 2.3em; font-size: clamp(16px, 4.4vw, 22px); }
+    .gnum { position: absolute; top: -10px; left: 8px; font-size: 16px; z-index: 1; box-shadow: 0 0 0 3px #fff; }
+    .group { padding: 4px; }
+    .pad { gap: 6px; padding: 6px; }
+    .count-btn { min-height: 52px; height: 52px; }
+    .tool { width: 44px; height: 44px; font-size: 22px; border-radius: 14px; }
+  }
+</style>
+</head>
+<body>
+<noscript><p style="font-size:28px;text-align:center;padding:40px">Please turn on JavaScript to play! 🐶</p></noscript>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<div class="welcome" id="welcome">
+  <div class="welcome-inner">
+    <div class="welcome-hello emoji" aria-hidden="true">🐶</div>
+    <h1 class="welcome-title">Let’s play math!</h1>
+    <p class="welcome-sub">Pick a game to play</p>
+    <div class="activities">
+      <button class="activity play" type="button" data-activity="addition">
+        <span class="act-art emoji" aria-hidden="true">🐶➕🐱</span>
+        <span class="act-name">Add Along</span>
+        <span class="act-desc">Put two groups together!</span>
+        <span class="act-go">Play! ▶</span>
+      </button>
+      <button class="activity play" type="button" data-activity="subtraction">
+        <span class="act-art emoji" aria-hidden="true">🐰➖👋</span>
+        <span class="act-name">Take Away</span>
+        <span class="act-desc">Some go away. How many are left?</span>
+        <span class="act-go">Play! ▶</span>
+      </button>
+      <button class="activity play" type="button" data-activity="counting">
+        <span class="act-art emoji" aria-hidden="true">⏱️🐥🐥</span>
+        <span class="act-name">Count Quickly</span>
+        <span class="act-desc">How many? Beat the clock!</span>
+        <span class="act-go">Play! ▶</span>
+      </button>
+    </div>
+    <div class="level-row">
+      <div class="level-title" id="levelTitle">Level</div>
+      <div class="level-chips" id="levelChips" role="radiogroup" aria-labelledby="levelTitle"></div>
+      <p class="level-desc" id="levelDesc"></p>
+    </div>
+  </div>
+</div>
+
+<div id="app" data-step="num1" hidden>
+  <header class="topbar">
+    <h2 class="title"><span id="gameTitle">Add Along!</span> <span class="emoji" id="gameIcon">🐾</span></h2>
+    <div class="tools">
+      <button class="tool" id="homeBtn" type="button" aria-label="Pick another game"><span class="emoji">🏠</span></button>
+      <button class="tool level-tool" id="levelBtn" type="button" aria-label="Difficulty level"><span class="emoji">⭐</span><span class="lvl-badge" id="levelNum">3</span></button>
+      <button class="tool" id="themeBtn" type="button" aria-label="Pick your animal"><span class="emoji" id="themeIcon">🎁</span></button>
+      <button class="tool" id="soundBtn" type="button" aria-label="Sound on" aria-pressed="true"><span class="emoji" id="soundIcon">🔊</span></button>
+      <button class="tool" id="restartBtn" type="button" aria-label="Start over"><span class="emoji">🔄</span></button>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <ol class="steps" aria-label="Steps">
+      <li data-s="num1">1</li><li class="dash" aria-hidden="true"></li>
+      <li data-s="num2">2</li><li class="dash" aria-hidden="true"></li>
+      <li data-s="answer">3</li>
+    </ol>
+
+    <p class="prompt" id="prompt" aria-live="polite">Pick the first number!</p>
+
+    <div class="equation" id="equation" aria-label="Number sentence">
+      <div class="slot" id="slot1">?</div>
+      <div class="op" id="opSign">+</div>
+      <div class="slot" id="slot2"></div>
+      <div class="op">=</div>
+      <div class="slot" id="slotAns"></div>
+    </div>
+
+    <div class="board" id="board">
+      <section class="group" id="group1" aria-label="First group">
+        <div class="gnum">?</div>
+        <div class="herd"></div>
+      </section>
+      <div class="plus-big" id="plusBig" aria-hidden="true">+</div>
+      <section class="group" id="group2" aria-label="Second group">
+        <div class="gnum">?</div>
+        <div class="herd"></div>
+      </section>
+    </div>
+  </main>
+
+  <section class="pad" id="pad" aria-label="Number pad">
+    <button class="key" type="button" data-key="1" style="--k:#ffc2cf">1</button>
+    <button class="key" type="button" data-key="2" style="--k:#ffd6a8">2</button>
+    <button class="key" type="button" data-key="3" style="--k:#fff1a0">3</button>
+    <button class="key" type="button" data-key="4" style="--k:#c8f5b4">4</button>
+    <button class="key" type="button" data-key="5" style="--k:#aef0dd">5</button>
+    <button class="key" type="button" data-key="6" style="--k:#b5e3ff">6</button>
+    <button class="key" type="button" data-key="7" style="--k:#cbd2ff">7</button>
+    <button class="key" type="button" data-key="8" style="--k:#e5c9ff">8</button>
+    <button class="key" type="button" data-key="9" style="--k:#ffc8ee">9</button>
+    <button class="key back" type="button" data-key="back" aria-label="Back"><span class="emoji">⬅️</span></button>
+    <button class="key" type="button" data-key="0" style="--k:#f4eee2">0</button>
+    <button class="key check" type="button" data-key="enter" aria-label="Check"><span class="emoji">✅</span></button>
+    <button class="count-btn random-btn" id="randomBtn" type="button" data-key="random"><span class="emoji">🎲</span> <span id="randomLabel">Surprise me!</span></button>
+    <button class="count-btn dim" id="countBtn" type="button" data-key="count" aria-disabled="true" hidden><span class="emoji">👆</span> Count with me!</button>
+  </section>
+</div>
+
+<div id="countApp" hidden>
+  <header class="topbar">
+    <h2 class="title"><span class="ctitle">Count Quickly!</span> <span class="emoji">⏱️</span></h2>
+    <div class="tools">
+      <button class="tool" id="cHomeBtn" type="button" aria-label="Pick another game"><span class="emoji">🏠</span></button>
+      <button class="tool" id="cThemeBtn" type="button" aria-label="Pick your animal"><span class="emoji" id="cThemeIcon">🎁</span></button>
+      <button class="tool" id="cSoundBtn" type="button" aria-label="Sound on" aria-pressed="true"><span class="emoji" id="cSoundIcon">🔊</span></button>
+    </div>
+  </header>
+  <main class="cstage">
+    <div class="cstats"><span id="cScore">⭐ 0</span><span id="cTime">⏱ 10s</span></div>
+    <p class="prompt" id="cPrompt" aria-live="polite">How many? Count quickly!</p>
+    <div class="cfield" id="cField" aria-label="Things to count"></div>
+    <div class="cans"><div class="slot active" id="cSlot">?</div></div>
+  </main>
+  <section class="pad cpad" id="cPad" aria-label="Number pad">
+    <button class="key" type="button" data-key="1" style="--k:#ffc2cf">1</button>
+    <button class="key" type="button" data-key="2" style="--k:#ffd6a8">2</button>
+    <button class="key" type="button" data-key="3" style="--k:#fff1a0">3</button>
+    <button class="key" type="button" data-key="4" style="--k:#c8f5b4">4</button>
+    <button class="key" type="button" data-key="5" style="--k:#aef0dd">5</button>
+    <button class="key" type="button" data-key="6" style="--k:#b5e3ff">6</button>
+    <button class="key" type="button" data-key="7" style="--k:#cbd2ff">7</button>
+    <button class="key" type="button" data-key="8" style="--k:#e5c9ff">8</button>
+    <button class="key" type="button" data-key="9" style="--k:#ffc8ee">9</button>
+  </section>
+  <div class="ctimer" id="cTimer" aria-hidden="true"><i id="cTimerBar"></i></div>
+</div>
+
+<div class="overlay" id="celebrate" hidden role="dialog" aria-modal="true" aria-labelledby="celebrateMsg">
+  <div class="card">
+    <div class="big-emoji emoji" id="celebrateEmoji">🎉</div>
+    <div class="msg" id="celebrateMsg"></div>
+    <button class="again" id="againBtn" type="button">Play Again! <span class="emoji">🔄</span></button>
+    <div class="timer" aria-hidden="true"><i id="timerBar"></i></div>
+  </div>
+</div>
+
+<div class="overlay" id="levelSheet" hidden role="dialog" aria-modal="true" aria-labelledby="levelSheetTitle">
+  <div class="card sheet-card">
+    <h2 id="levelSheetTitle">How tricky? <span class="emoji">⭐</span></h2>
+    <div class="level-grid" id="levelGrid" role="radiogroup" aria-labelledby="levelSheetTitle"></div>
+    <button class="close-sheet" id="closeLevel" type="button">Done</button>
+  </div>
+</div>
+
+<div class="overlay" id="themeSheet" hidden role="dialog" aria-modal="true" aria-labelledby="themeTitle">
+  <div class="card sheet-card">
+    <h2 id="themeTitle">Pick your friends!</h2>
+    <div class="theme-grid" id="themeGrid" role="radiogroup" aria-labelledby="themeTitle"></div>
+    <button class="close-sheet" id="closeTheme" type="button">Done</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ================================================================
+   * Config
+   * ================================================================ */
+  const CONFIG = {
+    appearStepMs: 110,     // stagger between animals hopping in
+    settleMs: 650,         // pause after the last animal before moving on
+    checkDelayMs: 420,     // pause so the child sees their digits before feedback
+    wrongResetMs: 900,     // how long the "oops" state stays before clearing input
+    overlayDelayMs: 700,   // delay before the celebration card pops up
+    autoResetMs: 9000,     // auto "Play Again" after a win (0 = never)
+    countAlongMs: 800      // spacing for "Count with me!"
+  };
+
+  const THEMES = [
+    { id: 'dog',   emoji: '🐶', one: 'puppy',  many: 'puppies' },
+    { id: 'cat',   emoji: '🐱', one: 'kitten', many: 'kittens' },
+    { id: 'chick', emoji: '🐥', one: 'chick',  many: 'chicks' },
+    { id: 'bunny', emoji: '🐰', one: 'bunny',  many: 'bunnies' },
+    { id: 'frog',  emoji: '🐸', one: 'frog',   many: 'frogs' },
+    { id: 'horse', emoji: '🐴', one: 'horse',  many: 'horses' },
+    { id: 'duck',  emoji: '🦆', one: 'duck',   many: 'ducks' },
+    { id: 'bird',  emoji: '🐦', one: 'bird',   many: 'birds' },
+    { id: 'apple', emoji: '🍎', one: 'apple',  many: 'apples' },
+    { id: 'star',  emoji: '⭐', one: 'star',   many: 'stars' }
+  ];
+  const RANDOM = { id: 'random', emoji: '🎁', one: 'surprise', many: 'Surprise' };
+
+  const $ = (sel) => document.querySelector(sel);
+
+  // Best-effort persistence: storage can be missing or throw (private mode, file://).
+  const store = {
+    get(key, fallback) {
+      try {
+        const v = localStorage.getItem('toddlermath.' + key);
+        return v === null ? fallback : JSON.parse(v);
+      } catch (e) { return fallback; }
+    },
+    set(key, value) {
+      try { localStorage.setItem('toddlermath.' + key, JSON.stringify(value)); } catch (e) { /* ignore */ }
+    }
+  };
+
+  /* ================================================================
+   * Sound engine — everything synthesized with the Web Audio API
+   * ================================================================ */
+  const Sound = (() => {
+    const NOTES = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51, 1567.98, 1760];
+    const log = [];
+    let ctx = null, master = null, noiseBuf = null, muted = false;
+
+    function ensure() {
+      if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        try { ctx = new AC(); } catch (e) { return null; }
+        const comp = ctx.createDynamicsCompressor();
+        comp.threshold.value = -14;
+        comp.ratio.value = 4;
+        master = ctx.createGain();
+        master.gain.value = 0.85;
+        master.connect(comp);
+        comp.connect(ctx.destination);
+        const len = Math.floor(ctx.sampleRate * 2);
+        noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const data = noiseBuf.getChannelData(0);
+        for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      }
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+      return ctx;
+    }
+
+    function ready(name) {
+      if (muted) return null;
+      const c = ensure();
+      if (!c) return null;
+      if (name) { log.push(name); if (log.length > 60) log.shift(); }
+      return c;
+    }
+
+    function env(g, t, vol, attack, dur) {
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(Math.max(vol, 0.0002), t + attack);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    }
+
+    function tone({ type = 'sine', freq, freqEnd, start = 0, dur = 0.2, vol = 0.25, attack = 0.005 }) {
+      const c = ctx; if (!c || muted) return;
+      const t = c.currentTime + start;
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, t);
+      if (freqEnd) o.frequency.exponentialRampToValueAtTime(freqEnd, t + dur);
+      env(g, t, vol, attack, dur);
+      o.connect(g); g.connect(master);
+      o.start(t); o.stop(t + dur + 0.05);
+    }
+
+    function noise({ start = 0, dur = 0.1, vol = 0.2, type = 'bandpass', freq = 1500, freqEnd, q = 1, attack = 0.004 }) {
+      const c = ctx; if (!c || muted) return;
+      const t = c.currentTime + start;
+      const src = c.createBufferSource();
+      src.buffer = noiseBuf;
+      src.loop = true;
+      const f = c.createBiquadFilter();
+      f.type = type;
+      f.frequency.setValueAtTime(freq, t);
+      if (freqEnd) f.frequency.exponentialRampToValueAtTime(freqEnd, t + dur);
+      f.Q.value = q;
+      const g = c.createGain();
+      env(g, t, vol, attack, dur);
+      src.connect(f); f.connect(g); g.connect(master);
+      src.start(t, Math.random() * 1.5);
+      src.stop(t + dur + 0.05);
+    }
+
+    function bell(freq, start = 0, vol = 0.18, dur = 0.7) {
+      tone({ type: 'sine', freq, start, dur, vol, attack: 0.004 });
+      tone({ type: 'sine', freq: freq * 2.01, start, dur: dur * 0.45, vol: vol * 0.3, attack: 0.003 });
+      tone({ type: 'triangle', freq: freq * 3, start, dur: dur * 0.2, vol: vol * 0.12, attack: 0.002 });
+    }
+
+    function brass(freq, start, dur, vol = 0.07) {
+      const c = ctx; if (!c || muted) return;
+      const t = c.currentTime + start;
+      const lp = c.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(700, t);
+      lp.frequency.exponentialRampToValueAtTime(3400, t + 0.06);
+      lp.frequency.exponentialRampToValueAtTime(1500, t + dur);
+      const g = c.createGain();
+      env(g, t, vol, 0.02, dur);
+      lp.connect(g); g.connect(master);
+      [['sawtooth', 1], ['square', 1.004], ['triangle', 0.5]].forEach(([type, mul]) => {
+        const o = c.createOscillator();
+        o.type = type;
+        o.frequency.setValueAtTime(freq * mul, t);
+        o.connect(lp);
+        o.start(t); o.stop(t + dur + 0.05);
+      });
+    }
+
+    function cheerVoice(start, f0) {
+      const c = ctx; if (!c || muted) return;
+      const t = c.currentTime + start;
+      const o = c.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(f0, t);
+      o.frequency.exponentialRampToValueAtTime(f0 * 1.9, t + 0.35);
+      o.frequency.exponentialRampToValueAtTime(f0 * 1.35, t + 1.1);
+      const lfo = c.createOscillator();
+      lfo.frequency.value = 5 + Math.random() * 2.5;
+      const lfoGain = c.createGain();
+      lfoGain.gain.value = f0 * 0.05;
+      lfo.connect(lfoGain); lfoGain.connect(o.frequency);
+      const bp = c.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(450, t);
+      bp.frequency.linearRampToValueAtTime(1100, t + 0.4);
+      bp.frequency.linearRampToValueAtTime(700, t + 1.1);
+      bp.Q.value = 3;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.035, t + 0.12);
+      g.gain.setValueAtTime(0.035, t + 0.6);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 1.25);
+      o.connect(bp); bp.connect(g); g.connect(master);
+      o.start(t); lfo.start(t);
+      o.stop(t + 1.3); lfo.stop(t + 1.3);
+    }
+
+    return {
+      log,
+      unlock() { if (!muted) ensure(); },
+      get state() { return ctx ? ctx.state : 'none'; },
+      get muted() { return muted; },
+      set muted(v) {
+        muted = !!v;
+        if (ctx) (muted ? ctx.suspend() : ctx.resume()).catch(() => {});
+      },
+
+      // Each number key sings its own note on a pentatonic scale.
+      key(d) {
+        if (!ready('key')) return;
+        if (d == null) {
+          tone({ type: 'triangle', freq: 440, freqEnd: 300, dur: 0.12, vol: 0.18 });
+          return;
+        }
+        const f = NOTES[d] || 660;
+        tone({ type: 'triangle', freq: f, dur: 0.22, vol: 0.2 });
+        tone({ type: 'sine', freq: f * 2, dur: 0.08, vol: 0.06 });
+        noise({ type: 'highpass', freq: 4000, dur: 0.02, vol: 0.05 });
+      },
+
+      // Bubble pop; gets a little higher with every animal counted.
+      pop(i = 0) {
+        if (!ready('pop')) return;
+        const f = 330 * Math.pow(1.07, Math.min(i, 18));
+        tone({ type: 'sine', freq: f, freqEnd: f * 2.6, dur: 0.1, vol: 0.28, attack: 0.003 });
+        tone({ type: 'sine', freq: f * 3, dur: 0.05, vol: 0.05, attack: 0.002 });
+        noise({ type: 'highpass', freq: 3000, dur: 0.015, vol: 0.04 });
+      },
+
+      // Sad "wah-wah-wah-waaah" (soft, for a wrong count or time running out).
+      sad() {
+        if (!ready('sad')) return;
+        const c = ctx;
+        [[392, 0, 0.22], [370, 0.24, 0.22], [349, 0.48, 0.22], [330, 0.72, 0.7]].forEach(([f, st, d], i) => {
+          const t = c.currentTime + st;
+          const o = c.createOscillator();
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(f, t);
+          if (i === 3) {
+            const lfo = c.createOscillator();
+            const lg = c.createGain();
+            lfo.frequency.value = 6;
+            lg.gain.value = 8;
+            lfo.connect(lg); lg.connect(o.frequency);
+            lfo.start(t); lfo.stop(t + d + 0.05);
+            o.frequency.linearRampToValueAtTime(f * 0.94, t + d);
+          }
+          const lp = c.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.value = 1200;
+          const g = c.createGain();
+          env(g, t, 0.2, 0.03, d);
+          o.connect(lp); lp.connect(g); g.connect(master);
+          o.start(t); o.stop(t + d + 0.05);
+        });
+      },
+
+      // Soft falling "whoop" as an animal goes away.
+      bye(i = 0) {
+        if (!ready('bye')) return;
+        const f = 700 * Math.pow(0.93, Math.min(i, 9));
+        tone({ type: 'sine', freq: f, freqEnd: f * 0.45, dur: 0.22, vol: 0.2, attack: 0.01 });
+      },
+
+      chime() {
+        if (!ready('chime')) return;
+        bell(1046.5, 0, 0.16);
+        bell(1318.51, 0.09, 0.15);
+        bell(1567.98, 0.18, 0.15, 0.9);
+      },
+
+      // Soft, friendly "uh-oh" — never harsh.
+      boop() {
+        if (!ready('boop')) return;
+        tone({ type: 'sine', freq: 392, freqEnd: 370, dur: 0.22, vol: 0.22, attack: 0.02 });
+        tone({ type: 'sine', freq: 330, freqEnd: 294, start: 0.2, dur: 0.38, vol: 0.2, attack: 0.02 });
+      },
+
+      fanfare() {
+        if (!ready('fanfare')) return;
+        const seq = [[392, 0, 0.13], [523.25, 0.13, 0.13], [659.25, 0.26, 0.13], [783.99, 0.39, 0.24], [659.25, 0.64, 0.12]];
+        seq.forEach(([f, s, d]) => brass(f, s, d + 0.05, 0.075));
+        [523.25, 659.25, 783.99, 1046.5].forEach((f) => brass(f, 0.76, 1.2, 0.05));
+        for (let i = 0; i < 10; i++) {
+          bell(1567.98 * Math.pow(2, Math.floor(Math.random() * 5) / 5), 1.0 + i * 0.13, 0.07, 0.5);
+        }
+      },
+
+      // Crowd: dozens of filtered-noise hand claps + a noise "roar" + swooping "woo!" voices.
+      applause(dur = 3) {
+        if (!ready('applause')) return;
+        const n = Math.round(dur * 48);
+        for (let i = 0; i < n; i++) {
+          const s = Math.random() * dur;
+          const shape = s < 0.4 ? s / 0.4 : 1 - ((s - 0.4) / (dur - 0.4)) * 0.75;
+          noise({
+            start: 0.25 + s,
+            dur: 0.025 + Math.random() * 0.05,
+            vol: (0.05 + Math.random() * 0.2) * shape,
+            type: 'bandpass',
+            freq: 800 + Math.random() * 1800,
+            q: 0.7 + Math.random()
+          });
+        }
+        noise({ start: 0.25, dur, vol: 0.05, type: 'bandpass', freq: 1300, q: 0.5, attack: 0.3 });
+        for (let k = 0; k < 5; k++) cheerVoice(0.3 + Math.random() * 0.7, 200 + Math.random() * 220);
+      },
+
+      whistle() {
+        if (!ready('whistle')) return;
+        tone({ type: 'sine', freq: 700 + Math.random() * 200, freqEnd: 1900, dur: 0.55, vol: 0.03, attack: 0.05 });
+      },
+
+      boom() {
+        if (!ready('boom')) return;
+        noise({ type: 'lowpass', freq: 1000, freqEnd: 80, dur: 0.8, vol: 0.32, q: 0.8 });
+        for (let i = 0; i < 7; i++) {
+          noise({ type: 'highpass', freq: 5000, start: 0.1 + Math.random() * 0.6, dur: 0.02, vol: 0.05 });
+        }
+      }
+    };
+  })();
+
+  /* ================================================================
+   * Voice — native speech synthesis (optional; silently skipped if absent)
+   * ================================================================ */
+  const Voice = (() => {
+    const synth = window.speechSynthesis;
+    const log = [];
+    let voice = null;
+
+    function pick() {
+      if (!synth) return;
+      const voices = synth.getVoices() || [];
+      const en = voices.filter((v) => /^en/i.test(v.lang));
+      voice =
+        en.find((v) => /Samantha|Google US English|Karen|Moira|Tessa|Aria|Jenny|Zira|Serena/i.test(v.name)) ||
+        en.find((v) => /en[-_]US/i.test(v.lang)) ||
+        en[0] || null;
+    }
+    if (synth) {
+      pick();
+      if ('onvoiceschanged' in synth) synth.onvoiceschanged = pick;
+    }
+
+    return {
+      log,
+      say(text, { interrupt = true, rate = 0.92, pitch = 1.25 } = {}) {
+        log.push(text);
+        if (log.length > 40) log.shift();
+        if (!synth || Sound.muted || typeof SpeechSynthesisUtterance === 'undefined') return;
+        try {
+          if (interrupt) synth.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          if (voice) u.voice = voice;
+          u.lang = voice ? voice.lang : 'en-US';
+          u.rate = rate;
+          u.pitch = pitch;
+          synth.speak(u);
+        } catch (e) { /* speech is a bonus; ignore failures */ }
+      },
+      cancel() { try { if (synth) synth.cancel(); } catch (e) { /* ignore */ } }
+    };
+  })();
+
+  /* ================================================================
+   * FX — canvas fireworks + confetti particle system (no libraries)
+   * ================================================================ */
+  const FX = (() => {
+    const canvas = $('#fx');
+    const g = canvas.getContext('2d');
+    const COLORS = ['#ff5e7e', '#ffb13d', '#ffe14d', '#5fd35f', '#3ec5ff', '#8a7dff', '#ff7de9', '#ffffff'];
+    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const GRAVITY = 600;
+    let W = 0, H = 0, dpr = 1;
+    let rockets = [], sparks = [], confetti = [];
+    let raf = 0, last = 0;
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const rand = (a, b) => a + Math.random() * (b - a);
+    const pickColor = () => COLORS[(Math.random() * COLORS.length) | 0];
+
+    function launch(delay = 0) {
+      const targetY = H * rand(0.12, 0.42);
+      const vy = -Math.sqrt(2 * GRAVITY * (H + 10 - targetY));
+      rockets.push({
+        x: W * rand(0.12, 0.88), y: H + 10,
+        vx: rand(-60, 60), vy,
+        delay, launched: false,
+        color: pickColor(), color2: pickColor()
+      });
+      start();
+    }
+
+    function explode(r) {
+      Sound.boom();
+      const n = reduced ? 34 : 80;
+      const maxSpeed = rand(220, 320) + Math.min(W, H) * 0.12;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 + rand(-0.05, 0.05);
+        const s = maxSpeed * (i % 3 === 0 ? 1 : rand(0.35, 0.9));
+        const life = rand(1.1, 1.9);
+        sparks.push({
+          x: r.x, y: r.y,
+          vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+          life, max: life,
+          size: rand(2, 3.6),
+          color: Math.random() < 0.7 ? r.color : r.color2,
+          flicker: Math.random() < 0.4
+        });
+      }
+    }
+
+    function burstConfetti(count) {
+      for (let i = 0; i < count; i++) {
+        confetti.push({
+          x: rand(0, W), y: rand(-H * 0.6, -10),
+          vx: rand(-60, 60), vy: rand(60, 200),
+          w: rand(7, 13), h: rand(4, 8),
+          rot: rand(0, Math.PI * 2), vr: rand(-6, 6),
+          phase: rand(0, Math.PI * 2),
+          color: pickColor(),
+          age: 0
+        });
+      }
+      start();
+    }
+
+    function start() {
+      if (raf) return;
+      last = performance.now();
+      raf = requestAnimationFrame(frame);
+    }
+
+    function frame(now) {
+      const dt = Math.min(0.033, (now - last) / 1000);
+      last = now;
+      g.clearRect(0, 0, W, H);
+
+      // Rockets
+      for (let i = rockets.length - 1; i >= 0; i--) {
+        const r = rockets[i];
+        if (r.delay > 0) { r.delay -= dt; continue; }
+        if (!r.launched) { r.launched = true; Sound.whistle(); }
+        r.vy += GRAVITY * dt;
+        r.x += r.vx * dt;
+        r.y += r.vy * dt;
+        sparks.push({ x: r.x, y: r.y, vx: rand(-20, 20), vy: rand(20, 60), life: 0.45, max: 0.45, size: 2, color: '#ffe9a8', flicker: false });
+        if (r.vy >= -20) { explode(r); rockets.splice(i, 1); }
+      }
+
+      // Sparks (additive glow)
+      g.globalCompositeOperation = 'lighter';
+      const drag = Math.pow(0.975, dt * 60);
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const p = sparks[i];
+        p.life -= dt;
+        if (p.life <= 0) { sparks.splice(i, 1); continue; }
+        p.vx *= drag;
+        p.vy = p.vy * drag + 220 * dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        let a = Math.min(1, p.life / p.max * 1.4);
+        if (p.flicker && Math.random() < 0.3) a *= 0.3;
+        g.globalAlpha = a;
+        g.fillStyle = p.color;
+        g.beginPath();
+        g.arc(p.x, p.y, p.size * (0.6 + 0.4 * (p.life / p.max)), 0, Math.PI * 2);
+        g.fill();
+      }
+      g.globalCompositeOperation = 'source-over';
+
+      // Confetti (flutters and flips as it falls)
+      for (let i = confetti.length - 1; i >= 0; i--) {
+        const c = confetti[i];
+        c.age += dt;
+        c.vy = Math.min(c.vy + 120 * dt, 240);
+        c.phase += dt * 5;
+        c.x += (c.vx + Math.sin(c.phase) * 40) * dt;
+        c.y += c.vy * dt;
+        c.rot += c.vr * dt;
+        if (c.y > H + 30 || c.age > 9) { confetti.splice(i, 1); continue; }
+        g.globalAlpha = c.age > 7 ? Math.max(0, (9 - c.age) / 2) : 1;
+        g.save();
+        g.translate(c.x, c.y);
+        g.rotate(c.rot);
+        g.scale(1, Math.cos(c.phase));
+        g.fillStyle = c.color;
+        g.fillRect(-c.w / 2, -c.h / 2, c.w, c.h);
+        g.restore();
+      }
+      g.globalAlpha = 1;
+
+      if (rockets.length || sparks.length || confetti.length) {
+        raf = requestAnimationFrame(frame);
+      } else {
+        raf = 0;
+        g.clearRect(0, 0, W, H);
+      }
+    }
+
+    return {
+      celebrate() {
+        const rocketsN = reduced ? 3 : 7;
+        for (let i = 0; i < rocketsN; i++) launch(i * 0.38 + rand(0, 0.15));
+        burstConfetti(reduced ? 60 : 170);
+      },
+      clear() {
+        rockets = []; sparks = []; confetti = [];
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+        g.clearRect(0, 0, W, H);
+      },
+      count() { return rockets.length + sparks.length + confetti.length; },
+      confetti(n) { burstConfetti(reduced ? Math.round(n / 3) : n); }
+    };
+  })();
+
+  /* ================================================================
+   * Game — 3-step state machine: num1 -> num2 -> answer -> celebrate
+   * ================================================================ */
+  const els = {
+    app: $('#app'),
+    prompt: $('#prompt'),
+    equation: $('#equation'),
+    s1: $('#slot1'), s2: $('#slot2'), sa: $('#slotAns'),
+    board: $('#board'),
+    g1: $('#group1'), g2: $('#group2'),
+    plus: $('#plusBig'),
+    pad: $('#pad'),
+    countBtn: $('#countBtn'),
+    levelBtn: $('#levelBtn'), levelNum: $('#levelNum'),
+    levelSheet: $('#levelSheet'), levelGrid: $('#levelGrid'),
+    levelChips: $('#levelChips'), levelDesc: $('#levelDesc'),
+    randomBtn: $('#randomBtn'), randomLabel: $('#randomLabel'),
+    gameTitle: $('#gameTitle'), gameIcon: $('#gameIcon'),
+    opSign: $('#opSign'),
+    welcome: $('#welcome'),
+    homeBtn: $('#homeBtn'),
+    steps: document.querySelectorAll('.steps li[data-s]'),
+    celebrate: $('#celebrate'),
+    celebrateMsg: $('#celebrateMsg'),
+    celebrateEmoji: $('#celebrateEmoji'),
+    timerBar: $('#timerBar'),
+    againBtn: $('#againBtn'),
+    themeBtn: $('#themeBtn'), themeIcon: $('#themeIcon'),
+    themeSheet: $('#themeSheet'), themeGrid: $('#themeGrid'),
+    soundBtn: $('#soundBtn'), soundIcon: $('#soundIcon'),
+    restartBtn: $('#restartBtn')
+  };
+
+  const STEP_ORDER = ['num1', 'num2', 'answer'];
+
+  const state = {
+    mode: 'addition',
+    step: 'num1',
+    num1: null,
+    num2: null,
+    input: '',
+    busy: false,
+    wrongs: 0,
+    counted: 0,
+    pendingSecond: null,   // set by "Surprise me!" so step 2 is filled in automatically
+    entry: '',             // digits typed so far for a multi-digit number (levels 4+)
+    level: store.get('level', 3),
+    lastQuestion: '',
+    theme: store.get('theme', 'random'),
+    animal: THEMES[0],
+    timers: [],
+    countTimers: []
+  };
+  if (state.theme !== 'random' && !THEMES.some((t) => t.id === state.theme)) state.theme = 'random';
+  if (!(state.level >= 1 && state.level <= 10)) state.level = 3;
+
+  const later = (fn, ms) => { state.timers.push(setTimeout(fn, ms)); };
+  const clearTimers = () => { state.timers.forEach(clearTimeout); state.timers = []; stopCountAlong(); };
+  const noun = (n) => (n === 1 ? state.animal.one : state.animal.many);
+  const randInt = (lo, hi) => lo + Math.floor(Math.random() * (hi - lo + 1));
+
+  /* ---------- Difficulty levels ---------- */
+  // Number shapes: s = 1–4, d1 = 1–9, d2low = 2 digits with ones under 5, d2 / d3 / d4 = 2 / 3 / 4 digits.
+  // Level 4 is special-cased in makeQuestion so it never needs carrying (or borrowing in Take Away).
+  const GEN = {
+    s: () => randInt(1, 4),
+    d1: () => randInt(1, 9),
+    d2low: () => randInt(1, 9) * 10 + randInt(0, 4),
+    d2: () => randInt(10, 99),
+    d3: () => randInt(100, 999),
+    d4: () => randInt(1000, 9999)
+  };
+  const LEVELS = [null,
+    { gen: ['s', 's'],      digits: 1, desc: 'Tiny numbers: both under 5',                     ex: ['2 + 3', '4 − 1'] },
+    { gen: ['s', 'd1'],     digits: 1, desc: 'One number under 5, one single digit',          ex: ['4 + 7', '8 − 3'] },
+    { gen: ['d1', 'd1'],    digits: 1, desc: 'Two single-digit numbers',                      ex: ['8 + 6', '9 − 6'] },
+    { gen: ['d2low', 'd1'], digits: 2, desc: 'A 2-digit number (ones under 5) and a single digit, no carrying', ex: ['23 + 5', '34 − 2'] },
+    { gen: ['d2', 'd1'],    digits: 2, desc: 'A 2-digit number and a single digit',           ex: ['47 + 8', '52 − 7'] },
+    { gen: ['d2', 'd2'],    digits: 2, desc: 'Two 2-digit numbers',                           ex: ['35 + 48', '84 − 37'] },
+    { gen: ['d3', 'd2'],    digits: 3, desc: 'A 3-digit and a 2-digit number',                ex: ['256 + 73', '512 − 86'] },
+    { gen: ['d3', 'd3'],    digits: 3, desc: 'Two 3-digit numbers',                           ex: ['418 + 365', '734 − 258'] },
+    { gen: ['d4', 'd3'],    digits: 4, desc: 'A 4-digit and a 3-digit number',                ex: ['2407 + 586', '3021 − 475'] },
+    { gen: ['d4', 'd4'],    digits: 4, desc: 'Two 4-digit numbers',                           ex: ['4825 + 3197', '8204 − 3576'] }
+  ];
+  const level = () => LEVELS[state.level];
+  const isBig = () => level().digits > 1;          // multi-digit typing, numbers only (no pictures)
+
+  // A single digit that goes with a without carrying (addition) or borrowing (subtraction); null if none fits.
+  function noCarrySingle(modeId, a) {
+    const ones = a % 10;
+    if (modeId === 'subtraction') return ones >= 1 ? randInt(1, Math.min(ones, 9)) : null;
+    return ones <= 8 ? randInt(1, 9 - ones) : null;
+  }
+
+  // Make a question for a game at a level. Take Away always puts the bigger number first.
+  function makeQuestion(modeId, lv, keepFirst) {
+    if (lv === 4) {
+      if (keepFirst != null) {
+        const b = noCarrySingle(modeId, keepFirst);
+        if (b != null && (modeId !== 'subtraction' || b <= keepFirst)) return [keepFirst, b];
+      } else {
+        // 2-digit with ones 0–4 (1–4 in Take Away, so there is something to take from the ones).
+        const a = randInt(1, 9) * 10 + (modeId === 'subtraction' ? randInt(1, 4) : randInt(0, 4));
+        const b = noCarrySingle(modeId, a);
+        return modeId === 'addition' && Math.random() < 0.5 ? [b, a] : [a, b];
+      }
+    }
+    const [g1, g2] = LEVELS[lv].gen;
+    if (keepFirst != null) {
+      let b = GEN[g2]();
+      if (modeId === 'subtraction' && b > keepFirst) b = randInt(1, keepFirst);
+      return [keepFirst, b];
+    }
+    let a = GEN[g1](), b = GEN[g2]();
+    if (modeId === 'subtraction') { if (b > a) [a, b] = [b, a]; }
+    else if (Math.random() < 0.5) [a, b] = [b, a];
+    return [a, b];
+  }
+
+  /* ---------- Activities: everything that differs between the games ---------- */
+  const MODES = {
+    addition: {
+      title: 'Add Along!', icon: '🐾', op: '+', opWord: 'plus',
+      answer: (a, b) => a + b,
+      pickFirst: 'Pick the first number!',
+      pickSecond: 'Now pick another number to add!',
+      askAnswer: 'How many altogether? Count them and type the answer!',
+      askAnswerBig: 'What does it add up to? Type the answer!',
+      askAnswerSay: (a, b) => `${a} plus ${b}. How many altogether?`,
+      secondChosen: (d) => d === 0
+        ? [`Zero! No more ${state.animal.many}!`, `Zero! No more ${state.animal.many}!`]
+        : [`${d} more ${noun(d)}! ${state.animal.emoji}`, `plus ${d} more ${noun(d)}!`],
+      maxSecond: () => Infinity,
+      recountHint: ' Tap each one to count! 👆'
+    },
+    subtraction: {
+      title: 'Take Away!', icon: '👋', op: '−', opWord: 'take away',
+      answer: (a, b) => a - b,
+      pickFirst: 'Pick how many to start with!',
+      pickSecond: 'How many go away? Pick a number to take away!',
+      askAnswer: 'How many are left? Count them and type the answer!',
+      askAnswerBig: 'How many are left? Type the answer!',
+      askAnswerSay: (a, b) => `${a} take away ${b}. How many are left?`,
+      secondChosen: (d) => d === 0
+        ? ['Zero! Nobody goes away!', 'Zero! Nobody goes away!']
+        : [`${d} ${noun(d)} ${d === 1 ? 'goes' : 'go'} away! 👋`, `take away ${d}! Bye-bye ${noun(d)}!`],
+      maxSecond: () => state.num1,
+      recountHint: ' Tap each one that is still here! 👆'
+    }
+  };
+  const mode = () => MODES[state.mode];
+  const isSolo = () => state.mode === 'subtraction' && !isBig(); // Take Away with cross-outs
+  const answer = () => mode().answer(state.num1 || 0, state.num2 || 0);
+
+  function restartAnim(el, cls) {
+    el.classList.remove(cls);
+    void el.offsetWidth; // reflow so the animation plays again
+    el.classList.add(cls);
+  }
+
+  function setPrompt(text, { nudge = false } = {}) {
+    els.prompt.textContent = text;
+    if (nudge) restartAnim(els.prompt, 'nudge');
+  }
+
+  function pickRoundAnimal() {
+    if (state.theme !== 'random') {
+      state.animal = THEMES.find((t) => t.id === state.theme) || THEMES[0];
+      return;
+    }
+    const choices = THEMES.filter((t) => t !== state.animal);
+    state.animal = choices[(Math.random() * choices.length) | 0];
+  }
+
+  /* ---------- Rendering ---------- */
+  function setSlot(el, text, active) {
+    el.textContent = text;
+    el.classList.toggle('active', !!active);
+    el.classList.toggle('empty', text === '');
+  }
+
+  function renderEquation() {
+    const { step, num1, num2, input } = state;
+    els.opSign.textContent = mode().op;
+    const entry = state.entry;
+    setSlot(els.s1, num1 != null ? String(num1) : step === 'num1' ? (entry || '?') : '', step === 'num1' && !entry);
+    setSlot(els.s2, num2 != null ? String(num2) : step === 'num2' ? (entry || '?') : '', step === 'num2' && !entry);
+    const d = level().digits;
+    els.equation.style.setProperty('--eq-chars', String(d * 3 + (state.mode === 'addition' ? 1 : 0)));
+    let ans = '';
+    if (step === 'answer') ans = input || '?';
+    if (step === 'celebrate') ans = String(answer());
+    setSlot(els.sa, ans, step === 'answer' && !input);
+    els.sa.classList.toggle('right', step === 'celebrate');
+    if (step !== 'answer') els.sa.classList.remove('wrong');
+  }
+
+  function renderSteps() {
+    const idx = STEP_ORDER.indexOf(state.step);
+    els.steps.forEach((li, i) => {
+      const done = state.step === 'celebrate' || i < idx;
+      li.classList.toggle('on', i === idx);
+      li.classList.toggle('done', done);
+    });
+  }
+
+  function renderPad() {
+    const { step, input, busy } = state;
+    els.pad.querySelectorAll('.key').forEach((k) => {
+      const key = k.dataset.key;
+      let dim = busy || step === 'celebrate';
+      const digit = /^[0-9]$/.test(key) ? Number(key) : null;
+      // Typed numbers are only limited by the level's number of digits (and Take Away can't take more than it has).
+      if (!isBig() && digit != null) {
+        if (step === 'num1' && digit === 0) dim = true;
+        if (step === 'num2' && digit > mode().maxSecond()) dim = true;
+      }
+      if (isBig() && step === 'num1' && digit === 0 && !state.entry) dim = true;
+      if (key === 'enter') {
+        const typing = (step === 'num1' || step === 'num2') && isBig() && !!state.entry;
+        dim = busy || !(typing || (step === 'answer' && !!input));
+      }
+      if (key === 'back') dim = dim || step === 'num1';
+      k.classList.toggle('dim', dim);
+    });
+    els.pad.querySelector('[data-key="enter"]').classList.toggle('ready', step === 'answer' && !!input && !busy);
+    // The bottom row of the pad is "Surprise me!" while picking numbers, then "Count with me!".
+    const picking = step === 'num1' || step === 'num2';
+    // Levels 4+ have no counting helper, so "Surprise me!" keeps the row (greyed out after picking).
+    els.randomBtn.hidden = !picking && !isBig();
+    els.randomBtn.classList.toggle('dim', busy || !picking);
+    els.randomLabel.textContent = step === 'num2' ? 'Pick for me!' : 'Surprise me!';
+    els.countBtn.hidden = picking || isBig();
+    els.countBtn.classList.toggle('dim', step !== 'answer' || busy);
+    els.countBtn.setAttribute('aria-disabled', String(step !== 'answer'));
+  }
+
+  function herdColumns(n) {
+    if (isSolo()) return Math.min(n, 5); // ten-frame rows of 5
+    if (n <= 3) return n;
+    if (n === 4) return 2;
+    return 3;
+  }
+
+  // Both groups share one animal size (fitted to the larger grid) so a bigger-looking
+  // animal never reads as "worth more" while counting.
+  function syncAnimalSize() {
+    let cols = 1, rows = 1;
+    els.board.querySelectorAll('.herd').forEach((h) => {
+      const n = Number(h.dataset.n);
+      if (!n) return;
+      const c = herdColumns(n);
+      cols = Math.max(cols, c);
+      rows = Math.max(rows, Math.ceil(n / c));
+    });
+    els.board.style.setProperty('--cols', String(cols));
+    els.board.style.setProperty('--rows', String(rows));
+  }
+
+  function renderGroup(which, n, { animate = true } = {}) {
+    const el = which === 1 ? els.g1 : els.g2;
+    const herd = el.querySelector('.herd');
+    el.querySelector('.gnum').textContent = n == null ? '?' : String(n);
+    el.classList.toggle('waiting', n == null);
+    herd.textContent = '';
+    herd.style.gridTemplateColumns = '';
+    herd.dataset.n = n == null || isBig() ? '' : String(n);
+    syncAnimalSize();
+    if (n == null || isBig()) return; // levels 4+ show only the numbers
+    if (n === 0) {
+      const z = document.createElement('div');
+      z.className = 'zero';
+      z.textContent = 'zero — none!';
+      herd.append(z);
+      return;
+    }
+    herd.style.gridTemplateColumns = `repeat(${herdColumns(n)}, auto)`;
+    for (let i = 0; i < n; i++) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'animal';
+      b.dataset.group = String(which);
+      b.setAttribute('aria-label', `${state.animal.one} ${i + 1}`);
+      b.style.setProperty('--i', animate ? String(i) : '0');
+      if (!animate) b.style.animationDuration = '0s';
+      b.innerHTML = `<span class="bob" style="--b:-${((i * 0.37) % 2.4).toFixed(2)}s"><span class="face">${state.animal.emoji}</span></span><span class="badge"></span>`;
+      herd.append(b);
+    }
+  }
+
+  function renderActiveGroups() {
+    els.g1.classList.toggle('active', state.step === 'num1');
+    els.g2.classList.toggle('active', state.step === 'num2');
+    els.plus.classList.toggle('hidden', state.step === 'num1');
+    els.countBtn.classList.toggle('pulse', state.step === 'answer' && state.wrongs >= 2);
+  }
+
+  function render() {
+    els.app.dataset.step = state.step;
+    els.app.dataset.mode = state.mode;
+    els.app.dataset.layout = isSolo() ? 'solo' : 'pair';
+    els.app.dataset.big = String(isBig());
+    els.plus.textContent = mode().op;
+    els.levelNum.textContent = String(state.level);
+    renderEquation();
+    renderSteps();
+    renderPad();
+    renderActiveGroups();
+    els.themeIcon.textContent = state.theme === 'random' ? RANDOM.emoji : state.animal.emoji;
+  }
+
+  /* ---------- Step transitions ---------- */
+  function scheduleAppearance(n, then) {
+    if (isBig()) { later(then, CONFIG.settleMs); return; } // no animals to wait for
+    for (let i = 0; i < n; i++) later(() => Sound.pop(i), i * CONFIG.appearStepMs + 120);
+    later(then, Math.max(n, 1) * CONFIG.appearStepMs + CONFIG.settleMs);
+  }
+
+  // Take Away: the last d animals of the group leave one after another (d = 0 brings everyone back).
+  function markGone(d) {
+    const animals = [...els.g1.querySelectorAll('.animal')];
+    const firstGone = animals.length - d;
+    animals.forEach((a, i) => {
+      const gone = i >= firstGone;
+      a.classList.toggle('gone', gone);
+      a.style.setProperty('--g', String(Math.max(0, i - firstGone)));
+      a.setAttribute('aria-label', `${state.animal.one} ${i + 1}${gone ? ', went away' : ''}`);
+    });
+  }
+
+  function scheduleGoodbyes(n, then) {
+    for (let i = 0; i < n; i++) later(() => Sound.bye(i), i * 160 + 150);
+    later(then, n * 160 + 500 + CONFIG.settleMs);
+  }
+
+  function chooseFirst(d) {
+    const surprise = state.pendingSecond != null;
+    state.num1 = d;
+    state.busy = true;
+    renderGroup(1, d);
+    render();
+    restartAnim(els.s1, 'filled');
+    const what = isBig() ? `${d}!` : `${d} ${noun(d)}!`;
+    setPrompt(`${surprise ? 'Surprise! ' : ''}${what} ${state.animal.emoji}`);
+    Voice.say(`${surprise ? 'Surprise! ' : ''}${what}`);
+    scheduleAppearance(d, () => {
+      Sound.chime();
+      state.step = 'num2';
+      if (state.pendingSecond != null) {
+        const b = state.pendingSecond;
+        state.pendingSecond = null;
+        render();
+        later(() => chooseSecond(b), 300);
+        return;
+      }
+      state.busy = false;
+      setPrompt(mode().pickSecond);
+      Voice.say(mode().pickSecond, { interrupt: false });
+      render();
+    });
+  }
+
+  function chooseSecond(d) {
+    state.num2 = d;
+    state.busy = true;
+    const subtract = isSolo();
+    if (subtract) markGone(d);
+    else renderGroup(2, d);
+    render();
+    restartAnim(els.s2, 'filled');
+    const [text, say] = isBig() ? [`${mode().op} ${d}!`, `${mode().opWord} ${d}!`] : mode().secondChosen(d);
+    setPrompt(text);
+    Voice.say(say, { interrupt: false });
+    (subtract ? scheduleGoodbyes : scheduleAppearance)(d, () => {
+      Sound.chime();
+      state.step = 'answer';
+      state.busy = false;
+      state.input = '';
+      state.counted = 0;
+      setPrompt(isBig() ? mode().askAnswerBig : mode().askAnswer);
+      Voice.say(mode().askAnswerSay(state.num1, d), { interrupt: false });
+      render();
+    });
+  }
+
+  // "Surprise me!" makes up the question: on step 1 both numbers, on step 2 just the second.
+  function surprise() {
+    if (state.busy || (state.step !== 'num1' && state.step !== 'num2')) return;
+    state.entry = '';
+    if (state.step === 'num2') {
+      Sound.chime();
+      chooseSecond(makeQuestion(state.mode, state.level, state.num1)[1]);
+      return;
+    }
+    let q = makeQuestion(state.mode, state.level);
+    for (let tries = 0; tries < 5 && q.join() === state.lastQuestion; tries++) q = makeQuestion(state.mode, state.level);
+    state.lastQuestion = q.join();
+    Sound.chime();
+    state.pendingSecond = q[1];
+    chooseFirst(q[0]);
+  }
+
+  // Levels 4+: numbers can have several digits. They go in when ✅ is pressed,
+  // or automatically once the level's maximum number of digits is typed.
+  function typeEntry(d) {
+    if (state.entry === '0') state.entry = '';
+    if (state.entry.length >= level().digits) return;
+    state.entry += String(d);
+    render();
+    restartAnim(state.step === 'num1' ? els.s1 : els.s2, 'filled');
+    if (state.entry.length >= level().digits) {
+      state.busy = true;
+      renderPad();
+      later(commitEntry, CONFIG.checkDelayMs);
+    }
+  }
+
+  function commitEntry() {
+    state.busy = false;
+    if (!state.entry || (state.step !== 'num1' && state.step !== 'num2')) { render(); return; }
+    const v = parseInt(state.entry, 10);
+    state.entry = '';
+    if (state.step === 'num1') {
+      if (!v) { refuse('Numbers start at 1! Try again. 👆', 'Pick a number bigger than zero!'); render(); return; }
+      chooseFirst(v);
+    } else {
+      if (v > mode().maxSecond()) { tooMany(); render(); return; }
+      chooseSecond(v);
+    }
+  }
+
+  function refuse(text, say) {
+    Sound.key(null);
+    setPrompt(text, { nudge: true });
+    Voice.say(say);
+  }
+
+  function tooMany() {
+    const n = state.num1;
+    refuse(`We only have ${n}${isBig() ? '' : ' ' + noun(n)}! Pick ${n} or less. 👆`, `We only have ${n}! Pick ${n} or less.`);
+  }
+
+  function typeAnswer(d) {
+    if (state.input.length >= 5) return;
+    state.input += String(d);
+    restartAnim(els.sa, 'filled');
+    els.sa.classList.remove('wrong');
+    render();
+    const needed = String(answer()).length;
+    if (state.input.length >= needed) {
+      state.busy = true;
+      renderPad();
+      later(checkAnswer, CONFIG.checkDelayMs);
+    }
+  }
+
+  function checkAnswer() {
+    if (state.step !== 'answer' || !state.input) return;
+    stopCountAlong();
+    const value = parseInt(state.input, 10);
+    if (value === answer()) win();
+    else oops();
+  }
+
+  function oops() {
+    state.wrongs += 1;
+    state.busy = true;
+    Sound.boop();
+    els.sa.classList.add('wrong');
+    restartAnim(els.equation, 'shake');
+    if (isBig()) {
+      setPrompt('Oops, not quite! Try again!', { nudge: true });
+      Voice.say('Oops, not quite! Try again!');
+    } else {
+      const hint = state.wrongs >= 2 ? mode().recountHint : '';
+      setPrompt('Oops, try counting them again!' + hint, { nudge: true });
+      Voice.say('Oops! Try counting them again!');
+    }
+    renderPad();
+    later(() => {
+      state.input = '';
+      state.busy = false;
+      clearCounted();
+      els.sa.classList.remove('wrong');
+      restartAnim(els.board, 'wiggle');
+      render();
+    }, CONFIG.wrongResetMs);
+  }
+
+  function win() {
+    const a = state.num1, b = state.num2, sum = answer();
+    const { op, opWord } = mode();
+    state.step = 'celebrate';
+    state.busy = false;
+    render();
+    els.board.classList.add('party');
+    Sound.fanfare();
+    Sound.applause(3);
+    FX.celebrate();
+    setPrompt(`Hooray! ${a} ${op} ${b} = ${sum}!`);
+    Voice.say(`Hooray! ${a} ${opWord} ${b} equals ${sum}! You did it!`);
+    later(() => {
+      els.celebrateEmoji.textContent = ['🎉', '🌟', '🥳', '🏆', '🎈'][(Math.random() * 5) | 0];
+      els.celebrateMsg.innerHTML = '';
+      els.celebrateMsg.append(
+        document.createTextNode('Hooray! 🌟 '),
+        Object.assign(document.createElement('span'), { className: 'sum', textContent: `${a} ${op} ${b} = ${sum}!` }),
+        document.createTextNode(' You did it!')
+      );
+      const bar = els.timerBar.parentElement;
+      bar.hidden = !CONFIG.autoResetMs;
+      if (CONFIG.autoResetMs) {
+        els.timerBar.style.setProperty('--auto', CONFIG.autoResetMs + 'ms');
+        restartAnim(els.timerBar, 'run');
+        later(playAgain, CONFIG.autoResetMs);
+      }
+      els.celebrate.hidden = false;
+    }, CONFIG.overlayDelayMs);
+  }
+
+  function playAgain() {
+    if (state.step !== 'celebrate') return;
+    reset({ announce: true });
+  }
+
+  function reset({ announce = false } = {}) {
+    clearTimers();
+    Voice.cancel();
+    FX.clear();
+    els.celebrate.hidden = true;
+    els.board.classList.remove('party', 'wiggle');
+    els.sa.classList.remove('right', 'wrong');
+    Object.assign(state, { step: 'num1', num1: null, num2: null, input: '', entry: '', busy: false, wrongs: 0, counted: 0, pendingSecond: null });
+    pickRoundAnimal();
+    renderGroup(1, null);
+    renderGroup(2, null);
+    setPrompt(mode().pickFirst + ' 👆');
+    render();
+    if (announce) Voice.say(mode().pickFirst);
+  }
+
+  function back() {
+    if (state.busy) return;
+    if (state.entry) {
+      Sound.key(null);
+      state.entry = state.entry.slice(0, -1);
+      render();
+      return;
+    }
+    if (state.step === 'answer') {
+      Sound.key(null);
+      if (state.input) {
+        state.input = state.input.slice(0, -1);
+        render();
+        return;
+      }
+      stopCountAlong();
+      clearCounted();
+      state.num2 = null;
+      state.step = 'num2';
+      if (isSolo()) markGone(0);
+      else renderGroup(2, null);
+      setPrompt(mode().pickSecond);
+      render();
+    } else if (state.step === 'num2') {
+      Sound.key(null);
+      state.num1 = null;
+      state.step = 'num1';
+      renderGroup(1, null);
+      setPrompt(mode().pickFirst + ' 👆');
+      render();
+    }
+  }
+
+  function pressDigit(d) {
+    if (state.busy || state.step === 'celebrate') return;
+    const picking = state.step === 'num1' || state.step === 'num2';
+    if (picking && isBig()) {
+      if (state.step === 'num1' && d === 0 && !state.entry) { refuse('Numbers start at 1! 👆', 'Start with a number bigger than zero!'); return; }
+      Sound.key(d);
+      typeEntry(d);
+      return;
+    }
+    if (state.step === 'num1' && d === 0) {
+      refuse('Pick a number from 1 to 9! 👆', 'Pick a number from one to nine!');
+      return;
+    }
+    if (state.step === 'num2' && d > mode().maxSecond()) { tooMany(); return; }
+    Sound.key(d);
+    if (state.step === 'num1') chooseFirst(d);
+    else if (state.step === 'num2') chooseSecond(d);
+    else if (state.step === 'answer') typeAnswer(d);
+  }
+
+  function pressEnter() {
+    if (state.busy) return;
+    if (state.step === 'celebrate') { playAgain(); return; }
+    if (state.step === 'answer' && state.input) checkAnswer();
+    else if ((state.step === 'num1' || state.step === 'num2') && state.entry) commitEntry();
+  }
+
+  /* ---------- Touch counting ---------- */
+  function clearCounted() {
+    state.counted = 0;
+    els.board.querySelectorAll('.animal.counted').forEach((a) => {
+      a.classList.remove('counted');
+      a.querySelector('.badge').textContent = '';
+    });
+  }
+
+  function tapAnimal(btn) {
+    if (btn.classList.contains('gone')) { Sound.bye(0); return; } // it went away, so it doesn't count
+    const face = btn.querySelector('.face');
+    restartAnim(face, 'pop');
+    if (state.step === 'answer' && !btn.classList.contains('counted')) {
+      state.counted += 1;
+      btn.classList.add('counted');
+      btn.querySelector('.badge').textContent = String(state.counted);
+      Sound.pop(state.counted);
+      Voice.say(String(state.counted));
+      if (state.counted === answer() && answer() > 0) {
+        setPrompt('You counted them all! How many is that? Type it in!');
+      }
+    } else {
+      Sound.pop(state.step === 'answer' ? state.counted : 3);
+    }
+  }
+
+  function stopCountAlong() {
+    state.countTimers.forEach(clearTimeout);
+    state.countTimers = [];
+  }
+
+  function countAlong() {
+    if (state.step !== 'answer' || state.busy) return;
+    if (isBig()) return; // no counting helper above level 3
+    stopCountAlong();
+    clearCounted();
+    setPrompt('Let’s count together!');
+    Voice.say('Let’s count together!');
+    const animals = [...els.board.querySelectorAll('.animal:not(.gone)')];
+    animals.forEach((a, k) => {
+      state.countTimers.push(setTimeout(() => tapAnimal(a), 1100 + k * CONFIG.countAlongMs));
+    });
+  }
+
+  /* ---------- Difficulty level pickers (welcome strip + in-game sheet) ---------- */
+  function renderLevelPickers() {
+    const ex = (lv) => LEVELS[lv].ex[state.mode === 'subtraction' ? 1 : 0];
+    els.levelChips.textContent = '';
+    els.levelGrid.textContent = '';
+    for (let lv = 1; lv <= 10; lv++) {
+      const on = String(lv === state.level);
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'level-chip';
+      chip.dataset.level = String(lv);
+      chip.setAttribute('role', 'radio');
+      chip.setAttribute('aria-checked', on);
+      chip.setAttribute('aria-label', `Level ${lv}: ${LEVELS[lv].desc}`);
+      chip.textContent = String(lv);
+      els.levelChips.append(chip);
+
+      const opt = document.createElement('button');
+      opt.type = 'button';
+      opt.className = 'level-opt';
+      opt.dataset.level = String(lv);
+      opt.setAttribute('role', 'radio');
+      opt.setAttribute('aria-checked', on);
+      opt.innerHTML = `<span class="lv-n">${lv}</span><span class="lv-d"></span><span class="lv-ex"></span>`;
+      opt.querySelector('.lv-d').textContent = LEVELS[lv].desc;
+      opt.querySelector('.lv-ex').textContent = `like ${ex(lv)}`;
+      els.levelGrid.append(opt);
+    }
+    els.levelDesc.textContent = `Level ${state.level}: ${LEVELS[state.level].desc} (like ${LEVELS[state.level].ex[0]})`;
+    els.levelNum.textContent = String(state.level);
+    els.levelBtn.setAttribute('aria-label', `Difficulty level ${state.level}`);
+  }
+
+  function setLevel(lv) {
+    if (!(lv >= 1 && lv <= 10)) return;
+    const changed = lv !== state.level;
+    state.level = lv;
+    store.set('level', lv);
+    Sound.pop(lv);
+    renderLevelPickers();
+    if (changed && screen !== 'welcome') reset();
+    else render();
+  }
+
+  function openLevels() { renderLevelPickers(); els.levelSheet.hidden = false; }
+  function closeLevels() { els.levelSheet.hidden = true; }
+
+  /* ---------- Theme picker ---------- */
+  function buildThemeGrid() {
+    els.themeGrid.textContent = '';
+    [RANDOM, ...THEMES].forEach((t) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'theme-opt';
+      b.dataset.theme = t.id;
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(state.theme === t.id));
+      b.innerHTML = `<span class="emoji">${t.emoji}</span><span>${t.id === 'random' ? 'Surprise!' : t.many}</span>`;
+      els.themeGrid.append(b);
+    });
+  }
+
+  function openThemes() {
+    buildThemeGrid();
+    els.themeSheet.hidden = false;
+  }
+
+  function closeThemes() {
+    const wasOpen = !els.themeSheet.hidden;
+    els.themeSheet.hidden = true;
+    if (wasOpen && typeof cqResume === 'function') cqResume();
+  }
+
+  function chooseTheme(id) {
+    state.theme = id;
+    store.set('theme', id);
+    pickRoundAnimal();
+    // Swap the emoji on animals already on screen without replaying their entrance.
+    els.board.querySelectorAll('.animal').forEach((a, i) => {
+      a.querySelector('.face').textContent = state.animal.emoji;
+      a.setAttribute('aria-label', `${state.animal.one} ${i + 1}`);
+    });
+    els.themeGrid.querySelectorAll('.theme-opt').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.theme === id)));
+    Sound.pop(4);
+    render();
+    if (screen === 'counting') {
+      // Same number of things, new animal.
+      cqPickAnimal();
+      cels.field.querySelectorAll('.citem').forEach((el) => { el.textContent = cq.animal.emoji; });
+      cels.themeIcon.textContent = id === 'random' ? RANDOM.emoji : cq.animal.emoji;
+    }
+  }
+
+  /* ---------- Sound toggle ---------- */
+  function applyMute(m) {
+    Sound.muted = m;
+    if (m) Voice.cancel();
+    [[els.soundBtn, els.soundIcon], [$('#cSoundBtn'), $('#cSoundIcon')]].forEach(([btn, icon]) => {
+      icon.textContent = m ? '🔇' : '🔊';
+      btn.setAttribute('aria-pressed', String(!m));
+      btn.setAttribute('aria-label', m ? 'Sound off' : 'Sound on');
+    });
+  }
+
+  /* ================================================================
+   * Input wiring
+   * ================================================================ */
+  // Act on pointerdown for instant, forgiving toddler taps; still honour keyboard-triggered clicks (detail === 0).
+  function onTap(el, handler) {
+    el.addEventListener('pointerdown', (e) => {
+      if (e.button > 0) return;
+      const target = handler.match ? e.target.closest(handler.match) : el;
+      if (!target) return;
+      e.preventDefault();
+      Sound.unlock();
+      handler.fn(target, e);
+    });
+    el.addEventListener('click', (e) => {
+      if (e.detail !== 0) return;
+      const target = handler.match ? e.target.closest(handler.match) : el;
+      if (target) handler.fn(target, e);
+    });
+  }
+
+  function flashKey(key) {
+    const k = els.pad.querySelector(`[data-key="${key}"]`);
+    if (!k) return;
+    k.classList.add('pressed');
+    setTimeout(() => k.classList.remove('pressed'), 120);
+  }
+
+  function handleKey(key) {
+    flashKey(key);
+    if (key === 'back') back();
+    else if (key === 'enter') pressEnter();
+    else if (key === 'count') countAlong();
+    else if (key === 'random') surprise();
+    else pressDigit(Number(key));
+  }
+
+  onTap(els.pad, { match: '.key, .count-btn', fn: (k) => handleKey(k.dataset.key) });
+  onTap(els.board, { match: '.animal', fn: (a) => tapAnimal(a) });
+  onTap(els.levelChips, { match: '.level-chip', fn: (c) => setLevel(Number(c.dataset.level)) });
+  onTap(els.levelBtn, { fn: openLevels });
+  onTap(els.levelGrid, { match: '.level-opt', fn: (o) => { setLevel(Number(o.dataset.level)); closeLevels(); } });
+  onTap(els.levelSheet.querySelector('#closeLevel'), { fn: closeLevels });
+  els.levelSheet.addEventListener('pointerdown', (e) => { if (e.target === els.levelSheet) closeLevels(); });
+  onTap(els.welcome, { match: '.activity', fn: (b) => startActivity(b.dataset.activity) });
+  onTap(els.homeBtn, { fn: () => { Sound.key(null); goHome(); } });
+  onTap(els.againBtn, { fn: playAgain });
+  onTap(els.restartBtn, { fn: () => { Sound.key(null); reset({ announce: true }); } });
+  onTap(els.soundBtn, { fn: () => { applyMute(!Sound.muted); store.set('muted', Sound.muted); if (!Sound.muted) Sound.chime(); } });
+  onTap(els.themeBtn, { fn: openThemes });
+  onTap(els.themeGrid, { match: '.theme-opt', fn: (b) => chooseTheme(b.dataset.theme) });
+  onTap(els.themeSheet.querySelector('#closeTheme'), { fn: closeThemes });
+  els.themeSheet.addEventListener('pointerdown', (e) => { if (e.target === els.themeSheet) closeThemes(); });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    Sound.unlock();
+    if (!els.themeSheet.hidden || !els.levelSheet.hidden) {
+      if (e.key === 'Escape') { e.preventDefault(); closeThemes(); closeLevels(); }
+      return;
+    }
+    if (screen === 'welcome') {
+      if (e.key === 'Enter' && !e.repeat) { e.preventDefault(); startActivity('addition'); }
+      return;
+    }
+    if (screen === 'counting') {
+      if (/^[0-9]$/.test(e.key) && !e.repeat) { e.preventDefault(); cqFlashKey(e.key); cqAnswer(Number(e.key)); }
+      return;
+    }
+    if (state.step === 'celebrate') {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+        e.preventDefault();
+        if (!e.repeat) playAgain();
+      }
+      return;
+    }
+    if (e.repeat) return; // ignore held-down keys (toddler mashing)
+    if (/^[0-9]$/.test(e.key)) { e.preventDefault(); handleKey(e.key); }
+    else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); handleKey('enter'); }
+    else if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); handleKey('back'); }
+    else if (e.key === 'r' || e.key === 'R' || e.key === '?') { e.preventDefault(); handleKey('random'); }
+  });
+
+  // Unlock audio on the very first interaction anywhere.
+  document.addEventListener('pointerdown', () => Sound.unlock(), { capture: true, passive: true });
+
+  // Block pinch-zoom, iOS gesture zoom, long-press menus and double-tap zoom.
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
+  document.addEventListener('touchmove', (e) => { if (e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd < 350) e.preventDefault();
+    lastTouchEnd = now;
+  }, { passive: false });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) Voice.cancel(); });
+
+  /* ================================================================
+   * Count Quickly — how many things? Answer before the bar runs out.
+   * Right: applause, new number, timer 0.5 s shorter (min 0.5 s).
+   * Wrong or time's up: sad sound, same number, timer 0.5 s longer (max 10 s).
+   * ================================================================ */
+  const COUNT = { startMs: 10000, stepMs: 500, minMs: 500, maxMs: 10000, rightPauseMs: 1400, wrongPauseMs: 1000 };
+  const cq = {
+    n: 0, timerMs: COUNT.startMs, score: 0, busy: false,
+    animal: THEMES[0], timeout: 0, raf: 0, endAt: 0, duration: 0, remaining: 0, paused: false, running: false, timers: []
+  };
+  const cels = {
+    app: $('#countApp'), field: $('#cField'), slot: $('#cSlot'), prompt: $('#cPrompt'),
+    score: $('#cScore'), time: $('#cTime'), pad: $('#cPad'),
+    timer: $('#cTimer'), bar: $('#cTimerBar'), themeIcon: $('#cThemeIcon'),
+    homeBtn: $('#cHomeBtn'), themeBtn: $('#cThemeBtn'), soundBtn: $('#cSoundBtn'), soundIcon: $('#cSoundIcon')
+  };
+  const cqLater = (fn, ms) => { cq.timers.push(setTimeout(fn, ms)); };
+
+  function cqPickAnimal() {
+    if (state.theme !== 'random') { cq.animal = THEMES.find((t) => t.id === state.theme) || THEMES[0]; return; }
+    const choices = THEMES.filter((t) => t !== cq.animal);
+    cq.animal = choices[(Math.random() * choices.length) | 0];
+  }
+
+  // Scatter n items over a jittered 3×3 grid so they never overlap but don't line up either.
+  function cqRenderItems() {
+    cels.field.textContent = '';
+    cels.field.classList.remove('party');
+    const cells = [0, 1, 2, 3, 4, 5, 6, 7, 8].sort(() => Math.random() - 0.5).slice(0, cq.n);
+    cells.forEach((cell, i) => {
+      const el = document.createElement('span');
+      el.className = 'citem';
+      el.textContent = cq.animal.emoji;
+      const col = cell % 3, row = Math.floor(cell / 3);
+      el.style.left = `${((col + 0.5 + (Math.random() - 0.5) * 0.45) / 3) * 100}%`;
+      el.style.top = `${((row + 0.5 + (Math.random() - 0.5) * 0.4) / 3) * 100}%`;
+      el.style.setProperty('--r', `${Math.round((Math.random() - 0.5) * 30)}deg`);
+      el.style.setProperty('--s', (0.85 + Math.random() * 0.3).toFixed(2));
+      el.style.setProperty('--i', String(i));
+      cels.field.append(el);
+    });
+    cels.field.setAttribute('aria-label', `${cq.n} ${cq.n === 1 ? cq.animal.one : cq.animal.many}`);
+    cels.themeIcon.textContent = state.theme === 'random' ? RANDOM.emoji : cq.animal.emoji;
+  }
+
+  function cqRenderStats() {
+    cels.score.textContent = `⭐ ${cq.score}`;
+    cels.time.textContent = `⏱ ${(cq.timerMs / 1000).toFixed(1).replace(/\.0$/, '')}s`;
+  }
+
+  function cqNewNumber() {
+    let n;
+    do { n = randInt(1, 9); } while (n === cq.n);
+    cq.n = n;
+    cqPickAnimal();
+    cqRenderItems();
+  }
+
+  function cqSetSlot(text, cls) {
+    cels.slot.textContent = text;
+    cels.slot.className = 'slot' + (cls ? ' ' + cls : '');
+  }
+
+  /* ----- the countdown bar ----- */
+  function cqTick() {
+    const left = Math.max(0, cq.endAt - performance.now());
+    const frac = cq.duration ? left / cq.duration : 0;
+    cels.bar.style.transform = `scaleX(${frac.toFixed(4)})`;
+    cels.timer.classList.toggle('low', frac < 0.25);
+    if (cq.running) cq.raf = requestAnimationFrame(cqTick);
+  }
+
+  function cqStartTimer(ms = cq.timerMs, duration = cq.timerMs) {
+    cqStopTimer();
+    cq.duration = duration;
+    cq.endAt = performance.now() + ms;
+    cq.running = true;
+    cq.paused = false;
+    cq.timeout = setTimeout(cqTimeUp, ms);
+    cq.raf = requestAnimationFrame(cqTick);
+  }
+
+  function cqStopTimer() {
+    cq.running = false;
+    clearTimeout(cq.timeout);
+    cancelAnimationFrame(cq.raf);
+  }
+
+  function cqPause() {
+    if (!cq.running) return;
+    cq.remaining = Math.max(0, cq.endAt - performance.now());
+    cqStopTimer();
+    cq.paused = true;
+  }
+
+  function cqResume() {
+    if (!cq.paused || screen !== 'counting') return;
+    cqStartTimer(cq.remaining, cq.duration);
+  }
+
+  function cqNextRound({ fresh }) {
+    cq.busy = false;
+    if (fresh) cqNewNumber();
+    cels.field.classList.remove('party');
+    cqSetSlot('?', 'active');
+    cels.prompt.textContent = 'How many? Count quickly!';
+    cqRenderStats();
+    cqStartTimer();
+  }
+
+  function cqMiss(prompt, say) {
+    cq.busy = true;
+    cqStopTimer();
+    cq.timerMs = Math.min(COUNT.maxMs, cq.timerMs + COUNT.stepMs);
+    Sound.sad();
+    restartAnim(cels.field, 'shake');
+    cels.prompt.textContent = prompt;
+    Voice.say(say);
+    cqRenderStats();
+    cqLater(() => cqNextRound({ fresh: false }), COUNT.wrongPauseMs);
+  }
+
+  function cqTimeUp() {
+    if (screen !== 'counting' || cq.busy) return;
+    cqSetSlot('⏱', 'wrong');
+    cqMiss("Time's up! Try again!", "Time's up! Try again!");
+  }
+
+  function cqAnswer(d) {
+    if (screen !== 'counting' || cq.busy || !cq.running) return;
+    Sound.key(d);
+    if (d === cq.n) {
+      cq.busy = true;
+      cqStopTimer();
+      cq.score += 1;
+      cq.timerMs = Math.max(COUNT.minMs, cq.timerMs - COUNT.stepMs);
+      cqSetSlot(String(d), 'right');
+      cels.field.classList.add('party');
+      cels.prompt.textContent = `Yes! ${d}! 🎉`;
+      Sound.chime();
+      Sound.applause(1.6);
+      FX.confetti(50);
+      Voice.say(`Yes! ${d}!`);
+      cqRenderStats();
+      cqLater(() => cqNextRound({ fresh: true }), COUNT.rightPauseMs);
+    } else {
+      cqSetSlot(String(d), 'wrong');
+      cqMiss('Oops! Count again!', 'Oops! Count again!');
+    }
+  }
+
+  function cqStart({ announce = false } = {}) {
+    cqStop();
+    cq.n = 0;
+    cq.score = 0;
+    cq.timerMs = COUNT.startMs;
+    cqNextRound({ fresh: true });
+    if (announce) Voice.say('How many? Count quickly!');
+  }
+
+  function cqStop() {
+    cqStopTimer();
+    cq.paused = false;
+    cq.timers.forEach(clearTimeout);
+    cq.timers = [];
+    cq.busy = false;
+  }
+
+  function showCount({ announce = false } = {}) {
+    reset();
+    screen = 'counting';
+    els.welcome.hidden = true;
+    els.app.hidden = true;
+    cels.app.hidden = false;
+    cqStart({ announce });
+  }
+
+  function cqFlashKey(key) {
+    const k = cels.pad.querySelector(`[data-key="${key}"]`);
+    if (!k) return;
+    k.classList.add('pressed');
+    setTimeout(() => k.classList.remove('pressed'), 120);
+  }
+
+  onTap(cels.pad, { match: '.key', fn: (k) => { cqFlashKey(k.dataset.key); cqAnswer(Number(k.dataset.key)); } });
+  onTap(cels.homeBtn, { fn: () => { Sound.key(null); goHome(); } });
+  onTap(cels.themeBtn, { fn: () => { cqPause(); openThemes(); } });
+  onTap(cels.soundBtn, { fn: () => { applyMute(!Sound.muted); store.set('muted', Sound.muted); if (!Sound.muted) Sound.chime(); } });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) cqPause(); else cqResume(); });
+
+  /* ================================================================
+   * Screens — welcome (activity picker) and games, routed by URL hash
+   * so reload and the browser Back button behave as expected.
+   * ================================================================ */
+  const ACTIVITIES = [...Object.keys(MODES), 'counting'];
+  let screen = 'welcome';
+
+  function showWelcome() {
+    cqStop();
+    cels.app.hidden = true;
+    reset();
+    closeThemes();
+    closeLevels();
+    screen = 'welcome';
+    els.app.hidden = true;
+    els.welcome.hidden = false;
+  }
+
+  function showGame(id, { announce = false } = {}) {
+    cqStop();
+    cels.app.hidden = true;
+    screen = id;
+    state.mode = id;
+    state.lastQuestion = '';
+    els.gameTitle.textContent = MODES[id].title;
+    els.gameIcon.textContent = MODES[id].icon;
+    renderLevelPickers();
+    els.welcome.hidden = true;
+    els.app.hidden = false;
+    reset({ announce });
+  }
+
+  function route({ announce = false } = {}) {
+    const id = location.hash.slice(1);
+    if (id === 'counting') showCount({ announce });
+    else if (ACTIVITIES.includes(id)) showGame(id, { announce });
+    else showWelcome();
+  }
+
+  function startActivity(id) {
+    if (!ACTIVITIES.includes(id)) {
+      const card = els.welcome.querySelector(`[data-activity="${id}"]`);
+      if (card) restartAnim(card, 'wiggle');
+      Sound.boop();
+      Voice.say('That game is coming soon!');
+      return;
+    }
+    Sound.chime();
+    if (location.hash === '#' + id) route({ announce: true });
+    else location.hash = id; // hashchange shows the game
+  }
+
+  function goHome() {
+    if (location.hash) location.hash = '';
+    else showWelcome();
+  }
+
+  window.addEventListener('hashchange', () => route({ announce: true }));
+
+  /* ================================================================
+   * Boot + test hooks
+   * ================================================================ */
+  applyMute(store.get('muted', false));
+  renderLevelPickers();
+  route();
+
+  window.ToddlerMath = {
+    config: CONFIG,
+    themes: THEMES.map((t) => t.id),
+    getState: () => ({
+      screen,
+      mode: state.mode,
+      level: state.level,
+      entry: state.entry,
+      step: state.step,
+      num1: state.num1,
+      num2: state.num2,
+      input: state.input,
+      busy: state.busy,
+      wrongs: state.wrongs,
+      counted: state.counted,
+      theme: state.theme,
+      animal: state.animal.id
+    }),
+    reset: () => reset(),
+    randomQuestion: (m, lv = 3) => makeQuestion(m, lv),
+    count: {
+      rules: COUNT,
+      state: () => ({ n: cq.n, timerMs: cq.timerMs, score: cq.score, busy: cq.busy, running: cq.running, left: cq.running ? Math.max(0, cq.endAt - performance.now()) : 0 }),
+      // Tests only: set the current timer length and restart the countdown.
+      setTimer: (ms) => { cq.timerMs = ms; cqRenderStats(); if (!cq.busy) cqStartTimer(); }
+    },
+    setLevel: (lv) => setLevel(lv),
+    answerFor: (m, a, b) => MODES[m].answer(a, b),
+    audioState: () => Sound.state,
+    particles: () => FX.count(),
+    soundLog: Sound.log,
+    spoken: Voice.log
+  };
+})();
+</script>
+</body>
+</html>
