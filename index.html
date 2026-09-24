@@ -125,11 +125,19 @@
     overflow: hidden;
   }
   .cfield.shake { animation: shake 0.55s ease; }
+  /* A centred square holds the 3×3 dice grid, so patterns keep their shape on wide or tall screens. */
+  .cgrid {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: min(94cqw, 94cqh);
+    height: min(94cqw, 94cqh);
+    transform: translate(-50%, -50%);
+  }
   .citem {
     position: absolute;
     font-family: var(--emoji);
     line-height: 1;
-    font-size: min(16cqw, 20cqh);
+    font-size: min(19cqw, 19cqh);
     transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1));
     filter: drop-shadow(0 3px 2px rgba(45, 42, 74, 0.25));
     animation: citem-in 0.35s cubic-bezier(.34, 1.56, .64, 1) both;
@@ -2303,23 +2311,36 @@
     cq.animal = choices[(Math.random() * choices.length) | 0];
   }
 
-  // Scatter n items over a jittered 3×3 grid so they never overlap but don't line up either.
+  // Dice-face patterns on a 3×3 grid (cells 0–8, left to right, top to bottom),
+  // so each number always has the same regular shape and can be recognised at a glance.
+  const DICE = {
+    1: [4],
+    2: [0, 8],
+    3: [0, 4, 8],
+    4: [0, 2, 6, 8],
+    5: [0, 2, 4, 6, 8],
+    6: [0, 2, 3, 5, 6, 8],
+    7: [0, 2, 3, 4, 5, 6, 8],
+    8: [0, 1, 2, 3, 5, 6, 7, 8],
+    9: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+  };
+
   function cqRenderItems() {
     cels.field.textContent = '';
     cels.field.classList.remove('party');
-    const cells = [0, 1, 2, 3, 4, 5, 6, 7, 8].sort(() => Math.random() - 0.5).slice(0, cq.n);
-    cells.forEach((cell, i) => {
+    const grid = document.createElement('div');
+    grid.className = 'cgrid';
+    DICE[cq.n].forEach((cell, i) => {
       const el = document.createElement('span');
       el.className = 'citem';
+      el.dataset.cell = String(cell);
       el.textContent = cq.animal.emoji;
-      const col = cell % 3, row = Math.floor(cell / 3);
-      el.style.left = `${((col + 0.5 + (Math.random() - 0.5) * 0.45) / 3) * 100}%`;
-      el.style.top = `${((row + 0.5 + (Math.random() - 0.5) * 0.4) / 3) * 100}%`;
-      el.style.setProperty('--r', `${Math.round((Math.random() - 0.5) * 30)}deg`);
-      el.style.setProperty('--s', (0.85 + Math.random() * 0.3).toFixed(2));
+      el.style.left = `${((cell % 3) + 0.5) / 3 * 100}%`;
+      el.style.top = `${(Math.floor(cell / 3) + 0.5) / 3 * 100}%`;
       el.style.setProperty('--i', String(i));
-      cels.field.append(el);
+      grid.append(el);
     });
+    cels.field.append(grid);
     cels.field.setAttribute('aria-label', `${cq.n} ${cq.n === 1 ? cq.animal.one : cq.animal.many}`);
     cels.themeIcon.textContent = state.theme === 'random' ? RANDOM.emoji : cq.animal.emoji;
   }
@@ -2559,7 +2580,9 @@
       rules: COUNT,
       state: () => ({ n: cq.n, timerMs: cq.timerMs, score: cq.score, busy: cq.busy, running: cq.running, left: cq.running ? Math.max(0, cq.endAt - performance.now()) : 0 }),
       // Tests only: set the current timer length and restart the countdown.
-      setTimer: (ms) => { cq.timerMs = ms; cqRenderStats(); if (!cq.busy) cqStartTimer(); }
+      setTimer: (ms) => { cq.timerMs = ms; cqRenderStats(); if (!cq.busy) cqStartTimer(); },
+      // Tests only: show exactly n things.
+      show: (n) => { cq.n = n; cqRenderItems(); }
     },
     setLevel: (lv) => setLevel(lv),
     answerFor: (m, a, b) => MODES[m].answer(a, b),

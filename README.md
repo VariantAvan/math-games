@@ -22,7 +22,7 @@ In both games, **🎲 Surprise me!** at the bottom of the number pad makes up a 
 
 **Count Quickly:**
 
-1 to 9 things are scattered on the screen. Type how many (keypad or keyboard) before the thin bar at the bottom of the screen runs out.
+1 to 9 things appear in a regular dice pattern (5 looks like the dice five). Type how many (keypad or keyboard) before the thin bar at the bottom of the screen runs out.
 - The timer starts at 10 seconds.
 - **Right:** applause and a new number. The timer gets 0.5 s shorter, down to 0.5 s.
 - **Wrong, or time runs out:** a sad "wah-wah" and the same things stay. The timer gets 0.5 s longer, up to 10 s.

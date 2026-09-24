@@ -54,7 +54,7 @@ test('the timer is a thin bar in the bottom 5% of the screen that counts down', 
   expect(w2).toBeLessThan(w1);
 });
 
-test('things are scattered inside the play area without overlapping', async ({ page }) => {
+test('things are inside the play area without overlapping', async ({ page }) => {
   await openCount(page);
   await page.waitForTimeout(600);
   const { inside, overlaps } = await page.evaluate(() => {
@@ -72,6 +72,37 @@ test('things are scattered inside the play area without overlapping', async ({ p
   });
   expect(inside).toBe(true);
   expect(overlaps).toBe(0);
+});
+
+test('things are laid out in a regular dice pattern for every number 1–9', async ({ page }) => {
+  await openCount(page);
+  const DICE = {
+    1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8],
+    6: [0, 2, 3, 5, 6, 8], 7: [0, 2, 3, 4, 5, 6, 8], 8: [0, 1, 2, 3, 5, 6, 7, 8], 9: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+  };
+  // the game's own first round uses the pattern for its number
+  const first = (await cstate(page)).n;
+  expect(await page.locator('.citem').evaluateAll((es) => es.map((e) => Number(e.dataset.cell)))).toEqual(DICE[first]);
+  for (let n = 1; n <= 9; n++) {
+    await page.evaluate((k) => window.ToddlerMath.count.show(k), n);
+    await page.waitForTimeout(450); // let the pop-in finish
+    const layout = await page.evaluate(() => {
+      const g = document.querySelector('.cgrid').getBoundingClientRect();
+      const items = [...document.querySelectorAll('.citem')].map((e) => {
+        const r = e.getBoundingClientRect();
+        return { cell: Number(e.dataset.cell), x: (r.left + r.width / 2 - g.left) / g.width, y: (r.top + r.height / 2 - g.top) / g.height, w: r.width };
+      });
+      return { square: Math.abs(g.width - g.height) < 1, items };
+    });
+    expect(layout.square).toBe(true);
+    expect(layout.items.map((i) => i.cell)).toEqual(DICE[n]);
+    for (const it of layout.items) {
+      // centred on its grid cell (1/6, 3/6 or 5/6 of the square), all the same size
+      expect(Math.abs(it.x - ((it.cell % 3) * 2 + 1) / 6)).toBeLessThan(0.02);
+      expect(Math.abs(it.y - (Math.floor(it.cell / 3) * 2 + 1) / 6)).toBeLessThan(0.02);
+      expect(Math.abs(it.w - layout.items[0].w)).toBeLessThan(1);
+    }
+  }
 });
 
 test('right answer: applause, score +1, timer 0.5 s shorter, new number', async ({ page }) => {

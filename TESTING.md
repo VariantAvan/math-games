@@ -274,7 +274,7 @@ How the levels behave:
 
 ## Count Quickly (timed counting)
 
-1 to 9 things (the current animal) are scattered over the play area. Type how many with the keypad or the keyboard: one key press is the answer. A thin bar along the very bottom of the screen counts down. The ⭐ score and the current timer length (⏱) are shown small at the top.
+1 to 9 things (the current animal) are laid out like the dots on a dice, on a square 3×3 grid in the middle of the play area. Each number always has the same shape: 5 is the dice five, 8 is a ring of eight, 9 is a full square. Type how many with the keypad or the keyboard: one key press is the answer. A thin bar along the very bottom of the screen counts down. The ⭐ score and the current timer length (⏱) are shown small at the top.
 
 | Event | What happens |
 |---|---|
@@ -291,6 +291,7 @@ The timer starts at 10 s. Keys pressed during the short pause after an answer ar
 | C.1 | The welcome card opens the game (`#counting`): 1–9 things, a "?" box, "⏱ 10s" and "⭐ 0". |
 | C.2 | The timer bar sits in the bottom 5% of the screen, is at most 5% tall, and gets shorter over time. |
 | C.3 | The things are inside the play area and don't overlap. |
+| C.3b | Every number 1–9 uses its dice pattern: the right cells of a square 3×3 grid, each thing centred on its cell, all the same size. The game's own first round uses the pattern too. |
 | C.4 | Right answer: box turns green, applause plays, score 1, timer 9.5 s ("⏱ 9.5s"), then a new, different number of things and a fresh "?". |
 | C.5 | The on-screen keypad works as well as the keyboard. |
 | C.6 | Wrong answer (after two right ones, at 9 s): sad sound, the same number stays, timer 9.5 s, and the bar restarts from full. After more misses the timer is capped at 10 s. |
@@ -308,7 +309,7 @@ The timer starts at 10 s. Keys pressed during the short pause after an answer ar
 - [ ] The sad sound is soft and a bit funny, not scary. Check it with a toddler.
 - [ ] After several right answers the timer gets really short (down to 0.5 s). Check that missing a few brings it back up.
 - [ ] Switch to another app or tab mid-count and come back: the bar continues from where it was.
-- [ ] Things look randomly scattered and never overlap, for every number 1–9.
+- [ ] The dice patterns look neat and even on a phone and a tablet, in both portrait and landscape. Your child starts recognising 4, 5 and 6 without counting.
 
 ---
 
