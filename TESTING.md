@@ -45,12 +45,11 @@ The page exposes a small test hook, `window.ToddlerMath`, with `getState()`, `re
 
 | # | Test |
 |---|------|
-| W.1 | The app opens on the welcome screen ("Let’s play math!") with 3 activity cards: **Add Along** and **Take Away** (playable) plus **Count Up** (marked "Coming soon!"). The game is hidden. |
+| W.1 | The app opens on the welcome screen ("Let’s play math!") with 3 playable activity cards: **Add Along**, **Take Away** and **Count Quickly**. The games are hidden. |
 | W.2 | On a phone (375×667), each card is at least 150×140 px and there is no horizontal scroll. |
 | W.3 | Tapping **Add Along** opens the game at step 1, the URL becomes `…#addition`, and "Pick the first number!" is spoken. |
 | W.4 | Pressing Enter on the welcome screen starts Add Along. |
 | W.5 | Digit keys do nothing on the welcome screen. |
-| W.6 | Tapping the coming-soon card (Count Up) wiggles it and says "That game is coming soon!", and the app stays on the welcome screen. |
 | W.7 | The 🏠 Home button mid-round goes back to the welcome screen and clears the round. |
 | W.8 | The browser's Back button from the game goes back to the welcome screen. |
 | W.9 | Opening `index.html#addition` directly skips the welcome screen (and a reload stays in the game). |
@@ -60,7 +59,6 @@ The page exposes a small test hook, `window.ToddlerMath`, with `getState()`, `re
 
 - [ ] The welcome screen fits and looks good on a phone (portrait and landscape), a tablet and a laptop. On a phone the cards stack and scroll.
 - [ ] Cards press down visibly when tapped, and the Play! pill gently pulses.
-- [ ] Tapping a coming-soon card is clearly "not yet" (wiggle + soft sound), not an error.
 - [ ] 🏠 during the celebration closes the fireworks and returns home cleanly.
 - [ ] Android: the system Back gesture from the game returns to the welcome screen.
 
@@ -271,6 +269,46 @@ How the levels behave:
 - [ ] Level 4+: the big number sentence is easy to read on a phone, including 4-digit numbers.
 - [ ] Typing a 3-digit number on a phone: the digits appear in the box as you type, and ✅ lights up once there's something to enter.
 - [ ] Switching level from the ⭐ sheet mid-round starts cleanly (no leftover animals). Going from level 4+ back to level 3 brings the animals and "Count with me!" back.
+
+---
+
+## Count Quickly (timed counting)
+
+1 to 9 things (the current animal) are scattered over the play area. Type how many with the keypad or the keyboard: one key press is the answer. A thin bar along the very bottom of the screen counts down. The ⭐ score and the current timer length (⏱) are shown small at the top.
+
+| Event | What happens |
+|---|---|
+| **Right answer** | Applause + chime + a little confetti, score +1. The **timer gets 0.5 s shorter** (never below 0.5 s), and a **new number** of things appears (never the same number twice in a row). |
+| **Wrong answer** | A soft sad "wah-wah-wah-waaah" and the field shakes. The timer gets **0.5 s longer** (never above 10 s). The **same things stay**, and the bar restarts from full. |
+| **Time runs out** | Treated like a wrong answer: "Time's up! Try again!", sad sound, +0.5 s, same things, bar restarts. |
+
+The timer starts at 10 s. Keys pressed during the short pause after an answer are ignored. The clock pauses while the animal picker is open or the app is in the background, and stops when you go 🏠 home. The difficulty levels don't apply to this game.
+
+**Automated** (`tests/10-count-quickly.spec.js`)
+
+| # | Test |
+|---|------|
+| C.1 | The welcome card opens the game (`#counting`): 1–9 things, a "?" box, "⏱ 10s" and "⭐ 0". |
+| C.2 | The timer bar sits in the bottom 5% of the screen, is at most 5% tall, and gets shorter over time. |
+| C.3 | The things are inside the play area and don't overlap. |
+| C.4 | Right answer: box turns green, applause plays, score 1, timer 9.5 s ("⏱ 9.5s"), then a new, different number of things and a fresh "?". |
+| C.5 | The on-screen keypad works as well as the keyboard. |
+| C.6 | Wrong answer (after two right ones, at 9 s): sad sound, the same number stays, timer 9.5 s, and the bar restarts from full. After more misses the timer is capped at 10 s. |
+| C.7 | Time running out (0.8 s timer): "Time's up! Try again!", sad sound, same number, timer 1.3 s. |
+| C.8 | The timer shrinks to a minimum of 0.5 s (1 s → 0.5 s → 0.5 s). |
+| C.9 | Keys pressed during the pause after an answer are ignored. |
+| C.10 | Six right answers in a row never repeat the previous number. |
+| C.11 | Going 🏠 Home stops the clock (no time's-up sound afterwards). |
+| C.12 | The 🎁 animal picker pauses the clock, swaps the things to the new animal (🐸), and the clock resumes on close. |
+| C.13 | Fits 360×640, 667×375 and 1024×768 screens: 9 keys each at least 64 px and on screen, a usable play area, no horizontal scroll. Screenshots are saved. |
+
+**Manual**
+
+- [ ] The bar is subtle (you notice it without it being stressful). It turns orange in the last quarter.
+- [ ] The sad sound is soft and a bit funny, not scary. Check it with a toddler.
+- [ ] After several right answers the timer gets really short (down to 0.5 s). Check that missing a few brings it back up.
+- [ ] Switch to another app or tab mid-count and come back: the bar continues from where it was.
+- [ ] Things look randomly scattered and never overlap, for every number 1–9.
 
 ---
 

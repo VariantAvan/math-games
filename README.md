@@ -1,10 +1,10 @@
 # Add Along! 🐾: Toddler Math
 
-Cheerful, **100% offline** math games for toddlers (and older kids): addition and take-away subtraction, with 10 difficulty levels from tiny numbers to 4-digit sums. The whole app is one file, [`index.html`](index.html). Open it in any browser, even with no internet, directly from disk (`file://`).
+Cheerful, **100% offline** math games for toddlers (and older kids): addition and take-away subtraction with 10 difficulty levels (tiny numbers up to 4-digit sums), plus a timed counting game. The whole app is one file, [`index.html`](index.html). Open it in any browser, even with no internet, directly from disk (`file://`).
 
 ## How to play
 
-The app opens on a **welcome screen** where you pick an activity: **Add Along** (addition) or **Take Away** (subtraction). **Count Up** (counting) is a placeholder marked "Coming soon!". The 🏠 button in the game goes back to the welcome screen, and `index.html#addition` / `index.html#subtraction` open a game directly.
+The app opens on a **welcome screen** where you pick an activity: **Add Along** (addition), **Take Away** (subtraction) or **Count Quickly** (timed counting). The 🏠 button in a game goes back to the welcome screen, and `index.html#addition` / `#subtraction` / `#counting` open a game directly.
 
 In both games, **🎲 Surprise me!** at the bottom of the number pad makes up a random question instead of asking for the two numbers (on step 2 it reads **Pick for me!** and picks only the second number). Keyboard shortcut: `R`.
 
@@ -20,7 +20,14 @@ In both games, **🎲 Surprise me!** at the bottom of the number pad makes up a 
 2. **Pick how many go away** (0 up to the starting number). They hop away, fade and get a soft ✖.
 3. **How many are left?** Count the animals that are still there and type the answer.
 
-**Difficulty levels (1–10):** pick one on the welcome screen or with the ⭐ button in a game. The levels go from tiny numbers under 5 (level 1), through single digits (level 3, the default), up to two 4-digit numbers (level 10):
+**Count Quickly:**
+
+1 to 9 things are scattered on the screen. Type how many (keypad or keyboard) before the thin bar at the bottom of the screen runs out.
+- The timer starts at 10 seconds.
+- **Right:** applause and a new number. The timer gets 0.5 s shorter, down to 0.5 s.
+- **Wrong, or time runs out:** a sad "wah-wah" and the same things stay. The timer gets 0.5 s longer, up to 10 s.
+
+**Difficulty levels (1–10, Add Along and Take Away):** pick one on the welcome screen or with the ⭐ button in a game. The levels go from tiny numbers under 5 (level 1), through single digits (level 3, the default), up to two 4-digit numbers (level 10):
 - Surprise me! follows the level exactly (level 4 never needs carrying or borrowing).
 - Typing your own numbers is only limited by the level's number of digits: at level 1 you can still type 6 + 7, but not 11 + 3.
 - From level 4, numbers can have several digits (press ✅ to enter one).

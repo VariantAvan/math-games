@@ -23,7 +23,7 @@ const spoken = (page) => page.evaluate(() => [...window.ToddlerMath.spoken]);
 /** Tap an on-screen numpad key: '0'-'9', 'back' or 'enter'. */
 async function tapKey(page, key) {
   // force: the Check key gently 'breathes' (looping scale), which Playwright treats as never stable.
-  await page.locator(`.key[data-key="${key}"]`).click({ force: true });
+  await page.locator(`#pad .key[data-key="${key}"]`).click({ force: true });
 }
 
 async function waitForStep(page, step) {

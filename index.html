@@ -69,7 +69,7 @@
   .emoji { font-family: var(--emoji); font-style: normal; line-height: 1; }
 
   /* ---------- Layout ---------- */
-  #app {
+  #app, #countApp {
     height: 100vh;
     height: 100dvh;
     max-width: 1400px;
@@ -87,7 +87,7 @@
   }
 
   @media (orientation: landscape) and (min-width: 600px) {
-    #app {
+    #app, #countApp {
       grid-template-columns: minmax(0, 1fr) minmax(250px, 32%);
       grid-template-rows: auto minmax(0, 1fr);
       grid-template-areas: "top top" "stage pad";
@@ -96,7 +96,76 @@
     .pad { align-self: center; --kh: clamp(64px, calc((100dvh - 170px) / 5.3), 118px); }
   }
 
-  #app[hidden], .welcome[hidden] { display: none; }
+  #app[hidden], #countApp[hidden], .welcome[hidden] { display: none; }
+
+  /* ---------- Count Quickly ---------- */
+  .cstage {
+    grid-area: stage;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(6px, 1.4dvh, 12px);
+  }
+  .cstats {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    font-size: clamp(15px, 2.4dvh, 20px);
+    font-weight: 900;
+    color: var(--ink-soft);
+  }
+  .cfield {
+    position: relative;
+    flex: 1 1 0;
+    min-height: 140px;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.7);
+    border: 4px solid #cdbbff;
+    container-type: size;
+    overflow: hidden;
+  }
+  .cfield.shake { animation: shake 0.55s ease; }
+  .citem {
+    position: absolute;
+    font-family: var(--emoji);
+    line-height: 1;
+    font-size: min(16cqw, 20cqh);
+    transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1));
+    filter: drop-shadow(0 3px 2px rgba(45, 42, 74, 0.25));
+    animation: citem-in 0.35s cubic-bezier(.34, 1.56, .64, 1) both;
+    animation-delay: calc(var(--i, 0) * 30ms);
+    pointer-events: none;
+  }
+  .cfield.party .citem { animation: citem-party 0.5s ease-in-out infinite alternate; }
+  @keyframes citem-in {
+    from { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    to { transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1)); opacity: 1; }
+  }
+  @keyframes citem-party {
+    from { transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1)); }
+    to { transform: translate(-50%, -62%) rotate(calc(var(--r, 0deg) * -1)) scale(var(--s, 1)); }
+  }
+  .cans { display: flex; justify-content: center; font-size: clamp(34px, min(9vw, 8dvh), 72px); font-weight: 900; }
+  .cpad { --kh: clamp(64px, 11dvh, 110px); }
+  /* The subtle countdown: a thin bar along the very bottom of the screen. */
+  .ctimer {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: clamp(6px, 1.2dvh, 10px);
+    background: rgba(122, 92, 255, 0.12);
+    z-index: 5;
+    pointer-events: none;
+  }
+  .ctimer i {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #b9a8ff, #7a5cff);
+    transform-origin: left;
+    transform: scaleX(1);
+    border-radius: 0 4px 4px 0;
+  }
+  .ctimer.low i { background: linear-gradient(90deg, #ffc28a, #ff9f43); }
 
   /* ---------- Welcome screen ---------- */
   .welcome {
@@ -683,7 +752,8 @@
     .prompt { min-height: 1.3em; }
     .tool { width: 44px; height: 44px; font-size: 22px; border-radius: 14px; }
     /* Too short for 5 keypad rows: use 4 columns (digits + a side column for back / 0 / check). */
-    #app { grid-template-columns: minmax(0, 1fr) minmax(300px, 44%); }
+    #app, #countApp { grid-template-columns: minmax(0, 1fr) minmax(300px, 44%); }
+    #cPad { --kh: 64px; grid-template-columns: repeat(3, minmax(64px, 1fr)); }
     .pad { --kh: 64px; grid-template-columns: repeat(4, minmax(64px, 1fr)); gap: 8px; padding: 8px; }
     .pad .key[data-key="back"] { grid-column: 4; grid-row: 1; }
     .pad .key[data-key="0"] { grid-column: 4; grid-row: 2; }
@@ -727,11 +797,11 @@
         <span class="act-desc">Some go away. How many are left?</span>
         <span class="act-go">Play! ▶</span>
       </button>
-      <button class="activity soon" type="button" data-activity="counting" aria-disabled="true">
-        <span class="act-art emoji" aria-hidden="true">🔢⭐</span>
-        <span class="act-name">Count Up</span>
-        <span class="act-desc">Count the stars 1, 2, 3!</span>
-        <span class="soon-tag">Coming soon!</span>
+      <button class="activity play" type="button" data-activity="counting">
+        <span class="act-art emoji" aria-hidden="true">⏱️🐥🐥</span>
+        <span class="act-name">Count Quickly</span>
+        <span class="act-desc">How many? Beat the clock!</span>
+        <span class="act-go">Play! ▶</span>
       </button>
     </div>
     <div class="level-row">
@@ -800,6 +870,35 @@
     <button class="count-btn random-btn" id="randomBtn" type="button" data-key="random"><span class="emoji">🎲</span> <span id="randomLabel">Surprise me!</span></button>
     <button class="count-btn dim" id="countBtn" type="button" data-key="count" aria-disabled="true" hidden><span class="emoji">👆</span> Count with me!</button>
   </section>
+</div>
+
+<div id="countApp" hidden>
+  <header class="topbar">
+    <h2 class="title"><span class="ctitle">Count Quickly!</span> <span class="emoji">⏱️</span></h2>
+    <div class="tools">
+      <button class="tool" id="cHomeBtn" type="button" aria-label="Pick another game"><span class="emoji">🏠</span></button>
+      <button class="tool" id="cThemeBtn" type="button" aria-label="Pick your animal"><span class="emoji" id="cThemeIcon">🎁</span></button>
+      <button class="tool" id="cSoundBtn" type="button" aria-label="Sound on" aria-pressed="true"><span class="emoji" id="cSoundIcon">🔊</span></button>
+    </div>
+  </header>
+  <main class="cstage">
+    <div class="cstats"><span id="cScore">⭐ 0</span><span id="cTime">⏱ 10s</span></div>
+    <p class="prompt" id="cPrompt" aria-live="polite">How many? Count quickly!</p>
+    <div class="cfield" id="cField" aria-label="Things to count"></div>
+    <div class="cans"><div class="slot active" id="cSlot">?</div></div>
+  </main>
+  <section class="pad cpad" id="cPad" aria-label="Number pad">
+    <button class="key" type="button" data-key="1" style="--k:#ffc2cf">1</button>
+    <button class="key" type="button" data-key="2" style="--k:#ffd6a8">2</button>
+    <button class="key" type="button" data-key="3" style="--k:#fff1a0">3</button>
+    <button class="key" type="button" data-key="4" style="--k:#c8f5b4">4</button>
+    <button class="key" type="button" data-key="5" style="--k:#aef0dd">5</button>
+    <button class="key" type="button" data-key="6" style="--k:#b5e3ff">6</button>
+    <button class="key" type="button" data-key="7" style="--k:#cbd2ff">7</button>
+    <button class="key" type="button" data-key="8" style="--k:#e5c9ff">8</button>
+    <button class="key" type="button" data-key="9" style="--k:#ffc8ee">9</button>
+  </section>
+  <div class="ctimer" id="cTimer" aria-hidden="true"><i id="cTimerBar"></i></div>
 </div>
 
 <div class="overlay" id="celebrate" hidden role="dialog" aria-modal="true" aria-labelledby="celebrateMsg">
@@ -1032,6 +1131,34 @@
         tone({ type: 'sine', freq: f, freqEnd: f * 2.6, dur: 0.1, vol: 0.28, attack: 0.003 });
         tone({ type: 'sine', freq: f * 3, dur: 0.05, vol: 0.05, attack: 0.002 });
         noise({ type: 'highpass', freq: 3000, dur: 0.015, vol: 0.04 });
+      },
+
+      // Sad "wah-wah-wah-waaah" (soft, for a wrong count or time running out).
+      sad() {
+        if (!ready('sad')) return;
+        const c = ctx;
+        [[392, 0, 0.22], [370, 0.24, 0.22], [349, 0.48, 0.22], [330, 0.72, 0.7]].forEach(([f, st, d], i) => {
+          const t = c.currentTime + st;
+          const o = c.createOscillator();
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(f, t);
+          if (i === 3) {
+            const lfo = c.createOscillator();
+            const lg = c.createGain();
+            lfo.frequency.value = 6;
+            lg.gain.value = 8;
+            lfo.connect(lg); lg.connect(o.frequency);
+            lfo.start(t); lfo.stop(t + d + 0.05);
+            o.frequency.linearRampToValueAtTime(f * 0.94, t + d);
+          }
+          const lp = c.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.value = 1200;
+          const g = c.createGain();
+          env(g, t, 0.2, 0.03, d);
+          o.connect(lp); lp.connect(g); g.connect(master);
+          o.start(t); o.stop(t + d + 0.05);
+        });
       },
 
       // Soft falling "whoop" as an animal goes away.
@@ -1300,7 +1427,8 @@
         raf = 0;
         g.clearRect(0, 0, W, H);
       },
-      count() { return rockets.length + sparks.length + confetti.length; }
+      count() { return rockets.length + sparks.length + confetti.length; },
+      confetti(n) { burstConfetti(reduced ? Math.round(n / 3) : n); }
     };
   })();
 
@@ -2017,7 +2145,11 @@
     els.themeSheet.hidden = false;
   }
 
-  function closeThemes() { els.themeSheet.hidden = true; }
+  function closeThemes() {
+    const wasOpen = !els.themeSheet.hidden;
+    els.themeSheet.hidden = true;
+    if (wasOpen && typeof cqResume === 'function') cqResume();
+  }
 
   function chooseTheme(id) {
     state.theme = id;
@@ -2031,15 +2163,23 @@
     els.themeGrid.querySelectorAll('.theme-opt').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.theme === id)));
     Sound.pop(4);
     render();
+    if (screen === 'counting') {
+      // Same number of things, new animal.
+      cqPickAnimal();
+      cels.field.querySelectorAll('.citem').forEach((el) => { el.textContent = cq.animal.emoji; });
+      cels.themeIcon.textContent = id === 'random' ? RANDOM.emoji : cq.animal.emoji;
+    }
   }
 
   /* ---------- Sound toggle ---------- */
   function applyMute(m) {
     Sound.muted = m;
     if (m) Voice.cancel();
-    els.soundIcon.textContent = m ? '🔇' : '🔊';
-    els.soundBtn.setAttribute('aria-pressed', String(!m));
-    els.soundBtn.setAttribute('aria-label', m ? 'Sound off' : 'Sound on');
+    [[els.soundBtn, els.soundIcon], [$('#cSoundBtn'), $('#cSoundIcon')]].forEach(([btn, icon]) => {
+      icon.textContent = m ? '🔇' : '🔊';
+      btn.setAttribute('aria-pressed', String(!m));
+      btn.setAttribute('aria-label', m ? 'Sound off' : 'Sound on');
+    });
   }
 
   /* ================================================================
@@ -2106,6 +2246,10 @@
       if (e.key === 'Enter' && !e.repeat) { e.preventDefault(); startActivity('addition'); }
       return;
     }
+    if (screen === 'counting') {
+      if (/^[0-9]$/.test(e.key) && !e.repeat) { e.preventDefault(); cqFlashKey(e.key); cqAnswer(Number(e.key)); }
+      return;
+    }
     if (state.step === 'celebrate') {
       if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
         e.preventDefault();
@@ -2136,13 +2280,205 @@
   document.addEventListener('visibilitychange', () => { if (document.hidden) Voice.cancel(); });
 
   /* ================================================================
+   * Count Quickly — how many things? Answer before the bar runs out.
+   * Right: applause, new number, timer 0.5 s shorter (min 0.5 s).
+   * Wrong or time's up: sad sound, same number, timer 0.5 s longer (max 10 s).
+   * ================================================================ */
+  const COUNT = { startMs: 10000, stepMs: 500, minMs: 500, maxMs: 10000, rightPauseMs: 1400, wrongPauseMs: 1000 };
+  const cq = {
+    n: 0, timerMs: COUNT.startMs, score: 0, busy: false,
+    animal: THEMES[0], timeout: 0, raf: 0, endAt: 0, duration: 0, remaining: 0, paused: false, running: false, timers: []
+  };
+  const cels = {
+    app: $('#countApp'), field: $('#cField'), slot: $('#cSlot'), prompt: $('#cPrompt'),
+    score: $('#cScore'), time: $('#cTime'), pad: $('#cPad'),
+    timer: $('#cTimer'), bar: $('#cTimerBar'), themeIcon: $('#cThemeIcon'),
+    homeBtn: $('#cHomeBtn'), themeBtn: $('#cThemeBtn'), soundBtn: $('#cSoundBtn'), soundIcon: $('#cSoundIcon')
+  };
+  const cqLater = (fn, ms) => { cq.timers.push(setTimeout(fn, ms)); };
+
+  function cqPickAnimal() {
+    if (state.theme !== 'random') { cq.animal = THEMES.find((t) => t.id === state.theme) || THEMES[0]; return; }
+    const choices = THEMES.filter((t) => t !== cq.animal);
+    cq.animal = choices[(Math.random() * choices.length) | 0];
+  }
+
+  // Scatter n items over a jittered 3×3 grid so they never overlap but don't line up either.
+  function cqRenderItems() {
+    cels.field.textContent = '';
+    cels.field.classList.remove('party');
+    const cells = [0, 1, 2, 3, 4, 5, 6, 7, 8].sort(() => Math.random() - 0.5).slice(0, cq.n);
+    cells.forEach((cell, i) => {
+      const el = document.createElement('span');
+      el.className = 'citem';
+      el.textContent = cq.animal.emoji;
+      const col = cell % 3, row = Math.floor(cell / 3);
+      el.style.left = `${((col + 0.5 + (Math.random() - 0.5) * 0.45) / 3) * 100}%`;
+      el.style.top = `${((row + 0.5 + (Math.random() - 0.5) * 0.4) / 3) * 100}%`;
+      el.style.setProperty('--r', `${Math.round((Math.random() - 0.5) * 30)}deg`);
+      el.style.setProperty('--s', (0.85 + Math.random() * 0.3).toFixed(2));
+      el.style.setProperty('--i', String(i));
+      cels.field.append(el);
+    });
+    cels.field.setAttribute('aria-label', `${cq.n} ${cq.n === 1 ? cq.animal.one : cq.animal.many}`);
+    cels.themeIcon.textContent = state.theme === 'random' ? RANDOM.emoji : cq.animal.emoji;
+  }
+
+  function cqRenderStats() {
+    cels.score.textContent = `⭐ ${cq.score}`;
+    cels.time.textContent = `⏱ ${(cq.timerMs / 1000).toFixed(1).replace(/\.0$/, '')}s`;
+  }
+
+  function cqNewNumber() {
+    let n;
+    do { n = randInt(1, 9); } while (n === cq.n);
+    cq.n = n;
+    cqPickAnimal();
+    cqRenderItems();
+  }
+
+  function cqSetSlot(text, cls) {
+    cels.slot.textContent = text;
+    cels.slot.className = 'slot' + (cls ? ' ' + cls : '');
+  }
+
+  /* ----- the countdown bar ----- */
+  function cqTick() {
+    const left = Math.max(0, cq.endAt - performance.now());
+    const frac = cq.duration ? left / cq.duration : 0;
+    cels.bar.style.transform = `scaleX(${frac.toFixed(4)})`;
+    cels.timer.classList.toggle('low', frac < 0.25);
+    if (cq.running) cq.raf = requestAnimationFrame(cqTick);
+  }
+
+  function cqStartTimer(ms = cq.timerMs, duration = cq.timerMs) {
+    cqStopTimer();
+    cq.duration = duration;
+    cq.endAt = performance.now() + ms;
+    cq.running = true;
+    cq.paused = false;
+    cq.timeout = setTimeout(cqTimeUp, ms);
+    cq.raf = requestAnimationFrame(cqTick);
+  }
+
+  function cqStopTimer() {
+    cq.running = false;
+    clearTimeout(cq.timeout);
+    cancelAnimationFrame(cq.raf);
+  }
+
+  function cqPause() {
+    if (!cq.running) return;
+    cq.remaining = Math.max(0, cq.endAt - performance.now());
+    cqStopTimer();
+    cq.paused = true;
+  }
+
+  function cqResume() {
+    if (!cq.paused || screen !== 'counting') return;
+    cqStartTimer(cq.remaining, cq.duration);
+  }
+
+  function cqNextRound({ fresh }) {
+    cq.busy = false;
+    if (fresh) cqNewNumber();
+    cels.field.classList.remove('party');
+    cqSetSlot('?', 'active');
+    cels.prompt.textContent = 'How many? Count quickly!';
+    cqRenderStats();
+    cqStartTimer();
+  }
+
+  function cqMiss(prompt, say) {
+    cq.busy = true;
+    cqStopTimer();
+    cq.timerMs = Math.min(COUNT.maxMs, cq.timerMs + COUNT.stepMs);
+    Sound.sad();
+    restartAnim(cels.field, 'shake');
+    cels.prompt.textContent = prompt;
+    Voice.say(say);
+    cqRenderStats();
+    cqLater(() => cqNextRound({ fresh: false }), COUNT.wrongPauseMs);
+  }
+
+  function cqTimeUp() {
+    if (screen !== 'counting' || cq.busy) return;
+    cqSetSlot('⏱', 'wrong');
+    cqMiss("Time's up! Try again!", "Time's up! Try again!");
+  }
+
+  function cqAnswer(d) {
+    if (screen !== 'counting' || cq.busy || !cq.running) return;
+    Sound.key(d);
+    if (d === cq.n) {
+      cq.busy = true;
+      cqStopTimer();
+      cq.score += 1;
+      cq.timerMs = Math.max(COUNT.minMs, cq.timerMs - COUNT.stepMs);
+      cqSetSlot(String(d), 'right');
+      cels.field.classList.add('party');
+      cels.prompt.textContent = `Yes! ${d}! 🎉`;
+      Sound.chime();
+      Sound.applause(1.6);
+      FX.confetti(50);
+      Voice.say(`Yes! ${d}!`);
+      cqRenderStats();
+      cqLater(() => cqNextRound({ fresh: true }), COUNT.rightPauseMs);
+    } else {
+      cqSetSlot(String(d), 'wrong');
+      cqMiss('Oops! Count again!', 'Oops! Count again!');
+    }
+  }
+
+  function cqStart({ announce = false } = {}) {
+    cqStop();
+    cq.n = 0;
+    cq.score = 0;
+    cq.timerMs = COUNT.startMs;
+    cqNextRound({ fresh: true });
+    if (announce) Voice.say('How many? Count quickly!');
+  }
+
+  function cqStop() {
+    cqStopTimer();
+    cq.paused = false;
+    cq.timers.forEach(clearTimeout);
+    cq.timers = [];
+    cq.busy = false;
+  }
+
+  function showCount({ announce = false } = {}) {
+    reset();
+    screen = 'counting';
+    els.welcome.hidden = true;
+    els.app.hidden = true;
+    cels.app.hidden = false;
+    cqStart({ announce });
+  }
+
+  function cqFlashKey(key) {
+    const k = cels.pad.querySelector(`[data-key="${key}"]`);
+    if (!k) return;
+    k.classList.add('pressed');
+    setTimeout(() => k.classList.remove('pressed'), 120);
+  }
+
+  onTap(cels.pad, { match: '.key', fn: (k) => { cqFlashKey(k.dataset.key); cqAnswer(Number(k.dataset.key)); } });
+  onTap(cels.homeBtn, { fn: () => { Sound.key(null); goHome(); } });
+  onTap(cels.themeBtn, { fn: () => { cqPause(); openThemes(); } });
+  onTap(cels.soundBtn, { fn: () => { applyMute(!Sound.muted); store.set('muted', Sound.muted); if (!Sound.muted) Sound.chime(); } });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) cqPause(); else cqResume(); });
+
+  /* ================================================================
    * Screens — welcome (activity picker) and games, routed by URL hash
    * so reload and the browser Back button behave as expected.
    * ================================================================ */
-  const ACTIVITIES = Object.keys(MODES);
+  const ACTIVITIES = [...Object.keys(MODES), 'counting'];
   let screen = 'welcome';
 
   function showWelcome() {
+    cqStop();
+    cels.app.hidden = true;
     reset();
     closeThemes();
     closeLevels();
@@ -2152,6 +2488,8 @@
   }
 
   function showGame(id, { announce = false } = {}) {
+    cqStop();
+    cels.app.hidden = true;
     screen = id;
     state.mode = id;
     state.lastQuestion = '';
@@ -2165,7 +2503,8 @@
 
   function route({ announce = false } = {}) {
     const id = location.hash.slice(1);
-    if (ACTIVITIES.includes(id)) showGame(id, { announce });
+    if (id === 'counting') showCount({ announce });
+    else if (ACTIVITIES.includes(id)) showGame(id, { announce });
     else showWelcome();
   }
 
@@ -2178,7 +2517,7 @@
       return;
     }
     Sound.chime();
-    if (location.hash === '#' + id) showGame(id, { announce: true });
+    if (location.hash === '#' + id) route({ announce: true });
     else location.hash = id; // hashchange shows the game
   }
 
@@ -2216,6 +2555,12 @@
     }),
     reset: () => reset(),
     randomQuestion: (m, lv = 3) => makeQuestion(m, lv),
+    count: {
+      rules: COUNT,
+      state: () => ({ n: cq.n, timerMs: cq.timerMs, score: cq.score, busy: cq.busy, running: cq.running, left: cq.running ? Math.max(0, cq.endAt - performance.now()) : 0 }),
+      // Tests only: set the current timer length and restart the countdown.
+      setTimer: (ms) => { cq.timerMs = ms; cqRenderStats(); if (!cq.busy) cqStartTimer(); }
+    },
     setLevel: (lv) => setLevel(lv),
     answerFor: (m, a, b) => MODES[m].answer(a, b),
     audioState: () => Sound.state,

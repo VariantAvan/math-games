@@ -36,8 +36,8 @@ test('taking away 3 of 7 crosses out the last 3 and asks how many are left', asy
 test('cannot take away more than we have: digits above the start are dimmed and refused', async ({ page }) => {
   await tapKey(page, '4');
   await waitForStep(page, 'num2');
-  await expect(page.locator('.key[data-key="5"]')).toHaveClass(/dim/);
-  await expect(page.locator('.key[data-key="4"]')).not.toHaveClass(/dim/);
+  await expect(page.locator('#pad .key[data-key="5"]')).toHaveClass(/dim/);
+  await expect(page.locator('#pad .key[data-key="4"]')).not.toHaveClass(/dim/);
   await tapKey(page, '6');
   const s = await state(page);
   expect(s.step).toBe('num2');

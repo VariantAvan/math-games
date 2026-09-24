@@ -16,12 +16,12 @@ for (const [name, vp] of Object.entries(VIEWPORTS)) {
     await page.setViewportSize(vp);
     await openApp(page);
     await setUpSum(page, 9, 9);
-    const keys = await page.locator('.key').evaluateAll((ks) => ks.map((k) => k.getBoundingClientRect()).map((r) => [r.width, r.height]));
+    const keys = await page.locator('#pad .key').evaluateAll((ks) => ks.map((k) => k.getBoundingClientRect()).map((r) => [r.width, r.height]));
     expect(keys).toHaveLength(12);
     for (const [w, h] of keys) { expect(w).toBeGreaterThanOrEqual(64); expect(h).toBeGreaterThanOrEqual(64); }
     const overflowX = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflowX).toBeLessThanOrEqual(0);
-    for (const sel of ['.pad', '#equation', '#group1', '#group2']) {
+    for (const sel of ['#pad', '#equation', '#group1', '#group2']) {
       const box = await page.locator(sel).boundingBox();
       expect(box.x).toBeGreaterThanOrEqual(0);
       expect(box.x + box.width).toBeLessThanOrEqual(vp.width + 1);
@@ -39,9 +39,9 @@ for (const [name, vp] of Object.entries(VIEWPORTS)) {
       expect(a.inside).toBe(true);
     }
     // "Count with me!" is a full-width row at the bottom of the number pad
-    const pad = await page.locator('.pad').boundingBox();
+    const pad = await page.locator('#pad').boundingBox();
     const cb = await page.locator('#countBtn').boundingBox();
-    const lowestKey = Math.max(...(await page.locator('.key').evaluateAll((ks) => ks.map((k) => k.getBoundingClientRect().bottom))));
+    const lowestKey = Math.max(...(await page.locator('#pad .key').evaluateAll((ks) => ks.map((k) => k.getBoundingClientRect().bottom))));
     expect(cb.y).toBeGreaterThanOrEqual(lowestKey);
     expect(cb.x).toBeGreaterThanOrEqual(pad.x);
     expect(cb.x + cb.width).toBeLessThanOrEqual(pad.x + pad.width + 1);

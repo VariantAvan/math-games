@@ -87,7 +87,7 @@ test.describe('typing your own numbers is limited only by number of digits', () 
   test('level 1 still allows 6 + 7 (any single digits)', async ({ page }) => {
     await openApp(page);
     await setLevel(page, 1);
-    for (let k = 1; k <= 9; k++) await expect(page.locator(`.key[data-key="${k}"]`)).not.toHaveClass(/dim/);
+    for (let k = 1; k <= 9; k++) await expect(page.locator(`#pad .key[data-key="${k}"]`)).not.toHaveClass(/dim/);
     await tapKey(page, '6');
     await waitForStep(page, 'num2');
     await tapKey(page, '7');
@@ -268,7 +268,7 @@ test.describe('big numbers (levels 4–10)', () => {
       expect(eq.x).toBeGreaterThanOrEqual(0);
       expect(eq.x + eq.width).toBeLessThanOrEqual(vp.width);
       expect(eq.y + eq.height).toBeLessThanOrEqual(vp.height);
-      const keys = await page.locator('.key').evaluateAll((ks) => ks.map((k) => k.getBoundingClientRect()).map((r) => [r.width, r.height, r.bottom]));
+      const keys = await page.locator('#pad .key').evaluateAll((ks) => ks.map((k) => k.getBoundingClientRect()).map((r) => [r.width, r.height, r.bottom]));
       for (const [w, h, bottom] of keys) { expect(w).toBeGreaterThanOrEqual(64); expect(h).toBeGreaterThanOrEqual(64); expect(bottom).toBeLessThanOrEqual(vp.height + 1); }
       await page.screenshot({ path: `test-results/screens/level10-${vp.width}x${vp.height}.png` });
     });

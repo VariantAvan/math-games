@@ -1,4 +1,4 @@
-// Welcome screen — choosing an activity, coming-soon cards, Home button, hash routing.
+// Welcome screen — choosing an activity, Home button, hash routing.
 const { test } = require('@playwright/test');
 const { APP_URL, openWelcome, openApp, state, spoken, tapKey, setUpSum, expect } = require('./helpers');
 
@@ -10,8 +10,9 @@ test('opens on the welcome screen with activity cards, game hidden', async ({ pa
   await expect(page.locator('.activity')).toHaveCount(3);
   await expect(page.locator('.activity[data-activity="addition"]')).toContainText('Add Along');
   await expect(page.locator('.activity[data-activity="subtraction"]')).toContainText('Take Away');
-  await expect(page.locator('.activity.play')).toHaveCount(2);
-  await expect(page.locator('.activity.soon')).toHaveCount(1);
+  await expect(page.locator('.activity[data-activity="counting"]')).toContainText('Count Quickly');
+  await expect(page.locator('.activity.play')).toHaveCount(3);
+  await expect(page.locator('.activity.soon')).toHaveCount(0);
 });
 
 test('activity cards are big touch targets', async ({ page }) => {
@@ -42,15 +43,6 @@ test('digit keys do nothing on the welcome screen', async ({ page }) => {
   await openWelcome(page);
   await page.keyboard.press('3');
   expect(await state(page)).toMatchObject({ screen: 'welcome', num1: null });
-});
-
-test('coming-soon cards wiggle and say so, but stay on the welcome screen', async ({ page }) => {
-  await openWelcome(page);
-  const card = page.locator('.activity[data-activity="counting"]');
-  await card.click({ force: true });
-  await expect(card).toHaveClass(/wiggle/);
-  expect(await spoken(page)).toContain('That game is coming soon!');
-  expect((await state(page)).screen).toBe('welcome');
 });
 
 test('Home button mid-round returns to the welcome screen and clears the round', async ({ page }) => {
