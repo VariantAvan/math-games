@@ -9,7 +9,9 @@ test('opens on the welcome screen with activity cards, game hidden', async ({ pa
   await expect(page.locator('.welcome-title')).toHaveText('Let’s play math!');
   await expect(page.locator('.activity')).toHaveCount(3);
   await expect(page.locator('.activity[data-activity="addition"]')).toContainText('Add Along');
-  await expect(page.locator('.activity.soon')).toHaveCount(2);
+  await expect(page.locator('.activity[data-activity="subtraction"]')).toContainText('Take Away');
+  await expect(page.locator('.activity.play')).toHaveCount(2);
+  await expect(page.locator('.activity.soon')).toHaveCount(1);
 });
 
 test('activity cards are big touch targets', async ({ page }) => {
@@ -44,7 +46,7 @@ test('digit keys do nothing on the welcome screen', async ({ page }) => {
 
 test('coming-soon cards wiggle and say so, but stay on the welcome screen', async ({ page }) => {
   await openWelcome(page);
-  const card = page.locator('.activity[data-activity="subtraction"]');
+  const card = page.locator('.activity[data-activity="counting"]');
   await card.click({ force: true });
   await expect(card).toHaveClass(/wiggle/);
   expect(await spoken(page)).toContain('That game is coming soon!');
@@ -72,4 +74,14 @@ test('opening …#addition directly skips the welcome screen', async ({ page }) 
   await page.goto(APP_URL + '#addition');
   await page.waitForFunction(() => window.ToddlerMath && window.ToddlerMath.getState().screen === 'addition');
   await expect(page.locator('#welcome')).toBeHidden();
+});
+
+test('Home from Add Along, then Take Away switches the game', async ({ page }) => {
+  await openApp(page);
+  await expect(page.locator('#gameTitle')).toHaveText('Add Along!');
+  await page.locator('#homeBtn').click();
+  await page.locator('.activity[data-activity="subtraction"]').click({ force: true });
+  await page.waitForFunction(() => window.ToddlerMath.getState().mode === 'subtraction');
+  await expect(page.locator('#gameTitle')).toHaveText('Take Away!');
+  expect(page.url()).toMatch(/#subtraction$/);
 });

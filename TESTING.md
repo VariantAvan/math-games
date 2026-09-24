@@ -45,15 +45,16 @@ The page exposes a small test hook, `window.ToddlerMath`, with `getState()`, `re
 
 | # | Test |
 |---|------|
-| W.1 | The app opens on the welcome screen ("Let’s play math!") with 3 activity cards: **Add Along** (playable) plus **Take Away** and **Count Up** (marked "Coming soon!"). The game is hidden. |
+| W.1 | The app opens on the welcome screen ("Let’s play math!") with 3 activity cards: **Add Along** and **Take Away** (playable) plus **Count Up** (marked "Coming soon!"). The game is hidden. |
 | W.2 | On a phone (375×667), each card is at least 150×140 px and there is no horizontal scroll. |
 | W.3 | Tapping **Add Along** opens the game at step 1, the URL becomes `…#addition`, and "Pick the first number!" is spoken. |
 | W.4 | Pressing Enter on the welcome screen starts Add Along. |
 | W.5 | Digit keys do nothing on the welcome screen. |
-| W.6 | Tapping a coming-soon card wiggles it and says "That game is coming soon!", and the app stays on the welcome screen. |
+| W.6 | Tapping the coming-soon card (Count Up) wiggles it and says "That game is coming soon!", and the app stays on the welcome screen. |
 | W.7 | The 🏠 Home button mid-round goes back to the welcome screen and clears the round. |
 | W.8 | The browser's Back button from the game goes back to the welcome screen. |
 | W.9 | Opening `index.html#addition` directly skips the welcome screen (and a reload stays in the game). |
+| W.10 | Going Home from Add Along and picking Take Away switches the game (title, `#subtraction` URL). |
 
 **Manual**
 
@@ -163,6 +164,58 @@ The page exposes a small test hook, `window.ToddlerMath`, with `getState()`, `re
 - [ ] Animation stays smooth (no stutter) on an older iPad or phone.
 - [ ] The progress bar under Play Again empties over 9 seconds, and then the game resets.
 - [ ] With **Reduce Motion** turned on in the OS, there are fewer particles and no looping bounces.
+
+---
+
+## Take Away (subtraction)
+
+Same three steps: **start with** a number (1–9), pick **how many go away** (0 up to the starting number), then **how many are left?** All the animals stay in one group. The ones that leave hop up, fade to grey and get a soft pink ✖.
+
+**Automated** (`tests/07-subtraction.spec.js`)
+
+| # | Test |
+|---|------|
+| T.1 | Starts with "Pick how many to start with!", a `−` sign, the title "Take Away!" and a single group (no second group or big +). |
+| T.2 | Picking 7 shows 7 animals, then asks "How many go away? Pick a number to take away!" |
+| T.3 | Taking away 3 of 7 marks exactly the **last 3** as gone. The boxes read `7 − 3 = ?`, the prompt asks "How many are left?", and the goodbye sound plays. |
+| T.4 | You can't take away more than you have: after starting with 4, keys 5–9 are dimmed, and pressing 6 is refused with "We only have 4 …! Pick 4 or less." |
+| T.5 | A correct answer shows "Hooray! 🌟 7 − 3 = 4! You did it!" and speaks "7 take away 3 equals 4". |
+| T.6 | A wrong answer gets the gentle oops, and the crossed-out animals stay crossed out. |
+| T.7 | Taking away everything works: 5 − 5 = 0. |
+| T.8 | Taking away zero works: nobody leaves, 6 − 0 = 6. |
+| T.9 | Tapping a gone animal doesn't count it. Tapping the ones that are left counts 1, 2, 3 and then says "You counted them all". |
+| T.10 | "Count with me!" skips the gone animals. |
+| T.11 | Back (⬅️) from step 3 brings the animals back. |
+| T.12 | Every question is accepted: `a − 0`, `a − ⌊a/2⌋` and `a − a` for a = 1…9. |
+
+**Manual**
+
+- [ ] The leaving animals hop away **one after another**, each with a soft falling "whoop", then fade and get crossed out. It should look like "going away", not like a mistake.
+- [ ] 9 − 4 on a phone: all 9 animals fit in rows of 5 (like a ten-frame), and the gone ones are still clearly visible but faded.
+- [ ] A toddler understands they should count only the ones still there. If not, note what confuses them.
+- [ ] Say it out loud: the speech uses "take away" (e.g. "8 take away 3. How many are left?").
+
+---
+
+## Surprise me! (random questions, both games)
+
+The bottom row of the number pad shows **🎲 Surprise me!** while you're picking numbers, and **👆 Count with me!** on step 3. Surprise me makes up the whole question on step 1. On step 2 it reads **Pick for me!** and makes up only the second number. The keyboard shortcut is `R`.
+
+**Automated** (`tests/08-surprise.spec.js`, run for both Add Along and Take Away)
+
+| # | Test |
+|---|------|
+| S.1 | On step 1, Surprise me! fills in both numbers, shows the animals (added or crossed out) and goes to step 3. The button then gives way to "Count with me!", and the question can be solved to a celebration. |
+| S.2 | On step 2 it reads "Pick for me!", keeps the first number and picks a valid second one (never more than the start in Take Away). |
+| S.3 | Pressing `R` on the keyboard makes a surprise question. |
+| S.4 | Over 500 generated questions, all are in range. Add Along: 1–9 + 1–9. Take Away: start 2–9, take away 1…start, so the answer is never negative. There is plenty of variety (more than 20 different questions). |
+| S.5 | Pressing it while animals are still appearing is ignored. |
+
+**Manual**
+
+- [ ] Press Surprise me! ten times in a row (playing each round). The questions feel varied and never repeat back-to-back.
+- [ ] Speech says "Surprise! 4 puppies!" and then carries on through the question naturally, without cutting itself off.
+- [ ] The 🎁 (animal picker) and 🎲 (surprise question) buttons are easy to tell apart.
 
 ---
 

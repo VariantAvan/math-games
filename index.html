@@ -397,6 +397,32 @@
   .board.wiggle .animal .face { animation: wiggle 0.6s ease 2; }
   .board.party .animal .bob { animation: party 0.55s ease-in-out infinite alternate; }
 
+  /* Take Away: one big group; the animals that leave hop, fade and get a soft cross. */
+  #app[data-mode="subtraction"] #group2,
+  #app[data-mode="subtraction"] #plusBig { display: none; }
+  #app[data-mode="subtraction"] #group1 { max-width: 760px; }
+  .animal.gone .bob { animation: none; }
+  .animal.gone .face {
+    opacity: 0.3;
+    filter: grayscale(1);
+    animation: leave 0.7s ease both;
+    animation-delay: calc(var(--g, 0) * 160ms);
+  }
+  .animal.gone::after {
+    content: "✖";
+    position: absolute;
+    inset: 0;
+    display: grid; place-items: center;
+    font-family: var(--font);
+    font-size: 0.85em;
+    font-weight: 900;
+    color: #ff5f86;
+    opacity: 0;
+    pointer-events: none;
+    animation: cross-in 0.3s ease forwards;
+    animation-delay: calc(var(--g, 0) * 160ms + 450ms);
+  }
+
   /* "Count with me!" sits in its own full-width row at the bottom of the number pad. */
   .count-btn {
     grid-column: 1 / -1;
@@ -413,6 +439,8 @@
   }
   .count-btn:active, .count-btn.pressed { transform: translateY(5px); border-bottom-width: 2px; }
   .count-btn.dim { opacity: 0.38; filter: saturate(0.5); }
+  .count-btn[hidden] { display: none; }
+  .random-btn { background: #cdbbff; border-bottom-color: #8f74e6; }
   .count-btn.pulse { animation: breathe 1s ease-in-out infinite; }
 
   /* ---------- Numpad ---------- */
@@ -567,6 +595,12 @@
   }
   @keyframes nudge { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.08); } }
   @keyframes card-in { from { transform: scale(0.5) translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes leave {
+    0% { opacity: 1; filter: none; transform: none; }
+    45% { opacity: 1; filter: none; transform: translateY(-40%) rotate(-14deg) scale(1.15); }
+    100% { opacity: 0.3; filter: grayscale(1); transform: none; }
+  }
+  @keyframes cross-in { from { opacity: 0; transform: scale(2); } to { opacity: 0.9; transform: none; } }
   @keyframes drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
   @media (prefers-reduced-motion: reduce) {
@@ -617,11 +651,11 @@
         <span class="act-desc">Put two groups together!</span>
         <span class="act-go">Play! ▶</span>
       </button>
-      <button class="activity soon" type="button" data-activity="subtraction" aria-disabled="true">
-        <span class="act-art emoji" aria-hidden="true">🍎➖🐛</span>
+      <button class="activity play" type="button" data-activity="subtraction">
+        <span class="act-art emoji" aria-hidden="true">🐰➖👋</span>
         <span class="act-name">Take Away</span>
-        <span class="act-desc">How many are left?</span>
-        <span class="soon-tag">Coming soon!</span>
+        <span class="act-desc">Some go away. How many are left?</span>
+        <span class="act-go">Play! ▶</span>
       </button>
       <button class="activity soon" type="button" data-activity="counting" aria-disabled="true">
         <span class="act-art emoji" aria-hidden="true">🔢⭐</span>
@@ -635,10 +669,10 @@
 
 <div id="app" data-step="num1" hidden>
   <header class="topbar">
-    <h2 class="title">Add Along! <span class="emoji">🐾</span></h2>
+    <h2 class="title"><span id="gameTitle">Add Along!</span> <span class="emoji" id="gameIcon">🐾</span></h2>
     <div class="tools">
       <button class="tool" id="homeBtn" type="button" aria-label="Pick another game"><span class="emoji">🏠</span></button>
-      <button class="tool" id="themeBtn" type="button" aria-label="Pick your animal"><span class="emoji" id="themeIcon">🎲</span></button>
+      <button class="tool" id="themeBtn" type="button" aria-label="Pick your animal"><span class="emoji" id="themeIcon">🎁</span></button>
       <button class="tool" id="soundBtn" type="button" aria-label="Sound on" aria-pressed="true"><span class="emoji" id="soundIcon">🔊</span></button>
       <button class="tool" id="restartBtn" type="button" aria-label="Start over"><span class="emoji">🔄</span></button>
     </div>
@@ -655,7 +689,7 @@
 
     <div class="equation" id="equation" aria-label="Number sentence">
       <div class="slot" id="slot1">?</div>
-      <div class="op">+</div>
+      <div class="op" id="opSign">+</div>
       <div class="slot" id="slot2"></div>
       <div class="op">=</div>
       <div class="slot" id="slotAns"></div>
@@ -687,7 +721,8 @@
     <button class="key back" type="button" data-key="back" aria-label="Back"><span class="emoji">⬅️</span></button>
     <button class="key" type="button" data-key="0" style="--k:#f4eee2">0</button>
     <button class="key check" type="button" data-key="enter" aria-label="Check"><span class="emoji">✅</span></button>
-    <button class="count-btn dim" id="countBtn" type="button" data-key="count" aria-disabled="true"><span class="emoji">👆</span> Count with me!</button>
+    <button class="count-btn random-btn" id="randomBtn" type="button" data-key="random"><span class="emoji">🎲</span> <span id="randomLabel">Surprise me!</span></button>
+    <button class="count-btn dim" id="countBtn" type="button" data-key="count" aria-disabled="true" hidden><span class="emoji">👆</span> Count with me!</button>
   </section>
 </div>
 
@@ -737,7 +772,7 @@
     { id: 'apple', emoji: '🍎', one: 'apple',  many: 'apples' },
     { id: 'star',  emoji: '⭐', one: 'star',   many: 'stars' }
   ];
-  const RANDOM = { id: 'random', emoji: '🎲', one: 'surprise', many: 'Surprise' };
+  const RANDOM = { id: 'random', emoji: '🎁', one: 'surprise', many: 'Surprise' };
 
   const $ = (sel) => document.querySelector(sel);
 
@@ -913,6 +948,13 @@
         tone({ type: 'sine', freq: f, freqEnd: f * 2.6, dur: 0.1, vol: 0.28, attack: 0.003 });
         tone({ type: 'sine', freq: f * 3, dur: 0.05, vol: 0.05, attack: 0.002 });
         noise({ type: 'highpass', freq: 3000, dur: 0.015, vol: 0.04 });
+      },
+
+      // Soft falling "whoop" as an animal goes away.
+      bye(i = 0) {
+        if (!ready('bye')) return;
+        const f = 700 * Math.pow(0.93, Math.min(i, 9));
+        tone({ type: 'sine', freq: f, freqEnd: f * 0.45, dur: 0.22, vol: 0.2, attack: 0.01 });
       },
 
       chime() {
@@ -1191,6 +1233,9 @@
     plus: $('#plusBig'),
     pad: $('#pad'),
     countBtn: $('#countBtn'),
+    randomBtn: $('#randomBtn'), randomLabel: $('#randomLabel'),
+    gameTitle: $('#gameTitle'), gameIcon: $('#gameIcon'),
+    opSign: $('#opSign'),
     welcome: $('#welcome'),
     homeBtn: $('#homeBtn'),
     steps: document.querySelectorAll('.steps li[data-s]'),
@@ -1208,6 +1253,7 @@
   const STEP_ORDER = ['num1', 'num2', 'answer'];
 
   const state = {
+    mode: 'addition',
     step: 'num1',
     num1: null,
     num2: null,
@@ -1215,6 +1261,8 @@
     busy: false,
     wrongs: 0,
     counted: 0,
+    pendingSecond: null,   // set by "Surprise me!" so step 2 is filled in automatically
+    lastQuestion: '',
     theme: store.get('theme', 'random'),
     animal: THEMES[0],
     timers: [],
@@ -1224,8 +1272,44 @@
 
   const later = (fn, ms) => { state.timers.push(setTimeout(fn, ms)); };
   const clearTimers = () => { state.timers.forEach(clearTimeout); state.timers = []; stopCountAlong(); };
-  const total = () => (state.num1 || 0) + (state.num2 || 0);
   const noun = (n) => (n === 1 ? state.animal.one : state.animal.many);
+  const randInt = (lo, hi) => lo + Math.floor(Math.random() * (hi - lo + 1));
+
+  /* ---------- Activities: everything that differs between the games ---------- */
+  const MODES = {
+    addition: {
+      title: 'Add Along!', icon: '🐾', op: '+', opWord: 'plus',
+      answer: (a, b) => a + b,
+      pickFirst: 'Pick the first number!',
+      pickSecond: 'Now pick another number to add!',
+      askAnswer: 'How many altogether? Count them and type the answer!',
+      askAnswerSay: (a, b) => `${a} plus ${b}. How many altogether?`,
+      secondChosen: (d) => d === 0
+        ? [`Zero! No more ${state.animal.many}!`, `Zero! No more ${state.animal.many}!`]
+        : [`${d} more ${noun(d)}! ${state.animal.emoji}`, `plus ${d} more ${noun(d)}!`],
+      maxSecond: () => 9,
+      recountHint: ' Tap each one to count! 👆',
+      // Surprise question: both numbers 1–9 (sums 2–18). Pass a to keep the first number.
+      random: (a = randInt(1, 9)) => [a, randInt(1, 9)]
+    },
+    subtraction: {
+      title: 'Take Away!', icon: '👋', op: '−', opWord: 'take away',
+      answer: (a, b) => a - b,
+      pickFirst: 'Pick how many to start with!',
+      pickSecond: 'How many go away? Pick a number to take away!',
+      askAnswer: 'How many are left? Count them and type the answer!',
+      askAnswerSay: (a, b) => `${a} take away ${b}. How many are left?`,
+      secondChosen: (d) => d === 0
+        ? ['Zero! Nobody goes away!', 'Zero! Nobody goes away!']
+        : [`${d} ${noun(d)} ${d === 1 ? 'goes' : 'go'} away! 👋`, `take away ${d}! Bye-bye ${noun(d)}!`],
+      maxSecond: () => state.num1,
+      recountHint: ' Tap each one that is still here! 👆',
+      // Surprise question: start with 2–9, take away 1..start (answers 0–8).
+      random: (a = randInt(2, 9)) => [a, randInt(1, a)]
+    }
+  };
+  const mode = () => MODES[state.mode];
+  const answer = () => mode().answer(state.num1 || 0, state.num2 || 0);
 
   function restartAnim(el, cls) {
     el.classList.remove(cls);
@@ -1256,11 +1340,12 @@
 
   function renderEquation() {
     const { step, num1, num2, input } = state;
+    els.opSign.textContent = mode().op;
     setSlot(els.s1, num1 != null ? String(num1) : step === 'num1' ? '?' : '', step === 'num1');
     setSlot(els.s2, num2 != null ? String(num2) : step === 'num2' ? '?' : '', step === 'num2');
     let ans = '';
     if (step === 'answer') ans = input || '?';
-    if (step === 'celebrate') ans = String(total());
+    if (step === 'celebrate') ans = String(answer());
     setSlot(els.sa, ans, step === 'answer' && !input);
     els.sa.classList.toggle('right', step === 'celebrate');
     if (step !== 'answer') els.sa.classList.remove('wrong');
@@ -1281,16 +1366,24 @@
       const key = k.dataset.key;
       let dim = busy || step === 'celebrate';
       if (key === '0' && step === 'num1') dim = true;
+      if (step === 'num2' && /^[0-9]$/.test(key) && Number(key) > mode().maxSecond()) dim = true;
       if (key === 'enter') dim = step !== 'answer' || !input || busy;
       if (key === 'back') dim = dim || step === 'num1';
       k.classList.toggle('dim', dim);
     });
     els.pad.querySelector('[data-key="enter"]').classList.toggle('ready', step === 'answer' && !!input && !busy);
+    // The bottom row of the pad is "Surprise me!" while picking numbers, then "Count with me!".
+    const picking = step === 'num1' || step === 'num2';
+    els.randomBtn.hidden = !picking;
+    els.randomBtn.classList.toggle('dim', busy);
+    els.randomLabel.textContent = step === 'num2' ? 'Pick for me!' : 'Surprise me!';
+    els.countBtn.hidden = picking;
     els.countBtn.classList.toggle('dim', step !== 'answer' || busy);
     els.countBtn.setAttribute('aria-disabled', String(step !== 'answer'));
   }
 
   function herdColumns(n) {
+    if (state.mode === 'subtraction') return Math.min(n, 5); // ten-frame rows of 5
     if (n <= 3) return n;
     if (n === 4) return 2;
     return 3;
@@ -1351,6 +1444,7 @@
 
   function render() {
     els.app.dataset.step = state.step;
+    els.app.dataset.mode = state.mode;
     renderEquation();
     renderSteps();
     renderPad();
@@ -1364,20 +1458,45 @@
     later(then, Math.max(n, 1) * CONFIG.appearStepMs + CONFIG.settleMs);
   }
 
+  // Take Away: the last d animals of the group leave one after another (d = 0 brings everyone back).
+  function markGone(d) {
+    const animals = [...els.g1.querySelectorAll('.animal')];
+    const firstGone = animals.length - d;
+    animals.forEach((a, i) => {
+      const gone = i >= firstGone;
+      a.classList.toggle('gone', gone);
+      a.style.setProperty('--g', String(Math.max(0, i - firstGone)));
+      a.setAttribute('aria-label', `${state.animal.one} ${i + 1}${gone ? ', went away' : ''}`);
+    });
+  }
+
+  function scheduleGoodbyes(n, then) {
+    for (let i = 0; i < n; i++) later(() => Sound.bye(i), i * 160 + 150);
+    later(then, n * 160 + 500 + CONFIG.settleMs);
+  }
+
   function chooseFirst(d) {
+    const surprise = state.pendingSecond != null;
     state.num1 = d;
     state.busy = true;
     renderGroup(1, d);
     render();
     restartAnim(els.s1, 'filled');
-    setPrompt(`${d} ${noun(d)}! ${state.animal.emoji}`);
-    Voice.say(`${d} ${noun(d)}!`);
+    setPrompt(`${surprise ? 'Surprise! ' : ''}${d} ${noun(d)}! ${state.animal.emoji}`);
+    Voice.say(`${surprise ? 'Surprise! ' : ''}${d} ${noun(d)}!`);
     scheduleAppearance(d, () => {
       Sound.chime();
       state.step = 'num2';
+      if (state.pendingSecond != null) {
+        const b = state.pendingSecond;
+        state.pendingSecond = null;
+        render();
+        later(() => chooseSecond(b), 300);
+        return;
+      }
       state.busy = false;
-      setPrompt('Now pick another number to add!');
-      Voice.say('Now pick another number to add!', { interrupt: false });
+      setPrompt(mode().pickSecond);
+      Voice.say(mode().pickSecond, { interrupt: false });
       render();
     });
   }
@@ -1385,26 +1504,40 @@
   function chooseSecond(d) {
     state.num2 = d;
     state.busy = true;
-    renderGroup(2, d);
+    const subtract = state.mode === 'subtraction';
+    if (subtract) markGone(d);
+    else renderGroup(2, d);
     render();
     restartAnim(els.s2, 'filled');
-    if (d === 0) {
-      setPrompt(`Zero! No more ${state.animal.many}!`);
-      Voice.say(`Zero! No more ${state.animal.many}!`);
-    } else {
-      setPrompt(`${d} more ${noun(d)}! ${state.animal.emoji}`);
-      Voice.say(`plus ${d} more ${noun(d)}!`);
-    }
-    scheduleAppearance(d, () => {
+    const [text, say] = mode().secondChosen(d);
+    setPrompt(text);
+    Voice.say(say, { interrupt: false });
+    (subtract ? scheduleGoodbyes : scheduleAppearance)(d, () => {
       Sound.chime();
       state.step = 'answer';
       state.busy = false;
       state.input = '';
       state.counted = 0;
-      setPrompt('How many altogether? Count them and type the answer!');
-      Voice.say(`${state.num1} plus ${d}. How many altogether?`, { interrupt: false });
+      setPrompt(mode().askAnswer);
+      Voice.say(mode().askAnswerSay(state.num1, d), { interrupt: false });
       render();
     });
+  }
+
+  // "Surprise me!" makes up the question: on step 1 both numbers, on step 2 just the second.
+  function surprise() {
+    if (state.busy || (state.step !== 'num1' && state.step !== 'num2')) return;
+    if (state.step === 'num2') {
+      Sound.chime();
+      chooseSecond(mode().random(state.num1)[1]);
+      return;
+    }
+    let q = mode().random();
+    for (let tries = 0; tries < 5 && q.join() === state.lastQuestion; tries++) q = mode().random();
+    state.lastQuestion = q.join();
+    Sound.chime();
+    state.pendingSecond = q[1];
+    chooseFirst(q[0]);
   }
 
   function typeAnswer(d) {
@@ -1413,7 +1546,7 @@
     restartAnim(els.sa, 'filled');
     els.sa.classList.remove('wrong');
     render();
-    const needed = String(total()).length;
+    const needed = String(answer()).length;
     if (state.input.length >= needed) {
       state.busy = true;
       renderPad();
@@ -1425,7 +1558,7 @@
     if (state.step !== 'answer' || !state.input) return;
     stopCountAlong();
     const value = parseInt(state.input, 10);
-    if (value === total()) win();
+    if (value === answer()) win();
     else oops();
   }
 
@@ -1435,7 +1568,7 @@
     Sound.boop();
     els.sa.classList.add('wrong');
     restartAnim(els.equation, 'shake');
-    const hint = state.wrongs >= 2 ? ' Tap each one to count! 👆' : '';
+    const hint = state.wrongs >= 2 ? mode().recountHint : '';
     setPrompt('Oops, try counting them again!' + hint, { nudge: true });
     Voice.say('Oops! Try counting them again!');
     renderPad();
@@ -1450,7 +1583,8 @@
   }
 
   function win() {
-    const a = state.num1, b = state.num2, sum = total();
+    const a = state.num1, b = state.num2, sum = answer();
+    const { op, opWord } = mode();
     state.step = 'celebrate';
     state.busy = false;
     render();
@@ -1458,14 +1592,14 @@
     Sound.fanfare();
     Sound.applause(3);
     FX.celebrate();
-    setPrompt(`Hooray! ${a} + ${b} = ${sum}!`);
-    Voice.say(`Hooray! ${a} plus ${b} equals ${sum}! You did it!`);
+    setPrompt(`Hooray! ${a} ${op} ${b} = ${sum}!`);
+    Voice.say(`Hooray! ${a} ${opWord} ${b} equals ${sum}! You did it!`);
     later(() => {
       els.celebrateEmoji.textContent = ['🎉', '🌟', '🥳', '🏆', '🎈'][(Math.random() * 5) | 0];
       els.celebrateMsg.innerHTML = '';
       els.celebrateMsg.append(
         document.createTextNode('Hooray! 🌟 '),
-        Object.assign(document.createElement('span'), { className: 'sum', textContent: `${a} + ${b} = ${sum}!` }),
+        Object.assign(document.createElement('span'), { className: 'sum', textContent: `${a} ${op} ${b} = ${sum}!` }),
         document.createTextNode(' You did it!')
       );
       const bar = els.timerBar.parentElement;
@@ -1491,13 +1625,13 @@
     els.celebrate.hidden = true;
     els.board.classList.remove('party', 'wiggle');
     els.sa.classList.remove('right', 'wrong');
-    Object.assign(state, { step: 'num1', num1: null, num2: null, input: '', busy: false, wrongs: 0, counted: 0 });
+    Object.assign(state, { step: 'num1', num1: null, num2: null, input: '', busy: false, wrongs: 0, counted: 0, pendingSecond: null });
     pickRoundAnimal();
     renderGroup(1, null);
     renderGroup(2, null);
-    setPrompt('Pick the first number! 👆');
+    setPrompt(mode().pickFirst + ' 👆');
     render();
-    if (announce) Voice.say('Pick the first number!');
+    if (announce) Voice.say(mode().pickFirst);
   }
 
   function back() {
@@ -1510,17 +1644,19 @@
         return;
       }
       stopCountAlong();
+      clearCounted();
       state.num2 = null;
       state.step = 'num2';
-      renderGroup(2, null);
-      setPrompt('Now pick another number to add!');
+      if (state.mode === 'subtraction') markGone(0);
+      else renderGroup(2, null);
+      setPrompt(mode().pickSecond);
       render();
     } else if (state.step === 'num2') {
       Sound.key(null);
       state.num1 = null;
       state.step = 'num1';
       renderGroup(1, null);
-      setPrompt('Pick the first number! 👆');
+      setPrompt(mode().pickFirst + ' 👆');
       render();
     }
   }
@@ -1531,6 +1667,13 @@
       Sound.key(null);
       setPrompt('Pick a number from 1 to 9! 👆', { nudge: true });
       Voice.say('Pick a number from one to nine!');
+      return;
+    }
+    if (state.step === 'num2' && d > mode().maxSecond()) {
+      const n = state.num1;
+      Sound.key(null);
+      setPrompt(`We only have ${n} ${noun(n)}! Pick ${n} or less. 👆`, { nudge: true });
+      Voice.say(`We only have ${n}! Pick ${n} or less.`);
       return;
     }
     Sound.key(d);
@@ -1555,6 +1698,7 @@
   }
 
   function tapAnimal(btn) {
+    if (btn.classList.contains('gone')) { Sound.bye(0); return; } // it went away, so it doesn't count
     const face = btn.querySelector('.face');
     restartAnim(face, 'pop');
     if (state.step === 'answer' && !btn.classList.contains('counted')) {
@@ -1563,7 +1707,7 @@
       btn.querySelector('.badge').textContent = String(state.counted);
       Sound.pop(state.counted);
       Voice.say(String(state.counted));
-      if (state.counted === total() && total() > 0) {
+      if (state.counted === answer() && answer() > 0) {
         setPrompt('You counted them all! How many is that? Type it in!');
       }
     } else {
@@ -1582,7 +1726,7 @@
     clearCounted();
     setPrompt('Let’s count together!');
     Voice.say('Let’s count together!');
-    const animals = [...els.board.querySelectorAll('.animal')];
+    const animals = [...els.board.querySelectorAll('.animal:not(.gone)')];
     animals.forEach((a, k) => {
       state.countTimers.push(setTimeout(() => tapAnimal(a), 1100 + k * CONFIG.countAlongMs));
     });
@@ -1665,6 +1809,7 @@
     if (key === 'back') back();
     else if (key === 'enter') pressEnter();
     else if (key === 'count') countAlong();
+    else if (key === 'random') surprise();
     else pressDigit(Number(key));
   }
 
@@ -1702,6 +1847,7 @@
     if (/^[0-9]$/.test(e.key)) { e.preventDefault(); handleKey(e.key); }
     else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); handleKey('enter'); }
     else if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); handleKey('back'); }
+    else if (e.key === 'r' || e.key === 'R' || e.key === '?') { e.preventDefault(); handleKey('random'); }
   });
 
   // Unlock audio on the very first interaction anywhere.
@@ -1723,7 +1869,7 @@
    * Screens — welcome (activity picker) and games, routed by URL hash
    * so reload and the browser Back button behave as expected.
    * ================================================================ */
-  const ACTIVITIES = ['addition'];
+  const ACTIVITIES = Object.keys(MODES);
   let screen = 'welcome';
 
   function showWelcome() {
@@ -1736,6 +1882,10 @@
 
   function showGame(id, { announce = false } = {}) {
     screen = id;
+    state.mode = id;
+    state.lastQuestion = '';
+    els.gameTitle.textContent = MODES[id].title;
+    els.gameIcon.textContent = MODES[id].icon;
     els.welcome.hidden = true;
     els.app.hidden = false;
     reset({ announce });
@@ -1778,6 +1928,7 @@
     themes: THEMES.map((t) => t.id),
     getState: () => ({
       screen,
+      mode: state.mode,
       step: state.step,
       num1: state.num1,
       num2: state.num2,
@@ -1789,6 +1940,8 @@
       animal: state.animal.id
     }),
     reset: () => reset(),
+    randomQuestion: (m) => MODES[m].random(),
+    answerFor: (m, a, b) => MODES[m].answer(a, b),
     audioState: () => Sound.state,
     particles: () => FX.count(),
     soundLog: Sound.log,

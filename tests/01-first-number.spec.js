@@ -10,7 +10,9 @@ test('starts on step 1 with the right prompt and an active "?" slot', async ({ p
   await expect(page.locator('#slot1')).toHaveClass(/active/);
   await expect(page.locator('#group1 .animal')).toHaveCount(0);
   await expect(page.locator('.steps li[data-s="num1"]')).toHaveClass(/on/);
-  await expect(page.locator('#countBtn')).toHaveClass(/dim/); // counting helper only works on step 3
+  // bottom pad row offers "Surprise me!" while picking; "Count with me!" only appears on step 3
+  await expect(page.locator('#randomBtn')).toBeVisible();
+  await expect(page.locator('#countBtn')).toBeHidden();
 });
 
 for (const n of [1, 5, 9]) {

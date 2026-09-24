@@ -9,11 +9,11 @@ async function openWelcome(page) {
   await page.waitForFunction(() => window.ToddlerMath && window.ToddlerMath.getState().screen === 'welcome');
 }
 
-/** Open the app, pick the Addition activity and wait for step 1. */
-async function openApp(page) {
+/** Open the app, pick an activity ('addition' or 'subtraction') and wait for step 1. */
+async function openApp(page, activity = 'addition') {
   await openWelcome(page);
-  await page.locator('.activity[data-activity="addition"]').click({ force: true });
-  await page.waitForFunction(() => window.ToddlerMath.getState().screen === 'addition' && window.ToddlerMath.getState().step === 'num1');
+  await page.locator(`.activity[data-activity="${activity}"]`).click({ force: true });
+  await page.waitForFunction((a) => window.ToddlerMath.getState().screen === a && window.ToddlerMath.getState().step === 'num1', activity);
 }
 
 const state = (page) => page.evaluate(() => window.ToddlerMath.getState());
