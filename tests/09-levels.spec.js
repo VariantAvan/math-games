@@ -99,15 +99,13 @@ test.describe('level 1 (tiny numbers)', () => {
 });
 
 test.describe('big numbers (levels 4–10)', () => {
-  test('level 5: typing 2 digits enters the number; place-value blocks show tens and ones', async ({ page }) => {
+  test('level 5: typing 2 digits enters the number; a 1-digit number goes in with ✅', async ({ page }) => {
     await openApp(page);
     await setLevel(page, 5);
     await type(page, '47');
     await waitForStep(page, 'num2');
     expect((await state(page)).num1).toBe(47);
-    await expect(page.locator('#group1 .pv-tens .blk')).toHaveCount(4);
-    await expect(page.locator('#group1 .pv-ones .blk')).toHaveCount(7);
-    await expect(page.locator('#group1 .pv-tens .pv-label')).toContainText('4');
+    await expect(page.locator('#slot1')).toHaveText('47');
     // a single-digit second number goes in with ✅
     await type(page, '8');
     await expect(page.locator('#slot2')).toHaveText('8');
@@ -128,9 +126,6 @@ test.describe('big numbers (levels 4–10)', () => {
     await type(page, '407');
     await waitForStep(page, 'num2');
     expect((await state(page)).num1).toBe(2407);
-    await expect(page.locator('#group1 .pv-col')).toHaveCount(4);
-    await expect(page.locator('#group1 .pv-hundreds .blk')).toHaveCount(4);
-    await expect(page.locator('#group1 .pv-tens .blk')).toHaveCount(0); // a zero place is still shown
     await type(page, '586');
     await page.keyboard.press('Enter');
     await waitForStep(page, 'answer');
@@ -146,13 +141,12 @@ test.describe('big numbers (levels 4–10)', () => {
     await expect(page.locator('#prompt')).toContainText('Numbers start at 1');
   });
 
-  test('Take Away level 6: two groups with a − sign; cannot take away more than we have', async ({ page }) => {
+  test('Take Away level 6: cannot take away more than we have', async ({ page }) => {
     await openApp(page, 'subtraction');
     await setLevel(page, 6);
     await type(page, '45');
     await waitForStep(page, 'num2');
-    await expect(page.locator('#group2')).toBeVisible();
-    await expect(page.locator('#plusBig')).toHaveText('−');
+    await expect(page.locator('#opSign')).toHaveText('−');
     await type(page, '67');
     await expect(page.locator('#prompt')).toContainText('We only have 45');
     expect((await state(page)).num2).toBeNull();
@@ -163,18 +157,38 @@ test.describe('big numbers (levels 4–10)', () => {
     await expect(page.locator('#celebrateMsg')).toHaveText('Hooray! 🌟 45 − 28 = 17! You did it!');
   });
 
-  test('"Show me the places" lights up the ones columns, then the tens', async ({ page }) => {
+  test('levels 4+ show only the number sentence: no animals and no counting helper', async ({ page }) => {
     await openApp(page);
     await setLevel(page, 6);
     await type(page, '35');
     await waitForStep(page, 'num2');
     await type(page, '48');
     await waitForStep(page, 'answer');
-    await expect(page.locator('#countBtn')).toContainText('Show me the places');
-    await page.locator('#countBtn').click({ force: true });
-    await expect(page.locator('.pv-col.hint[data-place="ones"]')).toHaveCount(2, { timeout: 4000 });
-    await expect(page.locator('.pv-col.hint[data-place="tens"]')).toHaveCount(2, { timeout: 5000 });
-    await expect(page.locator('.pv-col.hint[data-place="ones"]')).toHaveCount(0);
+    await expect(page.locator('#board')).toBeHidden();
+    await expect(page.locator('.animal')).toHaveCount(0);
+    await expect(page.locator('#countBtn')).toBeHidden();
+    // "Surprise me!" keeps the bottom row, greyed out once the numbers are picked
+    await expect(page.locator('#randomBtn')).toBeVisible();
+    await expect(page.locator('#randomBtn')).toHaveClass(/dim/);
+    await expect(page.locator('#prompt')).toHaveText('What does it add up to? Type the answer!');
+    await type(page, '82'); // wrong
+    await expect(page.locator('#prompt')).toHaveText('Oops, not quite! Try again!');
+    await page.waitForFunction(() => window.ToddlerMath.getState().input === '' && !window.ToddlerMath.getState().busy);
+    await type(page, '83');
+    await page.waitForFunction(() => window.ToddlerMath.getState().step === 'celebrate');
+  });
+
+  test('level 3 still has the animals and "Count with me!"', async ({ page }) => {
+    await openApp(page);
+    await setLevel(page, 3);
+    await tapKey(page, '3');
+    await waitForStep(page, 'num2');
+    await tapKey(page, '4');
+    await waitForStep(page, 'answer');
+    await expect(page.locator('#board')).toBeVisible();
+    await expect(page.locator('.animal')).toHaveCount(7);
+    await expect(page.locator('#countBtn')).toBeVisible();
+    await expect(page.locator('#randomBtn')).toBeHidden();
   });
 
   for (const lv of [4, 8, 10]) {
@@ -202,16 +216,13 @@ test.describe('big numbers (levels 4–10)', () => {
       await waitForStep(page, 'num2');
       await type(page, '3576');
       await waitForStep(page, 'answer');
-      await page.waitForTimeout(1500);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
       const eq = await page.locator('#equation').boundingBox();
       expect(eq.x).toBeGreaterThanOrEqual(0);
       expect(eq.x + eq.width).toBeLessThanOrEqual(vp.width);
-      const inside = await page.locator('.blk').evaluateAll((bs) => bs.every((b) => {
-        const r = b.getBoundingClientRect(), g = b.closest('.group').getBoundingClientRect();
-        return r.left >= g.left - 1 && r.right <= g.right + 1 && r.top >= g.top - 1 && r.bottom <= g.bottom + 1;
-      }));
-      expect(inside).toBe(true);
+      expect(eq.y + eq.height).toBeLessThanOrEqual(vp.height);
+      const keys = await page.locator('.key').evaluateAll((ks) => ks.map((k) => k.getBoundingClientRect()).map((r) => [r.width, r.height, r.bottom]));
+      for (const [w, h, bottom] of keys) { expect(w).toBeGreaterThanOrEqual(64); expect(h).toBeGreaterThanOrEqual(64); expect(bottom).toBeLessThanOrEqual(vp.height + 1); }
       await page.screenshot({ path: `test-results/screens/level10-${vp.width}x${vp.height}.png` });
     });
   }

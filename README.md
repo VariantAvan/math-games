@@ -23,7 +23,7 @@ In both games, **🎲 Surprise me!** at the bottom of the number pad makes up a 
 **Difficulty levels (1–10):** pick one on the welcome screen or with the ⭐ button in a game. The levels go from tiny numbers under 5 (level 1), through single digits (level 3, the default), up to two 4-digit numbers (level 10):
 - Surprise me! follows the level.
 - From level 4, numbers can have several digits (press ✅ to enter one).
-- From level 4, numbers are drawn as base-ten blocks: thousand cubes, hundred flats, ten rods and animal ones. There's a "Show me the places" helper that walks through the ones, then the tens, and so on.
+- Levels 4–10 show just the number sentence: no animal pictures and no counting helper.
 
 See [TESTING.md](TESTING.md#difficulty-levels-both-games) for the full table.
 

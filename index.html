@@ -405,80 +405,13 @@
   #app[data-layout="solo"] #plusBig { display: none; }
   #app[data-layout="solo"] #group1 { max-width: 760px; }
 
-  /* ---------- Place-value blocks (levels 4+): thousands cubes, hundred flats, ten rods, animal ones ---------- */
-  .herd.pv {
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-    gap: 4px;
-    padding-top: 6px;
+  /* Levels 4+: no pictures or counting helper, just a big number sentence. */
+  #app[data-big="true"] #board { display: none; }
+  #app[data-big="true"] .stage { justify-content: center; }
+  #app[data-big="true"] .equation {
+    font-size: min(clamp(40px, min(11vw, 12dvh), 120px), calc(100cqi / (var(--eq-chars, 4) * 0.62 + 4.4)));
   }
-  .pv-col {
-    flex: 1 1 0;
-    min-width: 0;
-    max-width: 50%;
-    container-type: size;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: 4px 2px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.6);
-    transition: background 0.25s, box-shadow 0.25s;
-  }
-  .pv-col.hint { background: #fff4b8; box-shadow: 0 0 0 4px #ffd84d; }
-  .pv-blocks {
-    flex: 1 1 0;
-    min-height: 0;
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-end;
-    justify-content: center;
-    gap: 3px 2px;
-  }
-  .pv-label {
-    font-size: clamp(9px, 12cqw, 15px);
-    font-weight: 900;
-    color: var(--ink-soft);
-    white-space: nowrap;
-    line-height: 1.2;
-  }
-  .blk {
-    display: grid; place-items: center;
-    border-radius: 4px;
-    animation: hop-in 0.45s cubic-bezier(.34, 1.56, .64, 1) both;
-    animation-delay: calc(min(var(--i, 0), 30) * 40ms);
-  }
-  .blk.pop { animation: pop 0.4s cubic-bezier(.34, 1.56, .64, 1); }
-  .pv-label .pv-short { display: none; }
-  @container (max-width: 80px) {
-    .pv-label .pv-long { display: none; }
-    .pv-label .pv-short { display: inline; }
-  }
-  .pv-ones .blk { width: min(31cqw, 21cqh); height: min(31cqw, 21cqh); font-size: min(27cqw, 18cqh); }
-  .pv-ones .blk .face { font-family: var(--emoji); line-height: 1; filter: drop-shadow(0 2px 1px rgba(45, 42, 74, 0.25)); }
-  .pv-tens .blk {
-    width: min(15cqw, 5cqh);
-    height: min(42cqh, 95cqw);
-    background: repeating-linear-gradient(to bottom, #45c3ff 0 calc(10% - 1px), #1b86c4 calc(10% - 1px) 10%);
-    box-shadow: inset 0 0 0 1px #1b86c4;
-  }
-  .pv-hundreds .blk, .pv-thousands .blk {
-    width: min(29cqw, 20cqh);
-    height: min(29cqw, 20cqh);
-    background-color: #ffb13d;
-    background-image:
-      linear-gradient(to right, rgba(0, 0, 0, 0.18) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.18) 1px, transparent 1px);
-    background-size: 10% 10%;
-    box-shadow: inset 0 0 0 1px #c97d0c;
-  }
-  .pv-thousands .blk {
-    background-color: #9a8cff;
-    box-shadow: inset 0 0 0 1px #5d4fd6, 3px -3px 0 #6c5ee0;
-  }
+
   .animal.gone .bob { animation: none; }
   .animal.gone .face {
     opacity: 0.3;
@@ -865,7 +798,7 @@
     <button class="key" type="button" data-key="0" style="--k:#f4eee2">0</button>
     <button class="key check" type="button" data-key="enter" aria-label="Check"><span class="emoji">✅</span></button>
     <button class="count-btn random-btn" id="randomBtn" type="button" data-key="random"><span class="emoji">🎲</span> <span id="randomLabel">Surprise me!</span></button>
-    <button class="count-btn dim" id="countBtn" type="button" data-key="count" aria-disabled="true" hidden><span class="emoji" id="countIcon">👆</span> <span id="countLabel">Count with me!</span></button>
+    <button class="count-btn dim" id="countBtn" type="button" data-key="count" aria-disabled="true" hidden><span class="emoji">👆</span> Count with me!</button>
   </section>
 </div>
 
@@ -1383,7 +1316,7 @@
     g1: $('#group1'), g2: $('#group2'),
     plus: $('#plusBig'),
     pad: $('#pad'),
-    countBtn: $('#countBtn'), countLabel: $('#countLabel'), countIcon: $('#countIcon'),
+    countBtn: $('#countBtn'),
     levelBtn: $('#levelBtn'), levelNum: $('#levelNum'),
     levelSheet: $('#levelSheet'), levelGrid: $('#levelGrid'),
     levelChips: $('#levelChips'), levelDesc: $('#levelDesc'),
@@ -1455,7 +1388,7 @@
     { gen: ['d4', 'd4'],    digits: 4, desc: 'Two 4-digit numbers',                           ex: ['4825 + 3197', '8204 − 3576'] }
   ];
   const level = () => LEVELS[state.level];
-  const isBig = () => level().digits > 1;          // place-value blocks + multi-digit typing
+  const isBig = () => level().digits > 1;          // multi-digit typing, numbers only (no pictures)
   const keyMax = () => (state.level === 1 ? 4 : 9); // level 1 only uses 1–4 (0–4 for the second number)
 
   // Make a question for a game at a level. Take Away always puts the bigger number first.
@@ -1480,6 +1413,7 @@
       pickFirst: 'Pick the first number!',
       pickSecond: 'Now pick another number to add!',
       askAnswer: 'How many altogether? Count them and type the answer!',
+      askAnswerBig: 'What does it add up to? Type the answer!',
       askAnswerSay: (a, b) => `${a} plus ${b}. How many altogether?`,
       secondChosen: (d) => d === 0
         ? [`Zero! No more ${state.animal.many}!`, `Zero! No more ${state.animal.many}!`]
@@ -1493,6 +1427,7 @@
       pickFirst: 'Pick how many to start with!',
       pickSecond: 'How many go away? Pick a number to take away!',
       askAnswer: 'How many are left? Count them and type the answer!',
+      askAnswerBig: 'How many are left? Type the answer!',
       askAnswerSay: (a, b) => `${a} take away ${b}. How many are left?`,
       secondChosen: (d) => d === 0
         ? ['Zero! Nobody goes away!', 'Zero! Nobody goes away!']
@@ -1578,13 +1513,12 @@
     els.pad.querySelector('[data-key="enter"]').classList.toggle('ready', step === 'answer' && !!input && !busy);
     // The bottom row of the pad is "Surprise me!" while picking numbers, then "Count with me!".
     const picking = step === 'num1' || step === 'num2';
-    els.randomBtn.hidden = !picking;
-    els.randomBtn.classList.toggle('dim', busy);
+    // Levels 4+ have no counting helper, so "Surprise me!" keeps the row (greyed out after picking).
+    els.randomBtn.hidden = !picking && !isBig();
+    els.randomBtn.classList.toggle('dim', busy || !picking);
     els.randomLabel.textContent = step === 'num2' ? 'Pick for me!' : 'Surprise me!';
-    els.countBtn.hidden = picking;
+    els.countBtn.hidden = picking || isBig();
     els.countBtn.classList.toggle('dim', step !== 'answer' || busy);
-    els.countLabel.textContent = isBig() ? 'Show me the places' : 'Count with me!';
-    els.countIcon.textContent = isBig() ? '🔢' : '👆';
     els.countBtn.setAttribute('aria-disabled', String(step !== 'answer'));
   }
 
@@ -1617,11 +1551,9 @@
     el.classList.toggle('waiting', n == null);
     herd.textContent = '';
     herd.style.gridTemplateColumns = '';
-    herd.classList.remove('pv');
     herd.dataset.n = n == null || isBig() ? '' : String(n);
     syncAnimalSize();
-    if (n == null) return;
-    if (isBig() && n > 0) { renderPlaceValue(herd, n); return; }
+    if (n == null || isBig()) return; // levels 4+ show only the numbers
     if (n === 0) {
       const z = document.createElement('div');
       z.className = 'zero';
@@ -1643,53 +1575,6 @@
     }
   }
 
-  const PLACES = [
-    { key: 'ones', one: 'one', many: 'ones', short: 'O' },
-    { key: 'tens', one: 'ten', many: 'tens', short: 'T' },
-    { key: 'hundreds', one: 'hundred', many: 'hundreds', short: 'H' },
-    { key: 'thousands', one: 'thousand', many: 'thousands', short: 'Th' }
-  ];
-  const digitAt = (n, p) => Math.floor(n / Math.pow(10, p)) % 10;
-  const digitSum = (n) => String(n).split('').reduce((t, c) => t + Number(c), 0);
-
-  // Base-ten picture of a number: one column per place, biggest place on the left.
-  function renderPlaceValue(herd, n) {
-    herd.classList.add('pv');
-    const places = String(n).length;
-    let k = 0;
-    for (let p = places - 1; p >= 0; p--) {
-      const count = digitAt(n, p);
-      const place = PLACES[p];
-      const col = document.createElement('div');
-      col.className = `pv-col pv-${place.key}`;
-      col.dataset.place = place.key;
-      const blocks = document.createElement('div');
-      blocks.className = 'pv-blocks';
-      for (let i = 0; i < count; i++) {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'blk';
-        b.dataset.place = String(p);
-        b.style.setProperty('--i', String(k++));
-        b.setAttribute('aria-label', p === 0 ? state.animal.one : place.one);
-        if (p === 0) b.innerHTML = `<span class="face">${state.animal.emoji}</span>`;
-        blocks.append(b);
-      }
-      const label = document.createElement('div');
-      label.className = 'pv-label';
-      label.innerHTML = `${count} <span class="pv-long">${count === 1 ? place.one : place.many}</span><span class="pv-short">${place.short}</span>`;
-      col.append(blocks, label);
-      herd.append(col);
-    }
-  }
-
-  function tapBlock(b) {
-    const p = Number(b.dataset.place);
-    restartAnim(b, 'pop');
-    Sound.pop(p * 4);
-    Voice.say(p === 0 ? 'one' : `one ${PLACES[p].one}`);
-  }
-
   function renderActiveGroups() {
     els.g1.classList.toggle('active', state.step === 'num1');
     els.g2.classList.toggle('active', state.step === 'num2');
@@ -1701,6 +1586,7 @@
     els.app.dataset.step = state.step;
     els.app.dataset.mode = state.mode;
     els.app.dataset.layout = isSolo() ? 'solo' : 'pair';
+    els.app.dataset.big = String(isBig());
     els.plus.textContent = mode().op;
     els.levelNum.textContent = String(state.level);
     renderEquation();
@@ -1712,11 +1598,9 @@
 
   /* ---------- Step transitions ---------- */
   function scheduleAppearance(n, then) {
-    // Big numbers: pop along with the first dozen blocks, a little faster.
-    const count = isBig() ? Math.min(digitSum(n), 12) : n;
-    const step = isBig() ? Math.min(45, CONFIG.appearStepMs) : CONFIG.appearStepMs;
-    for (let i = 0; i < count; i++) later(() => Sound.pop(i), i * step + 120);
-    later(then, Math.max(count, 1) * step + CONFIG.settleMs);
+    if (isBig()) { later(then, CONFIG.settleMs); return; } // no animals to wait for
+    for (let i = 0; i < n; i++) later(() => Sound.pop(i), i * CONFIG.appearStepMs + 120);
+    later(then, Math.max(n, 1) * CONFIG.appearStepMs + CONFIG.settleMs);
   }
 
   // Take Away: the last d animals of the group leave one after another (d = 0 brings everyone back).
@@ -1780,7 +1664,7 @@
       state.busy = false;
       state.input = '';
       state.counted = 0;
-      setPrompt(mode().askAnswer);
+      setPrompt(isBig() ? mode().askAnswerBig : mode().askAnswer);
       Voice.say(mode().askAnswerSay(state.num1, d), { interrupt: false });
       render();
     });
@@ -1871,9 +1755,14 @@
     Sound.boop();
     els.sa.classList.add('wrong');
     restartAnim(els.equation, 'shake');
-    const hint = state.wrongs >= 2 ? mode().recountHint : '';
-    setPrompt('Oops, try counting them again!' + hint, { nudge: true });
-    Voice.say('Oops! Try counting them again!');
+    if (isBig()) {
+      setPrompt('Oops, not quite! Try again!', { nudge: true });
+      Voice.say('Oops, not quite! Try again!');
+    } else {
+      const hint = state.wrongs >= 2 ? mode().recountHint : '';
+      setPrompt('Oops, try counting them again!' + hint, { nudge: true });
+      Voice.say('Oops! Try counting them again!');
+    }
     renderPad();
     later(() => {
       state.input = '';
@@ -2031,35 +1920,11 @@
   function stopCountAlong() {
     state.countTimers.forEach(clearTimeout);
     state.countTimers = [];
-    els.board.querySelectorAll('.pv-col.hint').forEach((c) => c.classList.remove('hint'));
-  }
-
-  // Big numbers: walk through the places, ones first, lighting up the matching columns.
-  function placeHint() {
-    stopCountAlong();
-    const a = state.num1, b = state.num2;
-    const places = Math.max(String(a).length, String(b).length);
-    const { opWord } = mode();
-    const verb = state.mode === 'addition' ? 'Add' : 'Take away';
-    const text = `${verb} the ones first, then the tens${places > 2 ? ', and so on' : ''}!`;
-    setPrompt(text);
-    Voice.say(text);
-    for (let p = 0; p < places; p++) {
-      state.countTimers.push(setTimeout(() => {
-        els.board.querySelectorAll('.pv-col.hint').forEach((c) => c.classList.remove('hint'));
-        els.board.querySelectorAll(`.pv-col[data-place="${PLACES[p].key}"]`).forEach((c) => c.classList.add('hint'));
-        Sound.pop(p * 4);
-        Voice.say(`The ${PLACES[p].many}: ${digitAt(a, p)} ${opWord} ${digitAt(b, p)}`);
-      }, 2200 + p * 2600));
-    }
-    state.countTimers.push(setTimeout(() => {
-      els.board.querySelectorAll('.pv-col.hint').forEach((c) => c.classList.remove('hint'));
-    }, 2200 + places * 2600));
   }
 
   function countAlong() {
     if (state.step !== 'answer' || state.busy) return;
-    if (isBig()) { placeHint(); return; }
+    if (isBig()) return; // no counting helper above level 3
     stopCountAlong();
     clearCounted();
     setPrompt('Let’s count together!');
@@ -2199,7 +2064,7 @@
   }
 
   onTap(els.pad, { match: '.key, .count-btn', fn: (k) => handleKey(k.dataset.key) });
-  onTap(els.board, { match: '.animal, .blk', fn: (a) => (a.classList.contains('blk') ? tapBlock(a) : tapAnimal(a)) });
+  onTap(els.board, { match: '.animal', fn: (a) => tapAnimal(a) });
   onTap(els.levelChips, { match: '.level-chip', fn: (c) => setLevel(Number(c.dataset.level)) });
   onTap(els.levelBtn, { fn: openLevels });
   onTap(els.levelGrid, { match: '.level-opt', fn: (o) => { setLevel(Number(o.dataset.level)); closeLevels(); } });
