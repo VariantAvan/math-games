@@ -24,7 +24,7 @@ test('a quick tap on ⚙️ does nothing; press and hold opens the grown-ups she
 test('switching skills off: only the skills left on are asked, alternating', async ({ page }) => {
   await openApp(page);
   await holdGear(page);
-  for (const id of ['numbers', 'letters', 'counting', 'starts', 'addition', 'subtraction', 'jumble', 'compare']) {
+  for (const id of ['numbers', 'letters', 'counting', 'starts', 'addition', 'jumble', 'compare']) {
     await page.locator(`[data-toggle="${id}"]`).click();
   }
   expect(await page.evaluate(() => window.SkillMix.enabled())).toEqual(['pattern', 'shapes']);
@@ -47,7 +47,7 @@ test('switching skills off: only the skills left on are asked, alternating', asy
 test('the last skill that is on cannot be switched off', async ({ page }) => {
   await openApp(page);
   await holdGear(page);
-  const ids = await page.evaluate(() => window.SkillMix.skills);
+  const ids = await page.evaluate(() => window.SkillMix.skills.filter((s) => !window.SkillMix.paused.includes(s)));
   for (const id of ids) await page.locator(`[data-toggle="${id}"]`).click();
   expect(await page.evaluate(() => window.SkillMix.enabled())).toEqual(['shapes']);
   await expect(page.locator('[data-toggle="shapes"]')).toHaveText('On');
@@ -98,4 +98,15 @@ test('the sheet can be opened from the start screen too', async ({ page }) => {
   await page.waitForTimeout(1100);
   await page.mouse.up();
   await expect(page.locator('#parentSheet')).toBeVisible();
+});
+
+test('Taking away is paused: shown as "Paused", never asked, but "Try now" still works', async ({ page }) => {
+  await openApp(page);
+  expect(await page.evaluate(() => window.SkillMix.paused)).toEqual(['subtraction']);
+  expect(await page.evaluate(() => window.SkillMix.enabled())).not.toContain('subtraction');
+  await holdGear(page);
+  await expect(page.locator('.skill-row[data-skill="subtraction"] .pill.paused')).toHaveText('Paused');
+  await expect(page.locator('[data-toggle="subtraction"]')).toHaveCount(0);
+  await page.locator('[data-try="subtraction"]').click();
+  await waitReady(page, 'subtraction');
 });

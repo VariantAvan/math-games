@@ -1,6 +1,8 @@
 # Skill Mix 🦉
 
-A **100% offline** learning game for toddlers. Instead of picking a game, the child presses ▶️. After that, one short question at a time comes from a random skill: numbers, letters, counting, letter sounds, adding, taking away, word building, comparing, patterns or shapes. **No reading is needed:** every question is spoken, has its own mascot, colours and jingle, and is answered by tapping big pictures.
+A **100% offline** learning game for toddlers. Instead of picking a game, the child presses ▶️. After that, one short question at a time comes from a random skill: numbers, first letters, counting, letter sounds, adding, word building, comparing, patterns or shapes. Each question has its own mascot, colours, jingle and a 2–3 word description, and is answered by tapping big pictures. Questions are also spoken where the browser's voice works.
+
+> **Voice:** speech doesn't work on every device (it didn't on the iPad this was tried on), so nothing depends on it. The game is playable silently.
 
 The whole app is one file, [`index.html`](index.html). Open it in any browser, even offline, straight from disk (`file://`).
 
@@ -22,18 +24,20 @@ The whole app is one file, [`index.html`](index.html). Open it in any browser, e
 
 ## The ten skills (all at level 1 for now)
 
-| Skill | Mascot | Level 1 |
-|---|---|---|
-| Numbers | 🦉 | "Find 2!" with 2 numerals from 1–3, each with dots under it. The question shows that many dots. |
-| Letters | 🐝 | Matching: a big capital (A, B, O, S, X or T), tap the same one of 2. |
-| Counting | 🐿️ | 1–3 animals: how many? 2 numeral cards with dots. |
-| Starts with… | 🦜 | A big capital is shown and its **sound** is spoken ("P… puh"). Tap the picture that starts with it (🐷 or 🐟). |
-| Adding | 🐻 | 1+1, 1+2 or 2+1 with animals. 2 answer cards. |
-| Taking away | 🐰 | 2−1, 3−1 or 3−2: the animals that leave hop away and get crossed out. |
-| Word jumble | 🐙 | Picture plus 3 slots with faint letters (C A T). Tap the tiles in order. |
-| More or fewer | 🐘 | "Which one has more?" Two groups that are easy to tell apart (e.g. 1 vs 4). |
-| What comes next | 🐛 | 🔴🔵🔴🔵🔴❓ Tap the next colour. |
-| Shapes | 🦊 | Tap the same shape (circle, square, triangle, star or heart). |
+Each game shows a short **description** (2–3 words) in its intro and next to the mascot on every question, so a grown-up can tell at a glance what is being asked even when the voice doesn't work.
+
+| Skill | Mascot | Description | Level 1 |
+|---|---|---|---|
+| Numbers | 🦉 | Find the number | Numerals 1–3, each with dots under it; the question shows that many dots. |
+| First letter | 🐝 | Which first letter? | A picture (🐶): tap the capital letter it starts with, from 2 (D or P). Letters A B D F M P S T, never a look-alike pair such as B and P. |
+| Counting | 🐿️ | How many? | 1–3 animals; 2 numeral cards with dots. |
+| Starts with… | 🦜 | Starts with… | A big capital (its sound is spoken where the voice works). Tap the picture that starts with it (🐷 or 🐟). |
+| Adding | 🐻 | Add them up | 1+1, 1+2 or 2+1 with animals; 2 answer cards. |
+| Taking away | 🐰 | Take away | **Paused**: not in the rotation for now (still reachable with Try now). |
+| Word jumble | 🐙 | Spell the word | Picture plus 3 slots with faint letters (C A T). Tap the tiles in order. |
+| More or fewer | 🐘 | Which has more? | Two groups that are easy to tell apart (e.g. 1 vs 4). |
+| What comes next | 🐛 | What comes next? | 🔴🔵🔴🔵🔴❓ Tap the next colour. |
+| Shapes | 🦊 | Same shape | Tap the same shape (circle, square, triangle, star or heart). |
 
 Letters are **capitals only** for now.
 
@@ -43,7 +47,7 @@ Letters are **capitals only** for now.
 
 **Press and hold ⚙️** (top right, also on the start screen) for about a second. A quick toddler tap does nothing. The sheet shows:
 - **Sound and voice** on/off.
-- **Each skill switched on or off.** At least one stays on, and the choice is remembered on the device.
+- **Each skill switched on or off.** At least one stays on, and the choice is remembered on the device. Paused skills (Taking away, for now) show **Paused** and are never asked.
 - **Try now:** jump straight to a skill (handy for checking the letter sounds).
 - **Each skill's record:** level, tries, right answers, right on the first try, and average time per right answer.
 

@@ -4,6 +4,12 @@
 
 The child doesn't choose a game. Each question comes from a random skill (never the same skill twice in a row), and every skill starts at the easiest level. Later, each skill's own record (tries, right answers, time) moves it up or down, so the mix stays just hard enough for every skill separately.
 
+## Status notes
+
+- **Voice doesn't work on the iPad it was tried on**, so the game must work silently. Every game has a 2–3 word description in its intro and name tag.
+- **Letters** changed from "match the same letter" to **"First letter"**: see a picture, pick the letter it starts with.
+- **Taking away is paused** (out of the rotation) until it's reworked.
+
 ## Rules for "no reading needed"
 
 1. **Voice first.** Every question is spoken, and 🔊 in the same spot always repeats it.
@@ -23,11 +29,11 @@ Each step changes **one thing**: more choices, a bigger range, look-alike distra
 | Skill | L1 ✅ | L2 | L3 | L4 | L5 |
 |---|---|---|---|---|---|
 | Numbers 🦉 | Find 1–3, 2 choices, dots under numerals and in the question | 3 choices, 1–5, no dots | 4 choices, 0–9 | Look-alikes (6/9, 1/7, 2/5) | Teens (12 vs 21), 10–20 |
-| Letters 🐝 | Match a capital (A B O S X T), 2 choices | Voice only ("Find M"), 3 capitals | 4 capitals, A–Z | Look-alike capitals (E/F, M/N/W, O/Q, P/R) | Capitals with a picture word ("A for apple") |
+| First letter 🐝 | Picture → pick its first letter, 2 capitals (A B D F M P S T, no look-alike pairs) | 3 capitals, more letters | 4 capitals, A–Z | Look-alike capitals (B/P, E/F, M/N) | Lowercase letters |
 | Counting 🐿️ | 1–3 in a row, 2 choices with dots | 1–5, 3 choices | 1–10 in dice / ten-frame patterns, keypad | 1–10 scattered | Timed, or up to 20 in ten-frames |
 | Starts with… 🦜 | Letter + sound, pick 1 of 2 pictures (A B D F M P S T) | 3 pictures, more letters | Reverse: picture → pick its letter | Similar sounds (B/P, M/N, S/Z) | "Tap all that start with S" |
 | Adding 🐻 | Sums up to 3, 2 choices | Up to 5, 3 choices | Up to 10, keypad | Up to 18 | Multi-digit (like the earlier Add Along levels 4–10) |
-| Taking away 🐰 | From up to 3, 2 choices | From up to 5, 3 choices | From up to 10, keypad | Up to 18 − 9 | Multi-digit |
+| Taking away 🐰 (paused) | From up to 3, 2 choices | From up to 5, 3 choices | From up to 10, keypad | Up to 18 − 9 | Multi-digit |
 | Word jumble 🐙 | 3 letters, ghost letters, 10 words | Only the first ghost letter | No ghosts | 4-letter words (FISH, FROG) | 5 letters or a decoy tile |
 | More or fewer 🐘 | "More", clearly different (1 vs 4) | Close numbers (3 vs 5), plus "fewer" | Numerals, no pictures | Three groups: "the most" | >, <, = |
 | What comes next 🐛 | AB colours, 2 choices | AB animals, 3 choices | AAB / ABB | ABC | Number patterns (2, 4, 6, ❓) |

@@ -3,7 +3,7 @@ const { test } = require('@playwright/test');
 const { FAST, openStart, openApp, state, spoken, force, answerRight, expect } = require('./helpers');
 
 const STARTS_L1 = ['A', 'B', 'D', 'F', 'M', 'P', 'S', 'T'];
-const LETTERS_L1 = ['A', 'B', 'O', 'S', 'X', 'T'];
+const LOOKALIKE = ['BP', 'PB', 'BD', 'DB', 'FP', 'PF'];
 const JUMBLE_L1 = ['CAT', 'DOG', 'SUN', 'BUS', 'PIG', 'HAT', 'COW', 'FOX', 'BED', 'CUP'];
 const SHAPES_L1 = ['circle', 'square', 'triangle', 'star', 'heart'];
 const inRange = (lo, hi) => (v) => Number(v) >= lo && Number(v) <= hi;
@@ -11,7 +11,8 @@ const inRange = (lo, hi) => (v) => Number(v) >= lo && Number(v) <= hi;
 // For each skill: a check that one generated level-1 question follows the rules.
 const RULES = {
   numbers: (q) => q.labels.every(inRange(1, 3)) && q.labels[q.answer] === String(q.data.n),
-  letters: (q) => q.labels.every((l) => LETTERS_L1.includes(l)) && q.labels[q.answer] === q.data.letter,
+  letters: (q) => q.labels.every((l) => STARTS_L1.includes(l)) && q.labels[q.answer] === q.data.letter
+    && q.data.word[0].toUpperCase() === q.data.letter && !LOOKALIKE.includes(q.labels.join('')),
   counting: (q) => q.labels.every(inRange(1, 3)) && q.labels[q.answer] === String(q.data.n),
   starts: (q) => STARTS_L1.includes(q.data.letter) && q.labels[q.answer] === q.data.word
     && q.data.word[0].toUpperCase() === q.data.letter && q.data.distractor[0].toUpperCase() !== q.data.letter,
@@ -54,10 +55,15 @@ for (const id of SKILLS) {
     await force(page, id);
     const st = await state(page);
     expect(await spoken(page)).toContain(st.q.say);
+    const labels = await page.evaluate(() => window.SkillMix.labels);
+    await expect(page.locator('#prompt .tag .tag-text')).toHaveText(labels[id]);
     const d = st.q.data;
     const prompt = page.locator('#prompt');
     if (id === 'numbers') await expect(prompt.locator('.bubble .dots i')).toHaveCount(d.n);
-    if (id === 'letters') await expect(prompt.locator('.bubble')).toHaveText(d.letter);
+    if (id === 'letters') {
+      await expect(prompt.locator('.bubble .emoji')).toHaveCount(1); // a picture, not a letter
+      await expect(page.locator('#answers .card')).toHaveText(st.q.labels);
+    }
     if (id === 'counting') await expect(prompt.locator('.critter')).toHaveCount(d.n);
     if (id === 'starts') {
       await expect(prompt.locator('.bubble')).toHaveText(d.letter);

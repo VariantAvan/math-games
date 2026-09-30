@@ -143,10 +143,22 @@
     flex-wrap: wrap;
     padding-top: clamp(30px, 8vmin, 60px);
   }
-  .mascot {
+  /* The game's name tag: mascot + a 2–3 word description, top left of every question. */
+  .tag {
     position: absolute;
     left: 0; top: 0;
-    font-size: clamp(40px, 10vmin, 76px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 16px 4px 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 3px solid var(--skill-edge);
+    max-width: 100%;
+  }
+  .tag-text { font-size: clamp(16px, 3.6vmin, 28px); font-weight: 900; white-space: nowrap; }
+  .mascot {
+    font-size: clamp(34px, 8vmin, 60px);
     animation: bob 2.4s ease-in-out infinite;
     filter: drop-shadow(0 4px 3px rgba(45, 42, 74, 0.2));
   }
@@ -325,7 +337,17 @@
     display: grid; place-items: center;
     background: var(--skill-bg);
   }
-  .intro-inner { display: flex; align-items: center; gap: 20px; animation: intro-in 0.5s cubic-bezier(.34, 1.56, .64, 1) both; }
+  .intro-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; animation: intro-in 0.5s cubic-bezier(.34, 1.56, .64, 1) both; }
+  .intro-row { display: flex; align-items: center; gap: 20px; }
+  .intro-label {
+    font-size: clamp(30px, 8vmin, 60px);
+    font-weight: 900;
+    background: #fff;
+    border: 5px solid var(--skill-edge);
+    border-radius: 999px;
+    padding: 6px 28px;
+    text-align: center;
+  }
   .intro-mascot { font-family: var(--emoji); font-size: clamp(110px, 32vmin, 240px); animation: party 0.45s ease-in-out infinite alternate; }
   .intro-icon {
     font-family: var(--emoji);
@@ -397,6 +419,7 @@
   }
   .pill.on { background: var(--good); color: #fff; }
   .pill.try { background: #fff4c2; }
+  .pill.paused { background: #eee; color: var(--ink-soft); cursor: default; }
   .done-btn { margin-top: 16px; width: 100%; min-height: 56px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 20px; font-weight: 900; }
 
   /* ---------- Keyframes ---------- */
@@ -449,7 +472,10 @@
 <div class="hand emoji" id="hand" hidden aria-hidden="true">👆</div>
 
 <div class="intro" id="intro" hidden aria-hidden="true">
-  <div class="intro-inner" id="introInner"><span class="intro-mascot" id="introMascot"></span><span class="intro-icon" id="introIcon"></span></div>
+  <div class="intro-inner" id="introInner">
+    <div class="intro-row"><span class="intro-mascot" id="introMascot"></span><span class="intro-icon" id="introIcon"></span></div>
+    <div class="intro-label" id="introLabel"></div>
+  </div>
 </div>
 
 <div class="start" id="start">
@@ -461,7 +487,7 @@
 <div class="overlay" id="parentSheet" hidden role="dialog" aria-modal="true" aria-labelledby="parentTitle">
   <div class="sheet">
     <h2 id="parentTitle">Grown-ups</h2>
-    <p>Questions come from the skills that are switched on, one at a time, never the same skill twice in a row. Every skill starts at level 1.</p>
+    <p>Questions come from the skills that are switched on, one at a time, never the same skill twice in a row. Every skill starts at level 1. Paused skills are never asked, but you can still try them.</p>
     <div class="sheet-row"><span>Sound and voice</span><button class="pill" id="soundToggle" type="button"></button></div>
     <div id="skillRows"></div>
     <button class="done-btn" id="closeParent" type="button">Done</button>
@@ -1018,7 +1044,8 @@
     W: ['watermelon', '🍉'], Y: ['yo-yo', '🪀'], Z: ['zebra', '🦓']
   };
   const STARTS_L1 = ['A', 'B', 'D', 'F', 'M', 'P', 'S', 'T']; // clear, different first sounds
-  const LETTERS_L1 = ['A', 'B', 'O', 'S', 'X', 'T'];          // very different shapes
+  // "First letter": letter pairs that look too alike to put side by side at level 1.
+  const LOOKALIKE_LETTERS = ['B|P', 'P|B', 'B|D', 'D|B', 'F|P', 'P|F'];
   const JUMBLE_L1 = [
     ['CAT', '🐱'], ['DOG', '🐶'], ['SUN', '☀️'], ['BUS', '🚌'], ['PIG', '🐷'],
     ['HAT', '🎩'], ['COW', '🐮'], ['FOX', '🦊'], ['BED', '🛏️'], ['CUP', '☕']
@@ -1063,12 +1090,17 @@
     };
   }
 
+  // Show a picture, pick the letter it starts with.
   function makeLetters() {
-    const t = pick(LETTERS_L1);
+    const t = pick(STARTS_L1);
+    let d;
+    do { d = otherFrom(STARTS_L1, t); } while (LOOKALIKE_LETTERS.includes(`${t}|${d}`));
+    const [word, e] = WORDS[t];
     return {
-      ...twoChoices(t, otherFrom(LETTERS_L1, t), (l) => ({ html: `<span>${l}</span>`, label: l })),
-      prompt: `<div class="bubble">${t}</div>`,
-      say: `Find ${LETTER_NAME[t]}!`, praise: `Yes! ${LETTER_NAME[t]}!`, data: { letter: t }
+      ...twoChoices(t, d, (l) => ({ html: `<span>${l}</span>`, label: l })),
+      prompt: `<div class="bubble"><span class="emoji">${e}</span></div>`,
+      say: `${word}! What does ${word} start with?`, praise: `Yes! ${word} starts with ${LETTER_NAME[t]}!`,
+      data: { letter: t, word, distractor: d }
     };
   }
 
@@ -1169,17 +1201,19 @@
   }
 
   // Each skill has its own mascot, colours, icon and jingle, so a child knows what is being asked without reading.
+  // `label` is the 2–3 word description shown in the intro and on every question.
+  // `paused` skills stay in the code (and "Try now") but are never picked.
   const SKILLS = {
-    numbers:     { name: 'Numbers',          mascot: '🦉', icon: '🔢', bg: '#dcefff', edge: '#8cc6f2', notes: [523, 659, 784], make: makeNumbers },
-    letters:     { name: 'Letters',          mascot: '🐝', icon: '🔤', bg: '#fff3bd', edge: '#e8c64a', notes: [784, 659, 523], make: makeLetters },
-    counting:    { name: 'Counting',         mascot: '🐿️', icon: '👆', bg: '#dff6d0', edge: '#86cf6a', notes: [523, 587, 659, 784], make: makeCounting },
-    starts:      { name: 'Starts with…',     mascot: '🦜', icon: '🗣️', bg: '#ffe3c8', edge: '#f3a55f', notes: [659, 784, 880], make: makeStarts },
-    addition:    { name: 'Adding',           mascot: '🐻', icon: '➕', bg: '#ffdcea', edge: '#f28db5', notes: [523, 784, 1047], make: makeAddition },
-    subtraction: { name: 'Taking away',      mascot: '🐰', icon: '➖', bg: '#eadfff', edge: '#ab8ff0', notes: [1047, 784, 523], make: makeSubtraction },
-    jumble:      { name: 'Word jumble',      mascot: '🐙', icon: '🧩', bg: '#d2f4ef', edge: '#5cc9b8', notes: [587, 784, 988], make: makeJumble },
-    compare:     { name: 'More or fewer',    mascot: '🐘', icon: '⚖️', bg: '#e2e9f6', edge: '#8fa3cc', notes: [392, 523, 659], make: makeCompare },
-    pattern:     { name: 'What comes next',  mascot: '🐛', icon: '🔁', bg: '#eef8c8', edge: '#b3d152', notes: [523, 659, 523, 659], make: makePattern },
-    shapes:      { name: 'Shapes',           mascot: '🦊', icon: '🔺', bg: '#ffe5da', edge: '#f39a78', notes: [880, 784, 659, 784], make: makeShapes }
+    numbers:     { name: 'Numbers',          label: 'Find the number',  mascot: '🦉', icon: '🔢', bg: '#dcefff', edge: '#8cc6f2', notes: [523, 659, 784], make: makeNumbers },
+    letters:     { name: 'First letter',     label: 'Which first letter?', mascot: '🐝', icon: '🔤', bg: '#fff3bd', edge: '#e8c64a', notes: [784, 659, 523], make: makeLetters },
+    counting:    { name: 'Counting',         label: 'How many?',        mascot: '🐿️', icon: '👆', bg: '#dff6d0', edge: '#86cf6a', notes: [523, 587, 659, 784], make: makeCounting },
+    starts:      { name: 'Starts with…',     label: 'Starts with…',     mascot: '🦜', icon: '🗣️', bg: '#ffe3c8', edge: '#f3a55f', notes: [659, 784, 880], make: makeStarts },
+    addition:    { name: 'Adding',           label: 'Add them up',      mascot: '🐻', icon: '➕', bg: '#ffdcea', edge: '#f28db5', notes: [523, 784, 1047], make: makeAddition },
+    subtraction: { name: 'Taking away',      label: 'Take away',        paused: true, mascot: '🐰', icon: '➖', bg: '#eadfff', edge: '#ab8ff0', notes: [1047, 784, 523], make: makeSubtraction },
+    jumble:      { name: 'Word jumble',      label: 'Spell the word',   mascot: '🐙', icon: '🧩', bg: '#d2f4ef', edge: '#5cc9b8', notes: [587, 784, 988], make: makeJumble },
+    compare:     { name: 'More or fewer',    label: 'Which has more?',  mascot: '🐘', icon: '⚖️', bg: '#e2e9f6', edge: '#8fa3cc', notes: [392, 523, 659], make: makeCompare },
+    pattern:     { name: 'What comes next',  label: 'What comes next?', mascot: '🐛', icon: '🔁', bg: '#eef8c8', edge: '#b3d152', notes: [523, 659, 523, 659], make: makePattern },
+    shapes:      { name: 'Shapes',           label: 'Same shape',       mascot: '🦊', icon: '🔺', bg: '#ffe5da', edge: '#f39a78', notes: [880, 784, 659, 784], make: makeShapes }
   };
   const SKILL_IDS = Object.keys(SKILLS);
 
@@ -1187,7 +1221,7 @@
   const els = {
     prompt: $('#prompt'), answers: $('#answers'), stickers: $('#stickers'),
     replayBtn: $('#replayBtn'), parentBtn: $('#parentBtn'), hand: $('#hand'),
-    intro: $('#intro'), introMascot: $('#introMascot'), introIcon: $('#introIcon'), introInner: $('#introInner'),
+    intro: $('#intro'), introMascot: $('#introMascot'), introIcon: $('#introIcon'), introInner: $('#introInner'), introLabel: $('#introLabel'),
     start: $('#start'), playBtn: $('#playBtn'), parade: $('#parade'), startParentBtn: $('#startParentBtn'),
     sheet: $('#parentSheet'), skillRows: $('#skillRows'), soundToggle: $('#soundToggle'), closeParent: $('#closeParent')
   };
@@ -1212,10 +1246,17 @@
   const saveStats = () => store.set('stats', stats);
 
   /* ---------- Question flow ---------- */
+  // Skills that can come up: switched on and not paused.
+  const inRotation = () => {
+    const on = enabled.filter((id) => !SKILLS[id].paused);
+    return on.length ? on : SKILL_IDS.filter((id) => !SKILLS[id].paused);
+  };
+
   function pickSkill() {
     if (S.forced && SKILLS[S.forced]) { const f = S.forced; S.forced = null; return f; }
-    const pool = enabled.filter((id) => id !== S.last);
-    return pick(pool.length ? pool : enabled);
+    const all = inRotation();
+    const pool = all.filter((id) => id !== S.last);
+    return pick(pool.length ? pool : all);
   }
 
   function applySkillLook(id) {
@@ -1241,6 +1282,7 @@
     els.answers.innerHTML = '';
     els.introMascot.textContent = sk.mascot;
     els.introIcon.textContent = sk.icon;
+    els.introLabel.textContent = sk.label;
     restartAnim(els.introInner, 'intro-inner');
     els.intro.hidden = false;
     S.inIntro = true;
@@ -1262,7 +1304,7 @@
     S.wrongs = 0;
     S.counted = 0;
     S.jpos = 0;
-    els.prompt.innerHTML = `<span class="mascot emoji" aria-hidden="true">${sk.mascot}</span>${q.prompt}`;
+    els.prompt.innerHTML = `<div class="tag"><span class="mascot emoji" aria-hidden="true">${sk.mascot}</span><span class="tag-text">${sk.label}</span></div>${q.prompt}`;
     if (q.kind === 'jumble') {
       els.answers.innerHTML = q.tiles.map((l, i) =>
         `<button class="tile" type="button" data-l="${l}" style="--i:${i}" aria-label="${LETTER_NAME[l]}">${l}</button>`).join('');
@@ -1420,12 +1462,14 @@
     els.soundToggle.textContent = Sound.muted ? 'Off' : 'On';
     els.soundToggle.classList.toggle('on', !Sound.muted);
     els.skillRows.innerHTML = SKILL_IDS.map((id) => {
-      const sk = SKILLS[id], st = stats[id], on = enabled.includes(id);
+      const sk = SKILLS[id], st = stats[id], on = enabled.includes(id) && !sk.paused;
       const avg = st.correct ? `${(st.totalMs / st.correct / 1000).toFixed(1)} s each` : '–';
       return `<div class="skill-row" data-skill="${id}">
         <span class="emoji" aria-hidden="true">${sk.mascot}</span>
         <span>${sk.name} · level ${st.level}<br><span class="stat">${st.tries} tried · ${st.correct} right · ${st.firstTry} first try · ${avg}</span></span>
-        <button class="pill${on ? ' on' : ''}" type="button" data-toggle="${id}" aria-pressed="${on}">${on ? 'On' : 'Off'}</button>
+        ${sk.paused
+          ? '<span class="pill paused">Paused</span>'
+          : `<button class="pill${on ? ' on' : ''}" type="button" data-toggle="${id}" aria-pressed="${on}">${on ? 'On' : 'Off'}</button>`}
         <button class="pill try" type="button" data-try="${id}">Try now</button>
       </div>`;
     }).join('');
@@ -1444,8 +1488,9 @@
   }
 
   function toggleSkill(id) {
+    if (SKILLS[id].paused) return;
     if (enabled.includes(id)) {
-      if (enabled.length === 1) return; // keep at least one skill on
+      if (enabled.filter((x) => !SKILLS[x].paused).length === 1) return; // keep at least one skill on
       enabled = enabled.filter((x) => x !== id);
     } else {
       enabled = SKILL_IDS.filter((x) => x === id || enabled.includes(x));
@@ -1583,7 +1628,9 @@
     // Tests only: switch to a skill straight away.
     force: (id) => { S.forced = id; if (S.started) nextQuestion(); },
     stats: () => JSON.parse(JSON.stringify(stats)),
-    enabled: () => enabled.slice(),
+    enabled: () => enabled.filter((id) => !SKILLS[id].paused), // the skills that can come up
+    labels: Object.fromEntries(SKILL_IDS.map((id) => [id, SKILLS[id].label])),
+    paused: SKILL_IDS.filter((id) => SKILLS[id].paused),
     letterSound: LETTER_SOUND,
     audioState: () => Sound.state,
     particles: () => FX.count(),

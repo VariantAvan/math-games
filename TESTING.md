@@ -31,9 +31,10 @@ The page exposes a test hook, `window.SkillMix`:
 |---|---|
 | E.1 | The start screen shows ▶️ and the 10 mascots, and nothing is asked or spoken yet. |
 | E.2 | Enter or Space also starts. |
-| E.3 | Each question opens with the skill's mascot, icon and jingle. The same mascot then sits by the question, and the question is spoken. |
+| E.3 | Each question opens with the skill's mascot, icon, jingle and a 2–3 word description. The same mascot and description then sit in a name tag by the question, and the question is spoken. |
 | E.4 | Tapping the intro skips it. |
-| E.5 | Over 25 questions, the same skill never comes twice in a row, and at least 6 different skills appear. |
+| E.5 | Over 25 questions, the same skill never comes twice in a row, at least 6 different skills appear, and Taking away (paused) never comes up. |
+| E.15 | Every game has a description of at most 3 words. |
 | E.6 | Right answer: green card, chime + applause, the praise is spoken, a sticker is added, and the record gets tries / correct / firstTry / time. |
 | E.7 | Wrong answer: wobble, "uh-oh" and "Try again!". The card fades and the right card glows. The faded card can't be tapped. Right after a miss counts as correct but not first try. |
 | E.8 | Five stickers: fanfare, fireworks and "Hooray! Five stickers!". Then the sticker row empties and play continues. |
@@ -49,7 +50,7 @@ The page exposes a test hook, `window.SkillMix`:
 | # | Test |
 |---|---|
 | K.1 | For every skill, 300 generated level-1 questions follow its rules (below). Each has 2 different choices, and the right answer appears on both sides over the run. |
-| K.2 | For each of the 10 skills, the question looks right on screen, is spoken, can be answered, and the praise is spoken. Where there's a ❓, it fills in with the answer. |
+| K.2 | For each of the 10 skills, the question looks right on screen, shows the game's description, is spoken, can be answered, and the praise is spoken. Where there's a ❓, it fills in with the answer. |
 | K.3 | Word jumble: a wrong tile fills nothing and says which letter to find. After two misses the right tile glows. A right tile fills the slot and moves the highlight on. |
 | K.4 | Word jumble can be typed on a keyboard. |
 
@@ -58,7 +59,7 @@ The level-1 rules the generator is checked against:
 | Skill | Rule |
 |---|---|
 | Numbers | Choices 1–3. The question shows that many dots. |
-| Letters | Capitals A, B, O, S, X, T. The answer is the shown letter. |
+| First letter | A picture from the word list; choices are 2 capitals from A B D F M P S T, never a look-alike pair (B/P, B/D, F/P). The answer is the picture word's first letter. The question shows the picture, not a letter. |
 | Counting | 1–3 animals. The answer is the count. |
 | Starts with… | Letters A B D F M P S T. The right picture word starts with the letter and the other doesn't. The spoken question includes the letter's sound from `LETTER_SOUND`. |
 | Adding | a, b ≥ 1 and a + b ≤ 3. Choices 1–4. |
@@ -79,6 +80,7 @@ The level-1 rules the generator is checked against:
 | P.5 | Sound off silences every sound and the voice, and stays off after a reload. |
 | P.6 | The sheet shows each skill's level, tries, right answers, first tries and average time. |
 | P.7 | The sheet can be opened from the start screen too. |
+| P.8 | Taking away shows **Paused** (no on/off switch), is not in the rotation, and **Try now** still opens it. |
 
 ## Layout: `tests/04-layout.spec.js`
 
@@ -90,7 +92,7 @@ The level-1 rules the generator is checked against:
 
 **Voice and sound**
 - [ ] On your iPad or phone, play each skill with **Try now**, and listen to how each question is spoken.
-- [ ] **Letter sounds:** use "Starts with…" to hear all 8 level-1 sounds (A ah, B buh, D duh, F fff, M mmm, P puh, S sss, T tuh). Note any that come out wrong, e.g. spelled out as letters. Fix them in `LETTER_SOUND`, or tell me which ones.
+- [ ] Voice is optional: on devices where it doesn't work, check every game is still clear from its picture and description.
 - [ ] Letter names are said as names ("bee", not "b" read as a word).
 - [ ] Each skill's jingle is short and pleasant, and they sound different from each other.
 

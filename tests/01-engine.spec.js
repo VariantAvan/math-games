@@ -22,10 +22,16 @@ test('each question opens with the skill mascot + icon + jingle, then is spoken'
   await expect(page.locator('#intro')).toBeVisible();
   const mascot = await page.locator('#introMascot').textContent();
   expect(mascot.length).toBeGreaterThan(0);
+  // every game has a 2–3 word description, shown in the intro and on the question
+  const label = await page.locator('#introLabel').textContent();
+  const words = label.split(/\s+/).filter(Boolean).length;
+  expect(words).toBeGreaterThanOrEqual(2);
+  expect(words).toBeLessThanOrEqual(3);
   expect(await soundLog(page)).toContain('jingle');
   await waitReady(page);
   await expect(page.locator('#intro')).toBeHidden();
-  await expect(page.locator('#prompt .mascot')).toHaveText(mascot);
+  await expect(page.locator('#prompt .tag .mascot')).toHaveText(mascot);
+  await expect(page.locator('#prompt .tag .tag-text')).toHaveText(label);
   const st = await state(page);
   expect(await spoken(page)).toContain(st.q.say);
 });
@@ -49,6 +55,7 @@ test('skills are random and never the same twice in a row', async ({ page }) => 
   }
   for (let i = 1; i < seen.length; i++) expect(seen[i], `question ${i}`).not.toBe(seen[i - 1]);
   expect(new Set(seen).size).toBeGreaterThanOrEqual(6);
+  expect(seen, 'Taking away is paused').not.toContain('subtraction');
 });
 
 test('right answer: green card, praise, a sticker, stats recorded', async ({ page }) => {
@@ -147,4 +154,15 @@ test('stats are kept on the device across visits', async ({ page }) => {
   await page.goto(APP_URL);
   await page.waitForFunction(() => window.SkillMix);
   expect((await page.evaluate(() => window.SkillMix.stats())).pattern.correct).toBe(1);
+});
+
+test('every game has a 2–3 word description', async ({ page }) => {
+  await openStart(page);
+  const labels = await page.evaluate(() => window.SkillMix.labels);
+  expect(Object.keys(labels)).toHaveLength(10);
+  for (const [id, label] of Object.entries(labels)) {
+    const words = label.split(/\s+/).filter(Boolean).length;
+    expect(words, `${id}: "${label}"`).toBeGreaterThanOrEqual(1);
+    expect(words, `${id}: "${label}"`).toBeLessThanOrEqual(3);
+  }
 });
