@@ -4,7 +4,7 @@ const { expect } = require('@playwright/test');
 const APP_URL = 'file://' + path.resolve(__dirname, '..', 'index.html');
 
 // Short timings so tests don't wait for the real (toddler-paced) pauses.
-const FAST = { introMs: 60, rightPauseMs: 150, wrongMs: 80, bigPartyMs: 300 };
+const FAST = { introMs: 40, demoStepMs: 30, yourTurnMs: 30, joinMs: 40, rightPauseMs: 150, explainMs: 300, bigPartyMs: 300 };
 
 async function openStart(page, config = FAST) {
   await page.goto(APP_URL);

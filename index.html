@@ -422,6 +422,108 @@
   .pill.paused { background: #eee; color: var(--ink-soft); cursor: default; }
   .done-btn { margin-top: 16px; width: 100%; min-height: 56px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 20px; font-weight: 900; }
 
+
+  /* ---------- Taps, mistakes and explanations ---------- */
+  .card.pressing, .tile.pressing { transform: translateY(5px) scale(0.98); }
+  .card.hint { box-shadow: 0 0 0 5px rgba(255, 216, 77, 0.9), 0 10px 22px rgba(45, 42, 74, 0.1); animation: breathe 1.2s ease-in-out infinite; }
+  .critter.paired::after {
+    content: "";
+    position: absolute; left: 50%; bottom: -10px;
+    width: 14px; height: 14px; margin-left: -7px;
+    border-radius: 50%;
+    background: #ff9f43;
+  }
+  .critter.unpaired { animation: breathe 0.8s ease-in-out infinite; box-shadow: inset 0 0 0 3px #ff9f43; }
+  .extra-dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #ff5f86;
+    align-self: flex-end; margin: 0 6px 4px;
+    animation: pop-in 0.3s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  .group { position: relative; padding-bottom: 16px; }
+  .critter.joining { animation: join 0.6s ease both; animation-delay: calc(var(--i, 0) * 120ms); }
+  @keyframes join { from { transform: translateX(160%); opacity: 0.4; } to { transform: none; opacity: 1; } }
+  .cmp { display: flex; flex-direction: column; align-items: flex-start; gap: 0.12em; padding: 0.2em 0.3em; }
+  .dots-row { display: flex; gap: 0.12em; min-height: 0.36em; }
+  .dots-row i { width: 0.36em; height: 0.36em; border-radius: 50%; background: var(--accent); display: block; }
+  .dots-row.picked i { background: #ff9f43; animation: pop-in 0.3s cubic-bezier(.34, 1.56, .64, 1) both; }
+  .plate {
+    display: grid;
+    grid-template-columns: repeat(5, 1em);
+    justify-content: start;
+    gap: 4px 6px;
+    font-size: clamp(24px, 6vmin, 44px);
+    padding: 6px 10px 12px;
+    border-radius: 50% / 30%;
+    background: radial-gradient(ellipse at center, #fff 55%, #f1ecff 56%);
+  }
+  .plate .critter { font-size: 1em; padding: 0; }
+  .food.paired { box-shadow: inset 0 0 0 2px #ff9f43; border-radius: 10px; }
+  .food.extra { background: #fff4b8; border-radius: 10px; animation: breathe 0.8s ease-in-out infinite; }
+  .qmark.broken { border-color: #ff5f86; animation: shake 0.5s ease; }
+  .shape-host { position: relative; }
+  .ghost-shape {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    opacity: 0.6;
+    pointer-events: none;
+    animation: ghost-in 0.5s ease both;
+  }
+  @keyframes ghost-in { from { transform: translateX(-60%); opacity: 0; } to { transform: none; opacity: 0.6; } }
+  .tile.nofit { animation: nofit 0.55s ease; }
+  @keyframes nofit { 0%, 100% { transform: none; } 35% { transform: translateY(-40px) scale(0.92); } 55% { transform: translateY(-30px) rotate(-10deg); } 75% { transform: translateY(-10px) rotate(6deg); } }
+  .jslot.nope { animation: shake 0.5s ease; border-color: #ff5f86; }
+
+  /* ---------- Demo ---------- */
+  .stage.demo .q-answers, .stage.demo .q-prompt { pointer-events: auto; }
+  .watch {
+    position: fixed;
+    top: max(12px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 25;
+    font-size: 40px;
+    background: #fff;
+    border-radius: 999px;
+    padding: 4px 16px;
+    border: 4px solid var(--skill-edge);
+    animation: breathe 1.2s ease-in-out infinite;
+  }
+  .your-turn {
+    position: fixed;
+    left: 50%; top: 45%;
+    transform: translate(-50%, -50%);
+    z-index: 26;
+    padding: 14px 34px;
+    border-radius: 999px;
+    background: var(--good);
+    color: #fff;
+    font-size: clamp(32px, 8vmin, 60px);
+    font-weight: 900;
+    white-space: nowrap;
+    box-shadow: 0 10px 0 #1e8a4a, 0 16px 40px rgba(45, 42, 74, 0.25);
+  }
+  .your-turn.show { animation: intro-in 0.45s cubic-bezier(.34, 1.56, .64, 1) both; }
+  .caption {
+    position: fixed;
+    left: 50%; bottom: max(10px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    z-index: 25;
+    max-width: min(92vw, 640px);
+    padding: 8px 16px;
+    border-radius: 14px;
+    background: rgba(45, 42, 74, 0.82);
+    color: #fff;
+    font-size: clamp(13px, 2.2vmin, 17px);
+    font-weight: 700;
+    text-align: center;
+    pointer-events: none;
+  }
+  .trophy { font-family: var(--emoji); font-size: clamp(90px, 24vmin, 180px); animation: party 0.6s ease-in-out infinite alternate; }
+  .watch[hidden], .your-turn[hidden], .caption[hidden], .trophy[hidden] { display: none; }
+  .sheet-row .pills { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+  .voice-status { font-size: 13px; color: var(--ink-soft); padding: 0 0 8px; }
+
   /* ---------- Keyframes ---------- */
   @keyframes pop-in { from { transform: scale(0.3); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.4) rotate(-8deg); } 100% { transform: scale(1); } }
@@ -470,6 +572,9 @@
 </div>
 
 <div class="hand emoji" id="hand" hidden aria-hidden="true">👆</div>
+<div class="watch emoji" id="watch" hidden aria-hidden="true">👀</div>
+<button class="your-turn" id="yourTurn" type="button" hidden><span class="emoji">👉</span> Your turn!</button>
+<div class="caption" id="caption" hidden></div>
 
 <div class="intro" id="intro" hidden aria-hidden="true">
   <div class="intro-inner" id="introInner">
@@ -479,6 +584,7 @@
 </div>
 
 <div class="start" id="start">
+  <div class="trophy" id="trophy" hidden aria-hidden="true">🏆</div>
   <div class="parade" id="parade" aria-hidden="true"></div>
   <button class="play-btn" id="playBtn" type="button" aria-label="Play"><span class="emoji">▶️</span></button>
   <button class="parent" id="startParentBtn" type="button" aria-label="Grown-ups: press and hold"><span class="emoji">⚙️</span></button>
@@ -487,8 +593,12 @@
 <div class="overlay" id="parentSheet" hidden role="dialog" aria-modal="true" aria-labelledby="parentTitle">
   <div class="sheet">
     <h2 id="parentTitle">Grown-ups</h2>
-    <p>Questions come from the skills that are switched on, one at a time, never the same skill twice in a row. Every skill starts at level 1. Paused skills are never asked, but you can still try them.</p>
+    <p>Games come in short blocks of 3–4 questions, each opened with a demo. Every skill starts at level 1. Paused skills are never asked, but you can still try them.</p>
     <div class="sheet-row"><span>Sound and voice</span><button class="pill" id="soundToggle" type="button"></button></div>
+    <div class="sheet-row"><span>Voice check</span><button class="pill try" id="voiceTest" type="button">Test voice</button></div>
+    <div class="voice-status" id="voiceStatus"></div>
+    <div class="sheet-row"><span>Session length</span><span class="pills" id="sessionPills"></span></div>
+    <div class="sheet-row"><span>Grown-up tips during demos</span><button class="pill" id="tipsToggle" type="button"></button></div>
     <div id="skillRows"></div>
     <button class="done-btn" id="closeParent" type="button">Done</button>
   </div>
@@ -795,7 +905,8 @@
   const Voice = (() => {
     const synth = window.speechSynthesis;
     const log = [];
-    let voice = null;
+    const keep = []; // hold on to utterances: some browsers drop ones that get garbage-collected mid-sentence
+    let voice = null, unlocked = false, started = 0, lastError = '';
 
     function pick() {
       if (!synth) return;
@@ -811,23 +922,69 @@
       if ('onvoiceschanged' in synth) synth.onvoiceschanged = pick;
     }
 
+    const ok = () => !!synth && typeof SpeechSynthesisUtterance !== 'undefined' && !Sound.muted;
+
+    function make(text, { rate = 0.92, pitch = 1.25, volume } = {}) {
+      const u = new SpeechSynthesisUtterance(text);
+      if (voice) u.voice = voice;
+      u.lang = voice ? voice.lang : 'en-US';
+      u.rate = rate;
+      u.pitch = pitch;
+      if (volume != null) u.volume = volume;
+      u.onstart = () => { started += 1; lastError = ''; };
+      u.onerror = (e) => { lastError = e.error || 'error'; };
+      u.onend = () => { const k = keep.indexOf(u); if (k >= 0) keep.splice(k, 1); };
+      keep.push(u);
+      if (keep.length > 8) keep.shift();
+      return u;
+    }
+
+    function status() {
+      return { supported: !!synth, voices: synth ? (synth.getVoices() || []).length : 0, voice: voice ? voice.name : '', started, lastError, unlocked };
+    }
+
     return {
       log,
-      say(text, { interrupt = true, rate = 0.92, pitch = 1.25 } = {}) {
+      // Safari (iPad/iPhone) stays silent unless the page's first sentence is started inside a tap.
+      // Call this from tap handlers; it queues a silent blank sentence once.
+      unlock() {
+        if (unlocked || !ok()) return;
+        unlocked = true;
+        try { synth.speak(make(' ', { volume: 0 })); } catch (e) { lastError = String(e.message || e); }
+      },
+      say(text, { interrupt = true } = {}) {
         log.push(text);
         if (log.length > 40) log.shift();
-        if (!synth || Sound.muted || typeof SpeechSynthesisUtterance === 'undefined') return;
+        if (!ok()) return;
         try {
-          if (interrupt) synth.cancel();
-          const u = new SpeechSynthesisUtterance(text);
-          if (voice) u.voice = voice;
-          u.lang = voice ? voice.lang : 'en-US';
-          u.rate = rate;
-          u.pitch = pitch;
-          synth.speak(u);
-        } catch (e) { /* speech is a bonus; ignore failures */ }
+          if (synth.paused) synth.resume();
+          const u = make(text);
+          if (interrupt && (synth.speaking || synth.pending)) {
+            synth.cancel();
+            // Speaking straight after cancel() can be dropped silently; give it a moment.
+            setTimeout(() => synth.speak(u), 80);
+          } else {
+            synth.speak(u);
+          }
+        } catch (e) { lastError = String(e.message || e); }
       },
-      cancel() { try { if (synth) synth.cancel(); } catch (e) { /* ignore */ } }
+      // Grown-ups "Test voice" button (runs inside the tap, so it also unlocks speech).
+      test() {
+        if (!synth) return;
+        unlocked = true;
+        try {
+          if (synth.speaking || synth.pending) synth.cancel();
+          synth.speak(make('Hello! The voice is working.'));
+        } catch (e) { lastError = String(e.message || e); }
+      },
+      cancel() { try { if (synth) synth.cancel(); } catch (e) { /* ignore */ } },
+      status,
+      describe() {
+        const s = status();
+        if (!s.supported) return 'This browser has no built-in voice.';
+        return `${s.voices} voice${s.voices === 1 ? '' : 's'} on this device${s.voice ? ` · using ${s.voice}` : ''} · `
+          + `${s.started} sentence${s.started === 1 ? '' : 's'} spoken so far${s.lastError ? ` · last problem: ${s.lastError}` : ''}`;
+      }
     };
   })();
 
@@ -996,16 +1153,23 @@
 
 
   /* ================================================================
-   * Skill Mix — one random skill question at a time. Every question is
-   * spoken, answered by tapping big pictures, and needs no reading.
+   * Skill Mix — short blocks of one game at a time, each started with
+   * a demo. Answered by tapping big pictures; spoken where speech works.
    * ================================================================ */
   const CONFIG = {
-    introMs: 1100,        // skill intro curtain (mascot + jingle)
+    introMs: 1100,        // game intro curtain (mascot + description + jingle)
+    demoStepMs: 800,      // pace of the demo hand
+    yourTurnMs: 1000,     // "Your turn!" after the demo
+    joinMs: 1000,         // adding: the second group walks over after this long
     rightPauseMs: 1700,   // celebrate a right answer before the next question
-    wrongMs: 600,         // wobble before a wrong card fades
-    idleHintMs: 7000,     // say it again + show the pointing hand after this long without a tap
+    explainMs: 2400,      // how long a mistake's explanation stays on screen
+    hintAfter: 3,         // wrong tries before the right card starts to pulse
+    glowAfter: 5,         // wrong tries before it glows
+    idleHintMs: 8000,     // say it again + point at the cards after this long without a tap
     bigPartyMs: 3400,     // the 5-sticker celebration
-    holdMs: 900           // press and hold ⚙️ this long to open the grown-ups sheet
+    holdMs: 900,          // press and hold ⚙️ this long to open the grown-ups sheet
+    blockMin: 3,          // questions per game before switching
+    blockMax: 4
   };
 
   const randInt = (lo, hi) => lo + Math.floor(Math.random() * (hi - lo + 1));
@@ -1036,7 +1200,7 @@
     A: 'ah', B: 'buh', C: 'kuh', D: 'duh', E: 'eh', F: 'fff', G: 'guh', H: 'huh', I: 'ih', J: 'juh', K: 'kuh', L: 'lll', M: 'mmm',
     N: 'nnn', O: 'aw', P: 'puh', Q: 'kwuh', R: 'rrr', S: 'sss', T: 'tuh', U: 'uh', V: 'vvv', W: 'wuh', X: 'ks', Y: 'yuh', Z: 'zzz'
   };
-  // Picture words for "Starts with…" (no Q or X: no clear toddler picture word).
+  // Picture words (no Q or X: no clear toddler picture word).
   const WORDS = {
     A: ['apple', '🍎'], B: ['bear', '🐻'], C: ['cat', '🐱'], D: ['dog', '🐶'], E: ['egg', '🥚'], F: ['fish', '🐟'], G: ['goat', '🐐'],
     H: ['hat', '🎩'], J: ['juice', '🧃'], K: ['kite', '🪁'], L: ['lion', '🦁'], M: ['moon', '🌙'], N: ['nose', '👃'], O: ['octopus', '🐙'],
@@ -1063,8 +1227,9 @@
     heart: { name: 'heart', svg: '<path d="M50 88C20 65 5 45 5 28 5 14 16 5 29 5c10 0 17 6 21 13 4-7 11-13 21-13 13 0 24 9 24 23 0 17-15 37-45 60z"/>' }
   };
   const SHAPES_L1 = ['circle', 'square', 'triangle', 'star', 'heart'];
-  const shapeSvg = (id) => `<svg viewBox="0 0 100 100" fill="#7a5cff" aria-hidden="true">${SHAPES[id].svg}</svg>`;
+  const shapeSvg = (id, fill = '#7a5cff') => `<svg viewBox="0 0 100 100" fill="${fill}" aria-hidden="true">${SHAPES[id].svg}</svg>`;
   const ANIMALS = THEMES.map((t) => t.emoji);
+  const FOODS = ['🍪', '🍓', '🍎', '🧁', '🍌', '🥕', '🍩'];
   const STICKERS = ['⭐', '🌈', '🍭', '🎈', '🦄', '🌟', '🍩', '🚀', '🌸', '🧸'];
 
   const dots = (n) => `<span class="dots" aria-hidden="true">${'<i></i>'.repeat(n)}</span>`;
@@ -1072,7 +1237,7 @@
   const critters = (emoji, n, goneFrom = Infinity) =>
     Array.from({ length: n }, (_, i) =>
       `<span class="critter${i >= goneFrom ? ' will-go' : ''}" style="--i:${i};--g:${Math.max(0, i - goneFrom)}">${emoji}</span>`).join('');
-  const group = (emoji, n) => `<div class="group">${critters(emoji, n)}</div>`;
+  const group = (emoji, n, cls = '') => `<div class="group ${cls}">${critters(emoji, n)}</div>`;
 
   // Put the right answer and one distractor in a random order.
   function twoChoices(right, wrong, toCard) {
@@ -1080,17 +1245,35 @@
     return { choices: order.map(toCard), answer: order.indexOf(right) };
   }
 
-  /* ---------- The ten skills, level 1 ---------- */
+  /* ---------- Showing what a mistake means ---------- */
+  const qs = (sel, root = els.prompt) => [...root.querySelectorAll(sel)];
+
+  // Line up the number picked against the animals: a dot under each one it covers,
+  // red dots for "too many", a "?" on the ones it leaves out.
+  function explainCount(picked) {
+    const cs = qs('.critter:not(.gone)');
+    cs.forEach((c, i) => c.classList.add(i < picked ? 'paired' : 'unpaired'));
+    const g = cs.length ? cs[cs.length - 1].parentElement : null;
+    for (let i = cs.length; i < picked && g; i++) g.insertAdjacentHTML('beforeend', '<span class="extra-dot" aria-hidden="true"></span>');
+  }
+  function clearCount() {
+    qs('.critter').forEach((c) => c.classList.remove('paired', 'unpaired'));
+    qs('.extra-dot').forEach((d) => d.remove());
+  }
+
+  /* ---------- The skills, level 1 (tuned for a 3-year-old) ---------- */
   function makeNumbers() {
-    const n = randInt(1, 3);
+    const n = randInt(1, 5);
     return {
-      ...twoChoices(n, other(1, 3, n), numberCard),
-      prompt: `<div class="bubble">${dots(n)}</div>`,
-      say: `Find ${n}!`, praise: `Yes! ${n}!`, data: { n }
+      ...twoChoices(n, other(1, 5, n), numberCard),
+      prompt: `<div class="bubble cmp"><div class="dots-row target">${'<i></i>'.repeat(n)}</div><div class="dots-row picked"></div></div>`,
+      say: `Find ${n}!`, retry: 'Look at the dots!', praise: `Yes! ${n}!`, data: { n },
+      // The picked number's dots appear under the question's dots, so the extra or missing ones show.
+      explain: (label) => { els.prompt.querySelector('.dots-row.picked').innerHTML = '<i></i>'.repeat(Number(label)); },
+      unexplain: () => { const r = els.prompt.querySelector('.dots-row.picked'); if (r) r.innerHTML = ''; }
     };
   }
 
-  // Show a picture, pick the letter it starts with.
   function makeLetters() {
     const t = pick(STARTS_L1);
     let d;
@@ -1099,17 +1282,18 @@
     return {
       ...twoChoices(t, d, (l) => ({ html: `<span>${l}</span>`, label: l })),
       prompt: `<div class="bubble"><span class="emoji">${e}</span></div>`,
-      say: `${word}! What does ${word} start with?`, praise: `Yes! ${word} starts with ${LETTER_NAME[t]}!`,
+      say: `${word}! What does ${word} start with?`, retry: 'Try again!', praise: `Yes! ${word} starts with ${LETTER_NAME[t]}!`,
       data: { letter: t, word, distractor: d }
     };
   }
 
   function makeCounting() {
-    const n = randInt(1, 3);
+    const n = randInt(1, 6);
     return {
-      ...twoChoices(n, other(1, 3, n), numberCard),
-      prompt: `${group(pick(ANIMALS), n)}<span class="op">=</span><span class="qmark">?</span>`,
-      fill: String(n), say: 'How many?', praise: `${n}!`, data: { n }
+      ...twoChoices(n, other(1, 6, n), numberCard),
+      prompt: `${group(pick(ANIMALS), n, 'countable')}<span class="op">=</span><span class="qmark">?</span>`,
+      fill: String(n), countTo: n, say: 'How many?', retry: 'Let’s count them!', praise: `${n}!`, data: { n },
+      explain: (label) => explainCount(Number(label)), unexplain: clearCount
     };
   }
 
@@ -1120,19 +1304,31 @@
     return {
       ...twoChoices(t, d, (l) => ({ html: `<span class="pic">${WORDS[l][1]}</span>`, label: WORDS[l][0] })),
       prompt: `<div class="bubble">${t}</div>`,
-      say: `${LETTER_NAME[t]}. ${LETTER_SOUND[t]}. Which one starts with ${LETTER_SOUND[t]}?`,
+      say: `${LETTER_NAME[t]}. ${LETTER_SOUND[t]}. Which one starts with ${LETTER_SOUND[t]}?`, retry: 'Try again!',
       praise: `${word}! ${LETTER_SOUND[t]}, ${word}!`, data: { letter: t, word, distractor: WORDS[d][0] }
     };
   }
 
+  // Adding: two groups, then the second group walks over and joins the first. Count them all.
   function makeAddition() {
-    const [a, b] = pick([[1, 1], [1, 2], [2, 1]]);
+    let a, b;
+    do { a = randInt(1, 4); b = randInt(1, 4); } while (a + b > 5);
     const e = pick(ANIMALS);
     const sum = a + b;
     return {
-      ...twoChoices(sum, other(1, 4, sum), numberCard),
-      prompt: `${group(e, a)}<span class="op">+</span>${group(e, b)}<span class="op">=</span><span class="qmark">?</span>`,
-      fill: String(sum), say: `${a} and ${b} more. How many altogether?`, praise: `${a} plus ${b} is ${sum}!`, data: { a, b }
+      ...twoChoices(sum, other(1, 5, sum), numberCard),
+      prompt: `<div class="group countable g-a">${critters(e, a)}</div><span class="op plus">+</span>${group(e, b, 'g-b')}<span class="op">=</span><span class="qmark">?</span>`,
+      after: () => later(() => {
+        const ga = els.prompt.querySelector('.g-a'), gb = els.prompt.querySelector('.g-b');
+        if (!ga || !gb) return;
+        [...gb.children].forEach((c, i) => { c.classList.add('joining'); c.style.setProperty('--i', String(i)); ga.append(c); });
+        gb.remove();
+        els.prompt.querySelector('.plus')?.remove();
+        Sound.pop(5);
+      }, CONFIG.joinMs),
+      fill: String(sum), countTo: sum, say: `${a} and ${b} more. How many altogether?`, retry: 'Let’s count them all!',
+      praise: `${a} and ${b} make ${sum}!`, data: { a, b },
+      explain: (label) => explainCount(Number(label)), unexplain: clearCount
     };
   }
 
@@ -1142,12 +1338,11 @@
     return {
       ...twoChoices(left, other(1, 3, left), numberCard),
       prompt: `<div class="group">${critters(pick(ANIMALS), a, left)}</div><span class="op">=</span><span class="qmark">?</span>`,
-      // The last b animals hop away shortly after the question appears.
       after: () => later(() => {
         els.prompt.querySelectorAll('.critter.will-go').forEach((c) => c.classList.add('gone', 'leaving'));
         for (let i = 0; i < b; i++) later(() => Sound.bye(i), i * 180);
       }, 900),
-      fill: String(left), say: `${a}. ${b} ${b === 1 ? 'goes' : 'go'} away. How many are left?`,
+      fill: String(left), say: `${a}. ${b} ${b === 1 ? 'goes' : 'go'} away. How many are left?`, retry: 'Try again!',
       praise: `${a} take away ${b} is ${left}!`, data: { a, b }
     };
   }
@@ -1166,14 +1361,26 @@
     };
   }
 
+  // Which has more? A hungry face and two plates; one plate has at least twice as much.
   function makeCompare() {
-    const [a, b] = pick([[1, 4], [1, 5], [2, 5], [4, 1], [5, 1], [5, 2]]);
-    const e = pick(ANIMALS);
+    const small = randInt(1, 4);
+    const big = randInt(2 * small, Math.min(10, 2 * small + 4));
+    const [a, b] = shuffle([small, big]);
+    const food = pick(FOODS);
+    const plate = (n) => `<div class="plate">${Array.from({ length: n }, (_, i) => `<span class="critter food" style="--i:${i}">${food}</span>`).join('')}</div>`;
+    const cardEls = () => [...els.answers.querySelectorAll('.card')];
     return {
-      choices: [a, b].map((n) => ({ html: group(e, n), label: `${n}`, cls: 'wide' })),
+      choices: [a, b].map((n) => ({ html: plate(n), label: `${n}`, cls: 'wide' })),
       answer: a > b ? 0 : 1,
-      prompt: '<div class="bubble small"><span class="emoji">⚖️</span></div>',
-      say: 'Which one has more?', praise: 'Yes! That one has more!', data: { a, b }
+      prompt: '<div class="bubble"><span class="emoji">😋</span></div>',
+      say: 'Which plate has more?', retry: 'Look! Which has more?', praise: 'Yes! That one has more!', data: { a, b },
+      // Line the two plates up one to one: the leftovers on the bigger plate light up.
+      explain: () => {
+        const [p0, p1] = cardEls().map((c) => [...c.querySelectorAll('.food')]);
+        const m = Math.min(p0.length, p1.length);
+        [p0, p1].forEach((items) => items.forEach((f, i) => f.classList.add(i < m ? 'paired' : 'extra')));
+      },
+      unexplain: () => els.answers.querySelectorAll('.food').forEach((f) => f.classList.remove('paired', 'extra'))
     };
   }
 
@@ -1183,11 +1390,19 @@
     const len = randInt(4, 5);
     const seq = Array.from({ length: len }, (_, i) => (i % 2 ? B : A));
     const next = len % 2 ? B : A;
+    const byName = { [A.n]: A, [B.n]: B };
     return {
       ...twoChoices(next, next === A ? B : A, (c) => ({ html: `<span class="pic">${c.e}</span>`, label: c.n })),
       prompt: `<div class="pattern">${seq.map((c) => `<span class="pitem">${c.e}</span>`).join('')}<span class="qmark">?</span></div>`,
-      fill: `<span class="emoji">${next.e}</span>`, say: 'What comes next?', praise: `Yes! ${next.n}!`,
-      data: { seq: seq.map((c) => c.n), next: next.n }
+      fill: `<span class="emoji">${next.e}</span>`, say: 'What comes next?', retry: 'Does it fit? Look again!', praise: `Yes! ${next.n}!`,
+      data: { seq: seq.map((c) => c.n), next: next.n },
+      // Try the picked colour in the gap: the pattern visibly breaks.
+      explain: (label) => {
+        const qm = els.prompt.querySelector('.qmark');
+        qm.innerHTML = `<span class="emoji">${byName[label].e}</span>`;
+        restartAnim(qm, 'broken');
+      },
+      unexplain: () => { const qm = els.prompt.querySelector('.qmark'); if (qm) { qm.textContent = '?'; qm.classList.remove('broken'); } }
     };
   }
 
@@ -1195,69 +1410,83 @@
     const t = pick(SHAPES_L1);
     return {
       ...twoChoices(t, otherFrom(SHAPES_L1, t), (s) => ({ html: shapeSvg(s), label: SHAPES[s].name })),
-      prompt: `<div class="bubble">${shapeSvg(t)}</div>`,
-      say: 'Find the same shape!', praise: `Yes! A ${SHAPES[t].name}!`, data: { shape: t }
+      prompt: `<div class="bubble shape-host">${shapeSvg(t)}</div>`,
+      say: 'Find the same shape!', retry: 'Same shape? Look again!', praise: `Yes! A ${SHAPES[t].name}!`, data: { shape: t },
+      // Lay the picked shape over the question's shape: they don't match.
+      explain: (label) => {
+        els.prompt.querySelector('.shape-host').insertAdjacentHTML('beforeend', `<div class="ghost-shape">${shapeSvg(label, '#ff9f43')}</div>`);
+      },
+      unexplain: () => qs('.ghost-shape').forEach((g) => g.remove())
     };
   }
 
-  // Each skill has its own mascot, colours, icon and jingle, so a child knows what is being asked without reading.
-  // `label` is the 2–3 word description shown in the intro and on every question.
+  // `label`: 2–3 words shown in the intro and on every question. `tip`: a line for grown-ups during the demo.
   // `paused` skills stay in the code (and "Try now") but are never picked.
   const SKILLS = {
-    numbers:     { name: 'Numbers',          label: 'Find the number',  mascot: '🦉', icon: '🔢', bg: '#dcefff', edge: '#8cc6f2', notes: [523, 659, 784], make: makeNumbers },
-    letters:     { name: 'First letter',     label: 'Which first letter?', mascot: '🐝', icon: '🔤', bg: '#fff3bd', edge: '#e8c64a', notes: [784, 659, 523], make: makeLetters },
-    counting:    { name: 'Counting',         label: 'How many?',        mascot: '🐿️', icon: '👆', bg: '#dff6d0', edge: '#86cf6a', notes: [523, 587, 659, 784], make: makeCounting },
-    starts:      { name: 'Starts with…',     label: 'Starts with…',     mascot: '🦜', icon: '🗣️', bg: '#ffe3c8', edge: '#f3a55f', notes: [659, 784, 880], make: makeStarts },
-    addition:    { name: 'Adding',           label: 'Add them up',      mascot: '🐻', icon: '➕', bg: '#ffdcea', edge: '#f28db5', notes: [523, 784, 1047], make: makeAddition },
-    subtraction: { name: 'Taking away',      label: 'Take away',        paused: true, mascot: '🐰', icon: '➖', bg: '#eadfff', edge: '#ab8ff0', notes: [1047, 784, 523], make: makeSubtraction },
-    jumble:      { name: 'Word jumble',      label: 'Spell the word',   mascot: '🐙', icon: '🧩', bg: '#d2f4ef', edge: '#5cc9b8', notes: [587, 784, 988], make: makeJumble },
-    compare:     { name: 'More or fewer',    label: 'Which has more?',  mascot: '🐘', icon: '⚖️', bg: '#e2e9f6', edge: '#8fa3cc', notes: [392, 523, 659], make: makeCompare },
-    pattern:     { name: 'What comes next',  label: 'What comes next?', mascot: '🐛', icon: '🔁', bg: '#eef8c8', edge: '#b3d152', notes: [523, 659, 523, 659], make: makePattern },
-    shapes:      { name: 'Shapes',           label: 'Same shape',       mascot: '🦊', icon: '🔺', bg: '#ffe5da', edge: '#f39a78', notes: [880, 784, 659, 784], make: makeShapes }
+    numbers:     { name: 'Numbers',         label: 'Find the number',     mascot: '🦉', icon: '🔢', bg: '#dcefff', edge: '#8cc6f2', notes: [523, 659, 784], make: makeNumbers,
+                   tip: 'Count the dots together, then find that number.' },
+    letters:     { name: 'First letter',    label: 'Which first letter?', paused: true, mascot: '🐝', icon: '🔤', bg: '#fff3bd', edge: '#e8c64a', notes: [784, 659, 523], make: makeLetters,
+                   tip: 'Say the word slowly and stretch the first sound.' },
+    counting:    { name: 'Counting',        label: 'How many?',           mascot: '🐿️', icon: '👆', bg: '#dff6d0', edge: '#86cf6a', notes: [523, 587, 659, 784], make: makeCounting,
+                   tip: 'Touch each animal once as you count. The last number is how many.' },
+    starts:      { name: 'Starts with…',    label: 'Starts with…',        paused: true, mascot: '🦜', icon: '🗣️', bg: '#ffe3c8', edge: '#f3a55f', notes: [659, 784, 880], make: makeStarts,
+                   tip: 'Say the letter’s sound, then each picture’s name.' },
+    addition:    { name: 'Adding',          label: 'Add them up',         mascot: '🐻', icon: '➕', bg: '#ffdcea', edge: '#f28db5', notes: [523, 784, 1047], make: makeAddition,
+                   tip: 'Watch them join, then count them all.' },
+    subtraction: { name: 'Taking away',     label: 'Take away',           paused: true, mascot: '🐰', icon: '➖', bg: '#eadfff', edge: '#ab8ff0', notes: [1047, 784, 523], make: makeSubtraction,
+                   tip: 'Count the ones that are left.' },
+    jumble:      { name: 'Word jumble',     label: 'Spell the word',      mascot: '🐙', icon: '🧩', bg: '#d2f4ef', edge: '#5cc9b8', notes: [587, 784, 988], make: makeJumble,
+                   tip: 'Find the letter that matches the faint one.' },
+    compare:     { name: 'More or fewer',   label: 'Which has more?',     mascot: '🐘', icon: '⚖️', bg: '#e2e9f6', edge: '#8fa3cc', notes: [392, 523, 659], make: makeCompare,
+                   tip: 'Which plate would you want? Point to the one with more.' },
+    pattern:     { name: 'What comes next', label: 'What comes next?',    mascot: '🐛', icon: '🔁', bg: '#eef8c8', edge: '#b3d152', notes: [523, 659, 523, 659], make: makePattern,
+                   tip: 'Say the pattern out loud: red, blue, red, blue…' },
+    shapes:      { name: 'Shapes',          label: 'Same shape',          mascot: '🦊', icon: '🔺', bg: '#ffe5da', edge: '#f39a78', notes: [880, 784, 659, 784], make: makeShapes,
+                   tip: 'Name the shape together, then find its twin.' }
   };
   const SKILL_IDS = Object.keys(SKILLS);
 
   /* ---------- State, settings and stats ---------- */
   const els = {
-    prompt: $('#prompt'), answers: $('#answers'), stickers: $('#stickers'),
+    prompt: $('#prompt'), answers: $('#answers'), stickers: $('#stickers'), stage: $('#stage'),
     replayBtn: $('#replayBtn'), parentBtn: $('#parentBtn'), hand: $('#hand'),
     intro: $('#intro'), introMascot: $('#introMascot'), introIcon: $('#introIcon'), introInner: $('#introInner'), introLabel: $('#introLabel'),
-    start: $('#start'), playBtn: $('#playBtn'), parade: $('#parade'), startParentBtn: $('#startParentBtn'),
-    sheet: $('#parentSheet'), skillRows: $('#skillRows'), soundToggle: $('#soundToggle'), closeParent: $('#closeParent')
+    yourTurn: $('#yourTurn'), caption: $('#caption'), watch: $('#watch'),
+    start: $('#start'), playBtn: $('#playBtn'), parade: $('#parade'), startParentBtn: $('#startParentBtn'), trophy: $('#trophy'),
+    sheet: $('#parentSheet'), skillRows: $('#skillRows'), soundToggle: $('#soundToggle'), closeParent: $('#closeParent'),
+    voiceTest: $('#voiceTest'), voiceStatus: $('#voiceStatus'), sessionPills: $('#sessionPills'), tipsToggle: $('#tipsToggle')
   };
 
   const S = {
-    started: false, skill: null, last: null, forced: null, q: null,
-    busy: false, inIntro: false, wrongs: 0, counted: 0, jpos: 0, startAt: 0,
-    stickers: [], seen: new Set(), timers: [], idle: 0, introDone: null
+    started: false, skill: null, last: null, forced: null, q: null, block: null,
+    busy: false, inIntro: false, inDemo: false, wrongs: 0, counted: 0, jpos: 0, startAt: 0,
+    stickers: [], timers: [], idle: 0, introDone: null, demoDone: null, explainTimer: 0,
+    playMs: 0, timeUp: false
   };
   const later = (fn, ms) => { const id = setTimeout(fn, ms); S.timers.push(id); return id; };
-  function clearTimers() { S.timers.forEach(clearTimeout); S.timers = []; clearTimeout(S.idle); }
+  function clearTimers() { S.timers.forEach(clearTimeout); S.timers = []; clearTimeout(S.idle); clearTimeout(S.explainTimer); }
 
   let enabled = store.get('enabled', SKILL_IDS.slice());
   enabled = Array.isArray(enabled) ? enabled.filter((id) => SKILLS[id]) : SKILL_IDS.slice();
   if (!enabled.length) enabled = SKILL_IDS.slice();
+  const SESSION_CHOICES = [5, 8, 10, 15, 0]; // minutes; 0 = no limit
+  let sessionMin = store.get('sessionMin', 5);
+  if (!SESSION_CHOICES.includes(sessionMin)) sessionMin = 5;
+  let showTips = store.get('tips', true) !== false;
 
-  // Per-skill record, kept on this device from day one: the later "adjust difficulty" step reads it.
+  // Per-skill record, kept on this device: the later "adjust difficulty" step reads it.
   const stats = store.get('stats', {}) || {};
   SKILL_IDS.forEach((id) => {
-    stats[id] = Object.assign({ level: 1, tries: 0, correct: 0, firstTry: 0, totalMs: 0 }, stats[id]);
+    stats[id] = Object.assign({ level: 1, tries: 0, correct: 0, firstTry: 0, totalMs: 0, misses: 0, taps: [0, 0], recentMisses: [] }, stats[id]);
   });
   const saveStats = () => store.set('stats', stats);
 
-  /* ---------- Question flow ---------- */
-  // Skills that can come up: switched on and not paused.
+  /* ---------- Question flow: blocks of one game, each opened with intro + demo ---------- */
   const inRotation = () => {
     const on = enabled.filter((id) => !SKILLS[id].paused);
     return on.length ? on : SKILL_IDS.filter((id) => !SKILLS[id].paused);
   };
-
-  function pickSkill() {
-    if (S.forced && SKILLS[S.forced]) { const f = S.forced; S.forced = null; return f; }
-    const all = inRotation();
-    const pool = all.filter((id) => id !== S.last);
-    return pick(pool.length ? pool : all);
-  }
+  const blockSize = () => randInt(CONFIG.blockMin, CONFIG.blockMax);
 
   function applySkillLook(id) {
     const sk = SKILLS[id];
@@ -1268,11 +1497,25 @@
   function nextQuestion() {
     clearTimers();
     hideHand();
-    const id = pickSkill();
+    if (S.timeUp && !S.forced) { endSession(); return; }
+    let id;
+    if (S.forced && SKILLS[S.forced]) {
+      id = S.forced;
+      S.forced = null;
+    } else if (S.block && S.block.left > 0 && inRotation().includes(S.block.skill)) {
+      S.block.left -= 1;
+      ask(S.block.skill);
+      return;
+    } else {
+      const all = inRotation();
+      const pool = all.filter((x) => x !== S.last);
+      id = pick(pool.length ? pool : all);
+    }
+    S.block = { skill: id, left: blockSize() - 1 };
     S.skill = id;
     S.last = id;
     S.busy = true;
-    showIntro(id, () => ask(id));
+    showIntro(id, () => runDemo(id, (demoQ) => ask(id, demoQ)));
   }
 
   function showIntro(id, then) {
@@ -1296,70 +1539,174 @@
     later(S.introDone, CONFIG.introMs);
   }
 
-  function ask(id) {
+  function renderQuestion(id, q) {
     const sk = SKILLS[id];
-    const q = sk.make(stats[id].level);
-    S.q = q;
-    S.busy = false;
-    S.wrongs = 0;
-    S.counted = 0;
-    S.jpos = 0;
     els.prompt.innerHTML = `<div class="tag"><span class="mascot emoji" aria-hidden="true">${sk.mascot}</span><span class="tag-text">${sk.label}</span></div>${q.prompt}`;
     if (q.kind === 'jumble') {
       els.answers.innerHTML = q.tiles.map((l, i) =>
         `<button class="tile" type="button" data-l="${l}" style="--i:${i}" aria-label="${LETTER_NAME[l]}">${l}</button>`).join('');
     } else {
       els.answers.innerHTML = q.choices.map((c, i) =>
-        `<button class="card ${c.cls || ''}" type="button" data-i="${i}" style="--i:${i}" aria-label="${c.label}">${c.html}</button>`).join('');
+        `<button class="card ${c.cls || ''}" type="button" data-i="${i}" data-label="${c.label}" style="--i:${i}" aria-label="${c.label}">${c.html}</button>`).join('');
     }
     if (q.after) q.after();
+  }
+
+  /* ---------- Demo: the hand plays one example, then "Your turn!" ---------- */
+  function hideHand() { els.hand.hidden = true; }
+
+  function moveHandTo(el, tap) {
+    if (!el) return;
+    const hand = els.hand;
+    if (hand.hidden) {
+      hand.style.transition = 'none';
+      hand.style.transform = `translate(${window.innerWidth / 2 - 30}px, ${window.innerHeight + 20}px)`;
+      hand.hidden = false;
+      void hand.offsetWidth;
+      hand.style.transition = '';
+    }
+    const r = el.getBoundingClientRect();
+    hand.style.transform = `translate(${r.left + r.width / 2 - 24}px, ${r.top + r.height * 0.55}px)`;
+    if (tap) later(() => restartAnim(hand, 'tap'), CONFIG.demoStepMs * 0.55);
+  }
+
+  function fillQmark(q) {
+    const qm = els.prompt.querySelector('.qmark');
+    if (qm && q.fill) { qm.innerHTML = q.fill; qm.classList.add('done'); qm.classList.remove('broken'); }
+  }
+
+  function runDemo(id, then) {
+    const sk = SKILLS[id];
+    const q = sk.make(stats[id].level);
+    S.q = q;
+    S.inDemo = true;
+    S.busy = true;
+    renderQuestion(id, q);
+    els.stage.classList.add('demo');
+    els.watch.hidden = false;
+    if (showTips) { els.caption.textContent = `Grown-ups: ${sk.tip}`; els.caption.hidden = false; }
+    const T = CONFIG.demoStepMs;
+    let t = (q.kind !== 'jumble' && id === 'addition') ? CONFIG.joinMs + T : T;
+    const step = (fn) => { later(fn, t); t += T; };
+    step(() => moveHandTo(els.prompt.querySelector('.bubble, .group, .pattern, .jumble')));
+    if (q.kind === 'jumble') {
+      q.word.split('').forEach((l) => step(() => {
+        const tile = els.answers.querySelector(`.tile[data-l="${l}"]:not(.used)`);
+        moveHandTo(tile, true);
+        later(() => placeTile(tile), T * 0.6);
+      }));
+    } else {
+      for (let k = 0; k < (q.countTo || 0); k++) {
+        step(() => {
+          const c = qs('.critter:not(.gone)')[k];
+          moveHandTo(c, true);
+          later(() => markCounted(c, k + 1), T * 0.6);
+        });
+      }
+      step(() => {
+        const card = els.answers.querySelector(`.card[data-i="${q.answer}"]`);
+        moveHandTo(card, true);
+        later(() => { card.classList.add('right'); fillQmark(q); Sound.chime(); }, T * 0.6);
+      });
+    }
+    step(() => { hideHand(); els.yourTurn.hidden = false; restartAnim(els.yourTurn, 'show'); Sound.pop(6); });
+    t += CONFIG.yourTurnMs - T;
+    const finish = () => {
+      if (!S.inDemo) return;
+      S.inDemo = false;
+      S.demoDone = null;
+      els.yourTurn.hidden = true;
+      els.caption.hidden = true;
+      els.watch.hidden = true;
+      els.stage.classList.remove('demo');
+      hideHand();
+      then(q);
+    };
+    // Tapping during the demo skips it.
+    S.demoDone = () => { clearTimers(); finish(); };
+    later(finish, t);
+  }
+
+  function ask(id, avoid) {
+    const sk = SKILLS[id];
+    let q = sk.make(stats[id].level);
+    // Don't repeat the demo's example as the first real question.
+    for (let i = 0; i < 10 && avoid && JSON.stringify(q.data) === JSON.stringify(avoid.data); i++) q = sk.make(stats[id].level);
+    S.q = q;
+    S.skill = id;
+    S.busy = false;
+    S.wrongs = 0;
+    S.counted = 0;
+    S.jpos = 0;
+    renderQuestion(id, q);
     Voice.say(q.say);
     S.startAt = performance.now();
     stats[id].tries += 1;
     saveStats();
-    if (!S.seen.has(id)) { S.seen.add(id); later(showHandDemo, 1500); }
     armIdle();
   }
 
   function armIdle() {
     clearTimeout(S.idle);
     S.idle = setTimeout(() => {
-      if (!S.q || S.busy || S.inIntro || !els.sheet.hidden) return;
+      if (!S.q || S.busy || S.inIntro || S.inDemo || !els.sheet.hidden) return;
       Voice.say(S.q.say);
-      showHandDemo();
+      pointAtAnswers();
       armIdle();
     }, CONFIG.idleHintMs);
   }
 
+  // Idle hint: the hand visits each answer (it never picks one).
+  function pointAtAnswers() {
+    const targets = [...els.answers.querySelectorAll('.card, .tile:not(.used)')].slice(0, 4);
+    targets.forEach((tg, i) => later(() => moveHandTo(tg, true), 150 + i * 1000));
+    later(hideHand, 150 + targets.length * 1000 + 400);
+  }
+
+  /* ---------- Answering ---------- */
   function choose(card) {
-    if (S.busy || S.inIntro || card.classList.contains('faded')) return;
+    if (S.busy || S.inIntro || S.inDemo) return;
     armIdle();
+    clearExplain();
     const i = Number(card.dataset.i);
+    const st = stats[S.skill];
+    st.taps[i] = (st.taps[i] || 0) + 1;
     if (i === S.q.answer) right(card);
     else wrong(card);
   }
 
-  function wrong(el) {
+  function clearExplain() {
+    clearTimeout(S.explainTimer);
+    if (S.q && S.q.unexplain) S.q.unexplain();
+  }
+
+  // A wrong pick stays on screen and can be tried again. The game shows why it doesn't fit,
+  // and only after several tries does the right card start to pulse (it is never picked for him).
+  function wrong(card) {
     S.wrongs += 1;
+    const st = stats[S.skill];
+    st.misses += 1;
+    st.recentMisses = [...st.recentMisses, { picked: card.dataset.label, right: S.q.choices[S.q.answer].label }].slice(-10);
+    saveStats();
     Sound.boop();
-    restartAnim(el, 'wrong');
-    Voice.say('Try again!');
-    later(() => {
-      el.classList.add('faded');
-      const cards = [...els.answers.querySelectorAll('.card')];
-      const leftOver = cards.filter((c) => !c.classList.contains('faded'));
-      // Errorless: once only the right card is left (or after two misses) it glows.
-      if (leftOver.length === 1 || S.wrongs >= 2) cards[S.q.answer].classList.add('glow');
-    }, CONFIG.wrongMs);
+    restartAnim(card, 'wrong');
+    Voice.say(S.q.retry || 'Try again!');
+    if (S.q.explain) {
+      S.q.explain(card.dataset.label);
+      S.explainTimer = setTimeout(clearExplain, CONFIG.explainMs);
+    }
+    const rightCard = els.answers.querySelector(`.card[data-i="${S.q.answer}"]`);
+    if (S.wrongs >= CONFIG.hintAfter) rightCard.classList.add('hint');
+    if (S.wrongs >= CONFIG.glowAfter) rightCard.classList.add('glow');
   }
 
   function right(el) {
     S.busy = true;
     clearTimeout(S.idle);
+    clearExplain();
     hideHand();
-    if (el) { el.classList.remove('glow'); el.classList.add('right'); }
-    const qm = els.prompt.querySelector('.qmark');
-    if (qm && S.q.fill) { qm.innerHTML = S.q.fill; qm.classList.add('done'); }
+    if (el) { el.classList.remove('glow', 'hint'); el.classList.add('right'); }
+    fillQmark(S.q);
     Sound.chime();
     Sound.applause(1.2);
     FX.confetti(45);
@@ -1374,44 +1721,69 @@
   }
 
   /* ---------- Word jumble tiles ---------- */
+  function placeTile(tile) {
+    const pos = Number(els.prompt.querySelectorAll('.jslot.filled').length);
+    const slot = els.prompt.querySelector(`.jslot[data-i="${pos}"]`);
+    tile.classList.remove('glow');
+    tile.classList.add('used');
+    slot.textContent = tile.dataset.l;
+    slot.classList.remove('next');
+    slot.classList.add('filled');
+    els.prompt.querySelector(`.jslot[data-i="${pos + 1}"]`)?.classList.add('next');
+    Sound.pop(pos * 3);
+    return pos + 1;
+  }
+
   function tapTile(tile) {
-    if (S.busy || S.inIntro || tile.classList.contains('used')) return;
+    if (S.busy || S.inIntro || S.inDemo || tile.classList.contains('used')) return;
     armIdle();
     const word = S.q.word;
     const need = word[S.jpos];
     if (tile.dataset.l !== need) {
       S.wrongs += 1;
+      stats[S.skill].misses += 1;
+      saveStats();
       Sound.boop();
-      restartAnim(tile, 'wrong');
+      // The tile tries the empty slot and bounces back: it doesn't fit there.
+      restartAnim(tile, 'nofit');
+      const slot = els.prompt.querySelector(`.jslot[data-i="${S.jpos}"]`);
+      if (slot) restartAnim(slot, 'nope');
       Voice.say(`Find ${LETTER_NAME[need]}.`);
-      if (S.wrongs >= 2) els.answers.querySelector(`.tile[data-l="${need}"]:not(.used)`)?.classList.add('glow');
+      if (S.wrongs >= CONFIG.hintAfter) els.answers.querySelector(`.tile[data-l="${need}"]:not(.used)`)?.classList.add('glow');
       return;
     }
-    tile.classList.remove('glow');
-    tile.classList.add('used');
-    const slot = els.prompt.querySelector(`.jslot[data-i="${S.jpos}"]`);
-    slot.textContent = need;
-    slot.classList.remove('next');
-    slot.classList.add('filled');
-    Sound.pop(S.jpos * 3);
-    S.jpos += 1;
+    S.jpos = placeTile(tile);
     if (S.jpos === word.length) { right(null); return; }
-    els.prompt.querySelector(`.jslot[data-i="${S.jpos}"]`).classList.add('next');
     Voice.say(`${LETTER_NAME[need]}! Now ${LETTER_NAME[word[S.jpos]]}.`);
   }
 
   /* ---------- Counting taps on the animals in a question ---------- */
-  function tapCritter(c) {
+  function markCounted(c, n) {
+    if (!c) return;
     restartAnim(c, 'pop');
-    if (S.busy || S.inIntro || c.classList.contains('gone') || c.classList.contains('counted')) { Sound.pop(2); return; }
-    S.counted += 1;
     c.classList.add('counted');
-    c.insertAdjacentHTML('beforeend', `<span class="badge">${S.counted}</span>`);
-    Sound.pop(S.counted);
-    Voice.say(String(S.counted));
+    c.insertAdjacentHTML('beforeend', `<span class="badge">${n}</span>`);
+    Sound.pop(n);
   }
 
-  /* ---------- Stickers and the big celebration ---------- */
+  function tapCritter(c) {
+    if (S.busy || S.inIntro || S.inDemo || c.classList.contains('gone') || c.classList.contains('counted') || c.classList.contains('food')) {
+      restartAnim(c, 'pop');
+      Sound.pop(2);
+      return;
+    }
+    armIdle();
+    S.counted += 1;
+    markCounted(c, S.counted);
+    Voice.say(String(S.counted));
+    // Counted them all: the last number counted is "how many", so its card lights up.
+    if (S.q.countTo && S.counted === qs('.critter:not(.gone)').length) {
+      const card = els.answers.querySelector(`.card[data-label="${S.counted}"]`);
+      if (card) card.classList.add('hint');
+    }
+  }
+
+  /* ---------- Stickers, the big celebration and the end of a session ---------- */
   function renderStickers() {
     els.stickers.innerHTML = Array.from({ length: 5 }, (_, i) =>
       `<span class="slot-sticker${S.stickers[i] ? ' on' : ''}"><span class="emoji">${S.stickers[i] || ''}</span></span>`).join('');
@@ -1428,7 +1800,7 @@
     Sound.applause(3);
     FX.celebrate();
     Voice.say('Hooray! Five stickers! You are a superstar!');
-    els.prompt.innerHTML = `<div class="parade">${SKILL_IDS.map((id, i) => `<span style="--i:${i}">${SKILLS[id].mascot}</span>`).join('')}</div>`;
+    els.prompt.innerHTML = `<div class="parade">${SKILL_IDS.filter((id) => !SKILLS[id].paused).map((id, i) => `<span style="--i:${i}">${SKILLS[id].mascot}</span>`).join('')}</div>`;
     els.answers.innerHTML = '';
     later(() => {
       S.stickers = [];
@@ -1437,36 +1809,42 @@
     }, CONFIG.bigPartyMs);
   }
 
-  /* ---------- Pointing hand: shows how to answer without words ---------- */
-  function hideHand() { els.hand.hidden = true; }
-
-  function showHandDemo() {
-    const targets = [...els.answers.querySelectorAll('.card:not(.faded), .tile:not(.used)')];
-    if (!targets.length || S.busy) return;
-    const hand = els.hand;
-    hand.style.transition = 'none';
-    hand.style.transform = `translate(${window.innerWidth / 2 - 30}px, ${window.innerHeight + 20}px)`;
-    hand.hidden = false;
-    void hand.offsetWidth;
-    hand.style.transition = '';
-    targets.slice(0, 4).forEach((t, i) => later(() => {
-      const r = t.getBoundingClientRect();
-      hand.style.transform = `translate(${r.left + r.width / 2 - 24}px, ${r.top + r.height * 0.55}px)`;
-      later(() => restartAnim(hand, 'tap'), 600);
-    }, 150 + i * 1000));
-    later(hideHand, 150 + Math.min(targets.length, 4) * 1000 + 400);
+  // Session length (grown-ups setting): when time is up the current question finishes,
+  // then a trophy screen ends the session on a high.
+  function endSession() {
+    S.started = false;
+    S.busy = true;
+    S.block = null;
+    Sound.fanfare();
+    FX.celebrate();
+    Voice.say('All done! Great playing!');
+    els.trophy.hidden = false;
+    els.start.hidden = false;
   }
+
+  setInterval(() => {
+    if (!S.started || document.hidden || !els.sheet.hidden || S.timeUp) return;
+    S.playMs += 1000;
+    if (sessionMin && S.playMs >= sessionMin * 60000) S.timeUp = true;
+  }, 1000);
 
   /* ---------- Grown-ups sheet (press and hold ⚙️) ---------- */
   function renderParent() {
     els.soundToggle.textContent = Sound.muted ? 'Off' : 'On';
     els.soundToggle.classList.toggle('on', !Sound.muted);
+    els.tipsToggle.textContent = showTips ? 'On' : 'Off';
+    els.tipsToggle.classList.toggle('on', showTips);
+    els.sessionPills.innerHTML = SESSION_CHOICES.map((m) =>
+      `<button class="pill${m === sessionMin ? ' on' : ''}" type="button" data-min="${m}">${m ? `${m} min` : 'No limit'}</button>`).join('');
     els.skillRows.innerHTML = SKILL_IDS.map((id) => {
       const sk = SKILLS[id], st = stats[id], on = enabled.includes(id) && !sk.paused;
       const avg = st.correct ? `${(st.totalMs / st.correct / 1000).toFixed(1)} s each` : '–';
+      const taps = st.taps[0] + st.taps[1];
+      const side = taps >= 6 ? ` · picks left ${Math.round((st.taps[0] / taps) * 100)}%` : '';
+      const last = st.recentMisses.length ? ` · last mix-up: picked ${st.recentMisses[st.recentMisses.length - 1].picked} for ${st.recentMisses[st.recentMisses.length - 1].right}` : '';
       return `<div class="skill-row" data-skill="${id}">
         <span class="emoji" aria-hidden="true">${sk.mascot}</span>
-        <span>${sk.name} · level ${st.level}<br><span class="stat">${st.tries} tried · ${st.correct} right · ${st.firstTry} first try · ${avg}</span></span>
+        <span>${sk.name} · level ${st.level}<br><span class="stat">${st.tries} tried · ${st.correct} right · ${st.firstTry} first try · ${st.misses} wrong taps · ${avg}${side}${last}</span></span>
         ${sk.paused
           ? '<span class="pill paused">Paused</span>'
           : `<button class="pill${on ? ' on' : ''}" type="button" data-toggle="${id}" aria-pressed="${on}">${on ? 'On' : 'Off'}</button>`}
@@ -1479,6 +1857,7 @@
     clearTimeout(S.idle);
     Voice.cancel();
     renderParent();
+    els.voiceStatus.textContent = Voice.describe();
     els.sheet.hidden = false;
   }
 
@@ -1523,12 +1902,18 @@
   /* ---------- Start ---------- */
   function startPlaying() {
     Sound.unlock();
+    // Safari only lets a page speak if the first sentence starts inside a tap, so say hello right now.
+    Voice.say('Let’s play!');
     els.start.hidden = true;
+    els.trophy.hidden = true;
     S.started = true;
+    S.timeUp = false;
+    S.playMs = 0;
     nextQuestion();
   }
 
   /* ---------- Input wiring ---------- */
+  // Plain taps for buttons outside the game (act on touch-down, keyboard clicks too).
   function onTap(el, handler) {
     el.addEventListener('pointerdown', (e) => {
       if (e.button > 0) return;
@@ -1536,6 +1921,7 @@
       if (!target) return;
       e.preventDefault();
       Sound.unlock();
+      Voice.unlock();
       handler.fn(target, e);
     });
     el.addEventListener('click', (e) => {
@@ -1545,13 +1931,62 @@
     });
   }
 
+  // Answer taps count when the finger LIFTS on the same card, so a resting palm, a slide onto
+  // a card or several fingers at once don't pick anything by accident.
+  const fingersDown = new Set();
+  let multiTouch = false;
+  document.addEventListener('pointerdown', (e) => {
+    fingersDown.add(e.pointerId);
+    if (fingersDown.size > 1) multiTouch = true;
+  }, { capture: true });
+  ['pointerup', 'pointercancel'].forEach((ev) => document.addEventListener(ev, (e) => {
+    fingersDown.delete(e.pointerId);
+    if (!fingersDown.size) setTimeout(() => { if (!fingersDown.size) multiTouch = false; }, 0);
+  }, { capture: true }));
+
+  function onRelease(el, match, fn) {
+    const pressed = new Map();
+    el.addEventListener('pointerdown', (e) => {
+      if (e.button > 0) return;
+      e.preventDefault();
+      Sound.unlock();
+      Voice.unlock();
+      if (S.demoDone) { S.demoDone(); return; } // a tap during the demo skips it
+      const t = e.target.closest(match);
+      if (!t) return;
+      const palm = e.pointerType === 'touch' && Math.max(e.width || 0, e.height || 0) > 80;
+      pressed.set(e.pointerId, { t, bad: palm || multiTouch });
+      t.classList.add('pressing');
+    });
+    el.addEventListener('pointerup', (e) => {
+      const p = pressed.get(e.pointerId);
+      pressed.delete(e.pointerId);
+      if (!p) return;
+      p.t.classList.remove('pressing');
+      if (p.bad || multiTouch) return;
+      const under = document.elementFromPoint(e.clientX, e.clientY);
+      if (under && under.closest(match) === p.t) fn(p.t);
+    });
+    el.addEventListener('pointercancel', (e) => {
+      const p = pressed.get(e.pointerId);
+      pressed.delete(e.pointerId);
+      if (p) p.t.classList.remove('pressing');
+    });
+    el.addEventListener('click', (e) => { // keyboard activation
+      if (e.detail !== 0) return;
+      const t = e.target.closest(match);
+      if (t) fn(t);
+    });
+  }
+
   onTap(els.playBtn, { fn: startPlaying });
-  onTap(els.answers, { match: '.card, .tile', fn: (t) => (t.classList.contains('tile') ? tapTile(t) : choose(t)) });
-  onTap(els.prompt, { match: '.critter', fn: tapCritter });
+  onRelease(els.answers, '.card, .tile', (t) => (t.classList.contains('tile') ? tapTile(t) : choose(t)));
+  onRelease(els.prompt, '.critter', tapCritter);
   onTap(els.intro, { fn: () => S.introDone && S.introDone() });
+  onTap(els.yourTurn, { fn: () => S.demoDone && S.demoDone() });
   onTap(els.replayBtn, {
     fn: () => {
-      if (!S.q || S.inIntro) return;
+      if (!S.q || S.inIntro || S.inDemo) return;
       Voice.say(S.q.say);
       restartAnim(els.replayBtn, 'talking');
       setTimeout(() => els.replayBtn.classList.remove('talking'), 1800);
@@ -1569,6 +2004,18 @@
       renderParent();
     }
   });
+  onTap(els.tipsToggle, { fn: () => { showTips = !showTips; store.set('tips', showTips); renderParent(); } });
+  onTap(els.sessionPills, {
+    match: '[data-min]',
+    fn: (b) => { sessionMin = Number(b.dataset.min); store.set('sessionMin', sessionMin); S.timeUp = false; renderParent(); }
+  });
+  onTap(els.voiceTest, {
+    fn: () => {
+      Voice.test();
+      els.voiceStatus.textContent = 'Speaking…';
+      setTimeout(() => { els.voiceStatus.textContent = Voice.describe(); }, 1500);
+    }
+  });
   onTap(els.skillRows, {
     match: '[data-toggle], [data-try]',
     fn: (b) => (b.dataset.toggle ? toggleSkill(b.dataset.toggle) : tryNow(b.dataset.try))
@@ -1578,11 +2025,13 @@
   window.addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
     Sound.unlock();
+    Voice.unlock();
     if (!els.sheet.hidden) { if (e.key === 'Escape') closeParent(); return; }
     if (!S.started) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startPlaying(); } return; }
     if (S.inIntro) { if (e.key === 'Enter' || e.key === ' ') S.introDone && S.introDone(); return; }
+    if (S.inDemo) { if (e.key === 'Enter' || e.key === ' ') S.demoDone && S.demoDone(); return; }
     if (!S.q) return;
-    if (e.key === ' ' || e.key.toLowerCase() === 'r' && S.q.kind !== 'jumble') { e.preventDefault(); els.replayBtn.click(); return; }
+    if (e.key === ' ' || (e.key.toLowerCase() === 'r' && S.q.kind !== 'jumble')) { e.preventDefault(); els.replayBtn.click(); return; }
     if (S.q.kind === 'jumble' && /^[a-z]$/i.test(e.key)) {
       const t = els.answers.querySelector(`.tile[data-l="${e.key.toUpperCase()}"]:not(.used)`);
       if (t) tapTile(t);
@@ -1609,29 +2058,34 @@
 
   /* ---------- Boot + test hooks ---------- */
   Sound.muted = !!store.get('muted', false);
-  els.parade.innerHTML = SKILL_IDS.map((id, i) => `<span style="--i:${i}">${SKILLS[id].mascot}</span>`).join('');
+  els.parade.innerHTML = SKILL_IDS.filter((id) => !SKILLS[id].paused).map((id, i) => `<span style="--i:${i}">${SKILLS[id].mascot}</span>`).join('');
   renderStickers();
 
-  const describe = (q) => q && ({
+  const describeQ = (q) => q && ({
     kind: q.kind || 'choice', answer: q.answer, labels: q.choices ? q.choices.map((c) => c.label) : null,
-    word: q.word || null, tiles: q.tiles || null, say: q.say, praise: q.praise, data: q.data
+    word: q.word || null, tiles: q.tiles || null, say: q.say, praise: q.praise, data: q.data, countTo: q.countTo || 0
   });
   window.SkillMix = {
     config: CONFIG,
     skills: SKILL_IDS,
-    make: (id, level = 1) => describe(SKILLS[id].make(level)),
+    make: (id, level = 1) => describeQ(SKILLS[id].make(level)),
     state: () => ({
-      started: S.started, skill: S.skill, inIntro: S.inIntro, busy: S.busy, wrongs: S.wrongs,
-      counted: S.counted, jpos: S.jpos, stickers: S.stickers.length, ready: S.started && !S.inIntro && !S.busy && !!S.q,
-      q: describe(S.q)
+      started: S.started, skill: S.skill, inIntro: S.inIntro, inDemo: S.inDemo, busy: S.busy, wrongs: S.wrongs,
+      counted: S.counted, jpos: S.jpos, stickers: S.stickers.length, block: S.block && { ...S.block },
+      ready: S.started && !S.inIntro && !S.inDemo && !S.busy && !!S.q,
+      q: describeQ(S.q), playMs: S.playMs, timeUp: S.timeUp
     }),
-    // Tests only: switch to a skill straight away.
+    // Tests only: switch to a skill straight away (starts a new block with intro + demo).
     force: (id) => { S.forced = id; if (S.started) nextQuestion(); },
+    // Tests only: pretend the session time has run out.
+    endTime: () => { S.timeUp = true; },
     stats: () => JSON.parse(JSON.stringify(stats)),
     enabled: () => enabled.filter((id) => !SKILLS[id].paused), // the skills that can come up
     labels: Object.fromEntries(SKILL_IDS.map((id) => [id, SKILLS[id].label])),
     paused: SKILL_IDS.filter((id) => SKILLS[id].paused),
+    sessionMin: () => sessionMin,
     letterSound: LETTER_SOUND,
+    voice: () => Voice.status(),
     audioState: () => Sound.state,
     particles: () => FX.count(),
     soundLog: Sound.log,

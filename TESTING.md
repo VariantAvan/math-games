@@ -29,58 +29,68 @@ The page exposes a test hook, `window.SkillMix`:
 
 | # | Test |
 |---|---|
-| E.1 | The start screen shows ▶️ and the 10 mascots, and nothing is asked or spoken yet. |
+| E.1 | The start screen shows ▶️ and the mascots of the 7 games in play, with nothing asked yet. |
 | E.2 | Enter or Space also starts. |
-| E.3 | Each question opens with the skill's mascot, icon, jingle and a 2–3 word description. The same mascot and description then sit in a name tag by the question, and the question is spoken. |
-| E.4 | Tapping the intro skips it. |
-| E.5 | Over 25 questions, the same skill never comes twice in a row, at least 6 different skills appear, and Taking away (paused) never comes up. |
-| E.15 | Every game has a description of at most 3 words. |
-| E.6 | Right answer: green card, chime + applause, the praise is spoken, a sticker is added, and the record gets tries / correct / firstTry / time. |
-| E.7 | Wrong answer: wobble, "uh-oh" and "Try again!". The card fades and the right card glows. The faded card can't be tapped. Right after a miss counts as correct but not first try. |
-| E.8 | Five stickers: fanfare, fireworks and "Hooray! Five stickers!". Then the sticker row empties and play continues. |
-| E.9 | 🔊 speaks the question again. |
-| E.10 | The first time a skill appears, the 👆 hand demonstrates. |
-| E.11 | After a quiet spell the question is spoken again and the hand appears. |
-| E.12 | Keys 1–4 pick the cards. |
-| E.13 | Animals in a question can be tapped to count them (badges 1, 2, 3). Tapping one twice doesn't count it again. |
-| E.14 | The record is still there after reloading the page. |
+| E.3 | A game opens with an intro: mascot, icon, a 2–3 word description and the jingle. Then comes the demo: 👀 at the top, the 👆 hand, a "Grown-ups:" tip, then "Your turn!". Then the question, with the same mascot and description in its name tag. The question is spoken, and the demo earns no sticker. |
+| E.4 | In the demo the hand answers its example correctly (the right card turns green). |
+| E.5 | Tapping the intro, or the demo, skips it. |
+| E.6 | Over 30 questions, games come in blocks of 3–4 and then switch, with at least 7 blocks. Paused games never come up. |
+| E.7 | Right answer: green card, chime and applause, praise spoken, a sticker. The record gets correct, firstTry, misses = 0 and the time. |
+| E.8 | **Wrong answers stay:** the card wobbles with a "boop", the explanation shows, nothing fades and he can pick the same card again. The right card starts pulsing only after 3 tries and glows after 5. It is never answered for him. The record counts the misses and remembers what was picked instead of what. |
+| E.9 | An explanation clears by itself after a moment. |
+| E.10 | Which card he taps (left or right) is recorded. |
+| E.11 | Five stickers: fanfare, fireworks, then the sticker row empties. |
+| E.12 | When the session time is up, the current question finishes, then the 🏆 screen says "All done!". ▶️ starts a new session. |
+| E.13 | 🔊 speaks the question again. |
+| E.14 | After a quiet spell the question is spoken again and the hand points at the answers. |
+| E.15 | Keys 1–4 pick the cards. |
+| E.16 | Tapping each animal counts it (1, 2, 3…). When all are counted, the matching number card lights up. Tapping one twice doesn't count it again. |
+| E.17 | **Touch:** an answer counts on finger *lift*, not touch-down. Lifting off the card picks nothing. Two fingers at once, or a palm-sized touch, pick nothing, and a normal tap still works afterwards. |
+| E.18 | The record survives a reload. |
+| E.19 | Every game's description is at most 3 words. |
 
-## The ten skills: `tests/02-skills.spec.js`
+## The games: `tests/02-skills.spec.js`
 
 | # | Test |
 |---|---|
-| K.1 | For every skill, 300 generated level-1 questions follow its rules (below). Each has 2 different choices, and the right answer appears on both sides over the run. |
-| K.2 | For each of the 10 skills, the question looks right on screen, shows the game's description, is spoken, can be answered, and the praise is spoken. Where there's a ❓, it fills in with the answer. |
-| K.3 | Word jumble: a wrong tile fills nothing and says which letter to find. After two misses the right tile glows. A right tile fills the slot and moves the highlight on. |
-| K.4 | Word jumble can be typed on a keyboard. |
+| K.1 | For every game, 300 generated level-1 questions follow its rules (below). Each has 2 different choices, and the right answer appears on both sides over the run. |
+| K.2 | Each of the 10 games looks right on screen, shows its description, is spoken, can be answered, and the praise is spoken. A ❓ fills in with the answer. |
+| K.3 | Adding: the groups start apart, then the second walks over and joins the first (one group of a + b, the "+" gone). |
+| K.4 | **Mistakes are explained.** Find the number: the picked number's dots appear. How many / Add them up: the picked number pairs with the animals (orange dots under min(n, pick), red extra dots for too many, missed animals pulse). Which has more: the paired items and exactly the leftover items light up. What comes next: the gap shows the picked colour and "breaks". Same shape: the picked shape is laid over the target. |
+| K.5 | Word jumble: a wrong tile bounces off and fills nothing. After three misses the right tile glows, and a right tile fills the slot. |
+| K.6 | Word jumble can be typed on a keyboard. |
 
 The level-1 rules the generator is checked against:
 
-| Skill | Rule |
+| Game | Rule |
 |---|---|
-| Numbers | Choices 1–3. The question shows that many dots. |
-| First letter | A picture from the word list; choices are 2 capitals from A B D F M P S T, never a look-alike pair (B/P, B/D, F/P). The answer is the picture word's first letter. The question shows the picture, not a letter. |
-| Counting | 1–3 animals. The answer is the count. |
-| Starts with… | Letters A B D F M P S T. The right picture word starts with the letter and the other doesn't. The spoken question includes the letter's sound from `LETTER_SOUND`. |
-| Adding | a, b ≥ 1 and a + b ≤ 3. Choices 1–4. |
-| Taking away | From 2 or 3, at least 1 left. Choices 1–3. The leaving animals are crossed out. |
-| Word jumble | One of the 10 three-letter words. Tiles are the word's letters, never already in order. |
-| More or fewer | Groups of up to 5 that differ by at least 3. The answer is the bigger group. |
-| What comes next | Alternating A B A B… of two colours that don't look alike (never red with orange, or blue with purple). The answer is the next one. |
-| Shapes | Circle, square, triangle, star or heart. The answer is the same shape. |
+| Find the number | Choices 1–5. The question shows that many dots. |
+| How many? | 1–6 animals. The answer is the count. |
+| Add them up | a, b ≥ 1 and a + b ≤ 5. Choices 1–5. |
+| Which has more? | Two plates, one with at least twice as much, up to 10. The answer is the bigger plate. |
+| What comes next? | Alternating A B A B… of two colours that don't look alike. |
+| Same shape | Circle, square, triangle, star or heart. |
+| Spell the word | One of 10 three-letter words. The tiles are never already in order. |
+| First letter (paused) | A picture word; 2 capitals from A B D F M P S T, never a look-alike pair. |
+| Starts with… (paused) | Letters A B D F M P S T. The spoken question includes the letter's sound. |
+| Take away (paused) | From 2 or 3, at least 1 left. |
 
 ## Grown-ups sheet: `tests/03-parent.spec.js`
 
 | # | Test |
 |---|---|
-| P.1 | A quick tap on ⚙️ does nothing. Press and hold opens the sheet with all 10 skills, and Escape closes it. |
-| P.2 | With only 2 skills on, only those are asked, alternating. The choice is remembered after a reload. |
-| P.3 | The last skill that's on can't be switched off. |
-| P.4 | "Try now" jumps straight to that skill. |
-| P.5 | Sound off silences every sound and the voice, and stays off after a reload. |
-| P.6 | The sheet shows each skill's level, tries, right answers, first tries and average time. |
-| P.7 | The sheet can be opened from the start screen too. |
-| P.8 | Taking away shows **Paused** (no on/off switch), is not in the rotation, and **Try now** still opens it. |
+| P.1 | A quick tap on ⚙️ does nothing. Press and hold opens the sheet with all 10 games, and Escape closes it. |
+| P.2 | With only 2 games on, only those are asked. The choice is remembered after a reload. |
+| P.3 | The last game that's on can't be switched off. |
+| P.4 | "Try now" jumps straight to a game (even a paused one). |
+| P.5 | Sound off silences everything and stays off after a reload. |
+| P.6 | The sheet shows level, tries, right answers, first tries, wrong taps and average time. |
+| P.7 | The sheet opens from the start screen too. |
+| P.8 | Paused games (First letter, Starts with…, Take away) show **Paused**, have no on/off switch, and are never asked. |
+| P.9 | Session length offers 5 / 8 / 10 / 15 min / No limit (default 5) and is remembered. |
+| P.10 | Grown-up tips can be switched off, which hides the tip during demos. |
+| P.11 | **Test voice** speaks and shows the voice status (voices on the device, sentences spoken, last problem). |
+| P.12 | The sheet shows which side he tends to pick and his last mix-up. |
 
 ## Layout: `tests/04-layout.spec.js`
 
@@ -90,21 +100,25 @@ The level-1 rules the generator is checked against:
 
 ## Manual checklist
 
-**Voice and sound**
-- [ ] On your iPad or phone, play each skill with **Try now**, and listen to how each question is spoken.
-- [ ] Voice is optional: on devices where it doesn't work, check every game is still clear from its picture and description.
-- [ ] Letter names are said as names ("bee", not "b" read as a word).
-- [ ] Each skill's jingle is short and pleasant, and they sound different from each other.
+**Voice (on the iPad)**
+- [ ] Press ▶️: you should hear "Let's play!", then the questions.
+- [ ] If not, press and hold ⚙️, then **Test voice**. Note what the status line says (number of voices, sentences spoken, any problem) and check the ring/silent switch and volume.
 
-**Understanding without reading** (with your child)
-- [ ] After a few rounds, does your child know what to do from the mascot and the voice alone?
-- [ ] Is the 👆 hand demo clear, or distracting?
-- [ ] Does the child try to tap the animals to count them?
-- [ ] Is "More or fewer" understood from "Which one has more?" alone?
-- [ ] Word jumble: does the child match the faint letters?
+**Touch**
+- [ ] Taps register when he lifts his finger. Resting his other hand on the screen doesn't pick anything.
+- [ ] Holding a finger on a card and sliding away cancels it.
 
-**Feel**
-- [ ] Wrong answers feel gentle, never like failing.
-- [ ] Five stickers feel like a treat, and the party isn't too long.
-- [ ] Nothing zooms, selects or scrolls when mashing the screen.
-- [ ] Press and hold ⚙️ works for an adult, and a toddler's taps don't open it.
+**Demos and blocks**
+- [ ] He watches the demo and then copies it. Is the hand's pace right?
+- [ ] 3–4 questions per game feels right: not boring, not too switchy.
+- [ ] The grown-up tip is readable at the bottom during the demo.
+
+**Mistakes**
+- [ ] When he picks wrong, does he look at the explanation (dots lining up, leftovers lighting up)?
+- [ ] Does he try again by himself? Does he ever repeat the same wrong card? (Check "last mix-up" in the sheet.)
+- [ ] Is the pulse after 3 tries soon enough, or too soon?
+
+**Engagement**
+- [ ] With the session at 5 minutes, does he finish happily, and want more?
+- [ ] Track over a few weeks: raise the session length when he regularly reaches the trophy.
+- [ ] In the sheet, check the "picks left %". Around 50% is healthy; near 0% or 100% means he's tapping one side by habit.
